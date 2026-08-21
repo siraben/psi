@@ -70,6 +70,7 @@ local TUI_CONST = {
 local chat = { FRAME = "frame", CHAT = "chat" }
 chat.paste = require("psi.tui_editor_paste")
 chat.clipboard = require("psi.clipboard")
+chat.clipboard.image = require("psi.clipboard_image")
 chat.startup = require("psi.tui_startup")
 chat.theme = require("psi.theme")
 chat.thinking = require("psi.thinking")
@@ -5164,7 +5165,14 @@ local function apply_action(state, action, arg)
     return
   end
   if action == "clipboard-paste" then
-    local reader = state.clipboard_reader or chat.clipboard.read_system
+    local clipboard = chat.clipboard
+    local image_reader = state.clipboard_image_reader or clipboard.image.read_system
+    local image_ok, image_path = pcall(image_reader)
+    if image_ok and type(image_path) == "string" and image_path ~= "" then
+      insert_text(state, image_path)
+      return
+    end
+    local reader = state.clipboard_reader or clipboard.read_system
     local text = chat.read_clipboard(state, reader)
     if type(text) == "string" and text ~= "" then
       insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(text)), true)
@@ -6571,6 +6579,9 @@ function M._debug_edit_keys(input, cursor, events, apply_startup_hooks, debug_op
     selection_anchor = nil,
     selection_kind = nil,
     clipboard = "",
+    clipboard_image_reader = debug_options.clipboard_image_reader or function()
+      return nil
+    end,
     clipboard_reader = debug_options.clipboard_reader,
     clipboard_writers_disabled = debug_options.clipboard_writers ~= true,
     pending_key = nil,
