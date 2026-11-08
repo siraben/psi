@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["ansi", "color"]
 expect = "true|true|true"
 env = { TERM = "xterm-256color", PSI_COLOR = "1" }
 ]==]

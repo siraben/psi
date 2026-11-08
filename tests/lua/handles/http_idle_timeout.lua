@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["mcp"]
 expect = "true|true"
 
 [env]

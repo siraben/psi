@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["mcp"]
 expect = "reply:hello|0"
 ]==]
 local h, err = psi.process_begin_stdio_argv({

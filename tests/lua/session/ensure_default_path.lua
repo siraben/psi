@@ -1,6 +1,4 @@
 --[==[psi-test
-# Original: idem == "true" AND set == "true" AND path contains "/psi/sessions/"
-# AND path ends with ".jsonl". Folded.
 expect = "true|true|true|true"
 ]==]
 local s = require("psi.session_manager")

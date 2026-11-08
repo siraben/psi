@@ -1,6 +1,4 @@
 --[==[psi-test
-# Original split-and-check on stdout '|'-separated parts. Refactored to do all
-# checks in Lua and return a single boolean tuple.
 expect = "true|true|true|true"
 ]==]
 local r = require("psi.render")

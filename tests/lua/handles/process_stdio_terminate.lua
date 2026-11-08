@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["mcp"]
 expect = "130"
 ]==]
 local h, err = psi.process_begin_stdio_argv({ "sh", "-c", "sleep 60" })

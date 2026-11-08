@@ -1,21 +1,19 @@
 --[==[psi-test
-expect = "moonshot|moonshot-messages|psi.providers.moonshot|function|function|kimi-for-coding|anthropic"
+expect = "ok"
 ]==]
--- Moonshot / Kimi For Coding routes to its own api + module, and its wire
--- format is Anthropic Messages (thinking_format anthropic).
-local reg = require("psi.api_registry")
-
-local api = reg.api("moonshot-messages")
-local route = reg.resolve_route("moonshot/kimi-for-coding")
-local desc = reg.resolve_descriptor("moonshot/kimi-for-coding")
-local mod = reg.load_api("moonshot-messages")
-
-return table.concat({
-  route.name,
-  desc.api,
-  api.module,
-  tostring(type(mod.run_turn)),
-  tostring(type(mod.has_auth)),
-  desc.model,
-  desc.compat.thinking_format,
-}, "|")
+local registry = require("psi.api_registry")
+local count = 0
+for _, model in ipairs(registry.all_models()) do
+  if model.provider == "moonshot" then
+    count = count + 1
+    local route = registry.resolve_route(model.id)
+    local desc = registry.resolve_descriptor(model.id)
+    assert(route.name == "moonshot")
+    assert(desc.api == "moonshot-messages")
+    assert(desc.compat.thinking_format == "anthropic")
+    assert(desc.compat.supports_tool_use)
+    assert(desc.model == model.id:match("^moonshot/(.+)$"))
+  end
+end
+assert(count > 0, "Moonshot catalogue must be routable")
+return "ok"

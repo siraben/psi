@@ -1,5 +1,8 @@
 --[==[psi-test
-expect = "true|function"
+expect = "ok"
 ]==]
 local info = psi.runtime_info()
-return tostring(info.mcp) .. "|" .. type(psi.process_begin_stdio_argv)
+assert(type(info.mcp) == "boolean")
+assert((type(psi.process_begin_stdio_argv) == "function") == info.mcp)
+assert(info.mcp or psi.process_begin_stdio_argv == nil)
+return "ok"

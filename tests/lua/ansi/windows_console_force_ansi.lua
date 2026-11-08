@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["ansi", "color"]
 expect = "true"
 env = { OS = "Windows_NT", TERM = "", PSI_ANSI = "1" }
 ]==]

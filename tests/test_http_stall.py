@@ -15,8 +15,7 @@ import time
 from pathlib import Path
 
 import pytest
-
-import lua_runner
+from test_support import smoke_env
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -57,7 +56,7 @@ class _StallServer:
         while not self._stop.is_set():
             try:
                 conn, _ = self._sock.accept()
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except OSError:
                 break
@@ -88,7 +87,7 @@ def test_stalled_stream_aborts_within_idle_timeout(tmp_path: Path, request):
 
     server = _StallServer()
     try:
-        env = lua_runner.smoke_env(tmp_path)
+        env = smoke_env(tmp_path)
         env["PSI_HTTP_IDLE_TIMEOUT"] = str(IDLE_TIMEOUT_SECS)
         env["PSI_TEST_URL"] = f"http://127.0.0.1:{server.port}/"
 
@@ -98,6 +97,7 @@ def test_stalled_stream_aborts_within_idle_timeout(tmp_path: Path, request):
         result = subprocess.run(
             [str(binary), "--eval", _EVAL],
             capture_output=True,
+            check=False,
             text=True,
             env=env,
             cwd=str(ROOT),
