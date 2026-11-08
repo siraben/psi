@@ -1,32 +1,21 @@
 -- psi.settings: small layered JSON settings loader.
 --
 -- Layers, lowest to highest precedence:
---   ~/.config/psi/settings.json
+--   $XDG_CONFIG_HOME/psi/settings.json (fallback ~/.config/psi/settings.json)
 --   ./.psi/settings.json
 --
 -- Environment variables still win where provider modules already use
 -- them; settings only provide repo/global defaults.
 
 local prelude = require("psi.prelude")
+local config_paths = require("psi.config_paths")
 
 local M = {}
 
 local cached = nil
 
-local function config_dir()
-  local xdg = os.getenv("XDG_CONFIG_HOME")
-  if xdg and xdg ~= "" then
-    return prelude.path_join(xdg, "psi")
-  end
-  local home = os.getenv("HOME")
-  if home and home ~= "" then
-    return prelude.path_join(home, ".config/psi")
-  end
-  return nil
-end
-
 local function global_path()
-  local dir = config_dir()
+  local dir = config_paths.config_dir()
   return dir and prelude.path_join(dir, "settings.json") or nil
 end
 

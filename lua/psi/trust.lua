@@ -6,10 +6,11 @@
 -- keybindings.json. Loading these unconditionally turns `cd evil-repo
 -- && psi` into silent code execution, so they stay disabled until the
 -- directory is trusted. Trust decisions are kept in
--- ~/.config/psi/trust.json keyed by canonical directory, inherited from
--- the nearest ancestor with a stored decision.
+-- $XDG_CONFIG_HOME/psi/trust.json (fallback ~/.config/psi/trust.json),
+-- keyed by canonical directory and inherited from the nearest stored ancestor.
 
 local prelude = require("psi.prelude")
+local config_paths = require("psi.config_paths")
 
 local M = {}
 
@@ -23,20 +24,8 @@ local RESOURCE_NAMES = {
   "keybindings.json",
 }
 
-local function config_dir()
-  local xdg = os.getenv("XDG_CONFIG_HOME")
-  if xdg and xdg ~= "" then
-    return prelude.path_join(xdg, "psi")
-  end
-  local home = os.getenv("HOME")
-  if home and home ~= "" then
-    return prelude.path_join(home, ".config/psi")
-  end
-  return nil
-end
-
 local function store_path()
-  local dir = config_dir()
+  local dir = config_paths.config_dir()
   return dir and prelude.path_join(dir, "trust.json") or nil
 end
 
@@ -114,7 +103,7 @@ end
 -- The fallback policy comes only from the global settings layer; a
 -- repo-local settings file must never decide its own trust.
 local function default_policy()
-  local dir = config_dir()
+  local dir = config_paths.config_dir()
   if not dir then
     return "ask"
   end

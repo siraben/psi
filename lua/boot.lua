@@ -7,14 +7,7 @@
 -- public namespace names stay short; underlying file paths mirror
 -- pi-mono (e.g. psi.session → psi.session_manager).
 
--- Runtime tuning: Lua 5.5 keeps generational collection as the best
--- default for psi's allocation-heavy hot paths. Most allocations are
--- short-lived (SSE chunks parsed into tables then discarded, gsub
--- replacement strings, per-line markdown spans, per-tick scratch
--- tables from sched.run_all). Lua 5.5 also gives generational mode
--- incremental major collections, so we get lower churn cost without
--- full stop-the-world majors. Set PSI_GC_MODE to override
--- ("incremental" reverts; "off" disables autocollection entirely).
+-- Generational GC by default; PSI_GC_MODE=incremental or off overrides it.
 do
   local mode = os.getenv("PSI_GC_MODE")
   if mode == "off" then
@@ -84,18 +77,18 @@ psi.markdown = require("psi.markdown")
 psi.doc = require("psi.doc")
 psi.doc.bootstrap(psi)
 
-local function load_packaged_extension(module_name)
-  local ok, ext = pcall(require, module_name)
+local function load_extension(acquire, name, label)
+  local ok, ext = pcall(acquire, name)
   if not ok then
     psi.notice.error(
-      "psi: packaged extension " .. module_name .. " failed to load: " .. tostring(ext),
+      "psi: " .. label .. " failed to load: " .. tostring(ext),
       { source = "extension-loader" }
     )
   elseif type(ext) == "function" then
     local inv_ok, inv_err = pcall(ext, psi)
     if not inv_ok then
       psi.notice.error(
-        "psi: packaged extension " .. module_name .. " failed during init: " .. tostring(inv_err),
+        "psi: " .. label .. " failed during init: " .. tostring(inv_err),
         { source = "extension-loader" }
       )
     end
@@ -105,7 +98,7 @@ end
 for _, module_name in ipairs({
   "psi.extensions.btw",
 }) do
-  load_packaged_extension(module_name)
+  load_extension(require, module_name, "packaged extension " .. module_name)
 end
 
 -- Default event-hook registrations.
@@ -232,21 +225,7 @@ end
 local function load_extensions_from(dir)
   for _, name in ipairs(list_lua_files(dir)) do
     local path = psi.path.join(dir, name)
-    local ok, ext = pcall(dofile, path)
-    if not ok then
-      psi.notice.error(
-        "psi: extension " .. path .. " failed to load: " .. tostring(ext),
-        { source = "extension-loader" }
-      )
-    elseif type(ext) == "function" then
-      local inv_ok, inv_err = pcall(ext, psi)
-      if not inv_ok then
-        psi.notice.error(
-          "psi: extension " .. path .. " failed during init: " .. tostring(inv_err),
-          { source = "extension-loader" }
-        )
-      end
-    end
+    load_extension(dofile, path, "extension " .. path)
   end
 end
 

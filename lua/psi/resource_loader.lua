@@ -2,6 +2,7 @@
 
 local records = require("psi.records")
 local prelude = require("psi.prelude")
+local config_paths = require("psi.config_paths")
 
 local M = {}
 
@@ -31,18 +32,6 @@ local function add_first_context(out, dir, source)
   return false
 end
 
-local function config_dir()
-  local xdg = os.getenv("XDG_CONFIG_HOME")
-  if xdg and xdg ~= "" then
-    return prelude.path_join(xdg, "psi")
-  end
-  local home = os.getenv("HOME")
-  if home and home ~= "" then
-    return prelude.path_join(home, ".config/psi")
-  end
-  return nil
-end
-
 function M.diagnostics()
   local out = {}
   for i, d in ipairs(diagnostics) do
@@ -61,7 +50,7 @@ function M.context_files()
     return found
   end
 
-  local cfg = config_dir()
+  local cfg = config_paths.config_dir()
   if cfg then
     add_first_context(found, cfg, "global")
   end
@@ -103,31 +92,32 @@ end
 
 local function first_existing(paths)
   for _, path in ipairs(paths) do
-    if path and psi.file_exists(path) then
+    if psi.file_exists(path) then
       return path, psi.read_file(path)
     end
   end
   return nil, nil
 end
 
+local function prompt_file(name)
+  local paths = {}
+  -- Repo-controlled prompt overrides are honored only when trusted.
+  if psi.project_trusted then
+    paths[#paths + 1] = prelude.path_join(prelude.path_join(psi.cwd(), ".psi"), name)
+  end
+  local cfg = config_paths.config_dir()
+  if cfg then
+    paths[#paths + 1] = prelude.path_join(cfg, name)
+  end
+  return first_existing(paths)
+end
+
 function M.system_prompt_file()
-  local cfg = config_dir()
-  local cwd = psi.cwd()
-  return first_existing({
-    -- Repo-controlled prompt overrides are honored only when trusted.
-    psi.project_trusted and prelude.path_join(prelude.path_join(cwd, ".psi"), "SYSTEM.md") or nil,
-    cfg and prelude.path_join(cfg, "SYSTEM.md") or nil,
-  })
+  return prompt_file("SYSTEM.md")
 end
 
 function M.append_system_prompt_file()
-  local cfg = config_dir()
-  local cwd = psi.cwd()
-  return first_existing({
-    psi.project_trusted and prelude.path_join(prelude.path_join(cwd, ".psi"), "APPEND_SYSTEM.md")
-      or nil,
-    cfg and prelude.path_join(cfg, "APPEND_SYSTEM.md") or nil,
-  })
+  return prompt_file("APPEND_SYSTEM.md")
 end
 
 -- Skills are advertised by metadata only. The model reads SKILL.md with
@@ -213,7 +203,7 @@ end
 
 function M.skills()
   local found, seen_dirs, seen_names = {}, {}, {}
-  local cfg = config_dir()
+  local cfg = config_paths.config_dir()
   if cfg then
     scan_skill_dir(prelude.path_join(cfg, "skills"), found, seen_dirs, seen_names)
   end
