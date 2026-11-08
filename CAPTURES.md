@@ -49,3 +49,7 @@ The screenshot was captured from the actual desktop over RDP. Only the RDP clien
 ## Scope
 
 Screenshots are evidence of these particular runs and configurations. They are not an operating-system compatibility test suite or a performance benchmark. No credentials or unrelated prior session transcripts are included in the media.
+
+## Published binary size
+
+The subtitle’s 6.4 MB is the rounded decimal size of the uncompressed `psi-cosmocc-fat` executable built on November 8, 2026 with `nix build .#psi-cosmocc-fat` on the Linux build host: **6,409,016 bytes** (about 6.11 MiB). The build completed successfully and the resulting executable returned `0.1.0` for `--version`. This is the portable Cosmopolitan fat build, not a compressed download or the size of every native platform build.
