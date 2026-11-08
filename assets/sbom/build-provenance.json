@@ -1,0 +1,62 @@
+{
+  "source_commit": "646098f607cd0df976ed1691adeca520a724209d",
+  "source_repository": "https://github.com/siraben/psi",
+  "source_url": "https://github.com/siraben/psi/commit/646098f607cd0df976ed1691adeca520a724209d",
+  "target": ".#default",
+  "platform": "x86_64-linux",
+  "scope": "Nix build-time closure",
+  "generated_at": "2026-11-08T16:02:39.697166-05:00",
+  "tool": {
+    "name": "sbomnix",
+    "version": "1.7.6+g8e94a4a",
+    "input_repository": "https://github.com/tiiuae/sbomnix",
+    "input_revision": "8e94a4a7f0983215141e0a50b45977353b56ba94"
+  },
+  "nixpkgs_revision": "4975466d324710c576dc11ad614684e6bd8cad8e",
+  "nix_version": "2.35.3+1",
+  "root_bom_ref": "/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv",
+  "root_output_path": "/nix/store/vma0g1c85cklkasbv0i62xg44c3bnnrj-psi-0.2.0",
+  "sbom_file": "psi-buildtime.cdx.json",
+  "sbom_sha256": "b2ecb1cbc44d04a5dd06d875adb353ca39161a1094b76716375bf177799eaef9",
+  "original_generated_sbom_sha256": "29322a0527abd17566a0722f1d42a4284bf3ec0f50614af48c29746a58cb6b32",
+  "cyclonedx_version": "1.4",
+  "counts": {
+    "nodes": 918,
+    "dependency_components": 917,
+    "direct": 12,
+    "transitive_only": 905,
+    "edges": 4660
+  },
+  "build_command": "nix build .#default --out-link ../psi-result",
+  "generation_command": "sbomnix .#default --buildtime --exclude-cpe-matching --cdx ../build.cdx.json --spdx ../build.spdx.json --csv ../build.csv",
+  "tool_selection": "Use inputs.sbomnix.packages.x86_64-linux.sbomnix from this source commit\u2019s locked flake, not an unpinned global package.",
+  "sanitization": {
+    "removed_cpe_fields": 886,
+    "reason": "sbomnix still synthesizes unverified CPE fallbacks with matching disabled; default heuristic mapping misidentified psi as unrelated psi-im software. Optional CPE fields are removed from this attributable public snapshot.",
+    "dependency_graph_changed": false,
+    "private_paths_found": false
+  },
+  "validation": {
+    "all_references_resolve": true,
+    "all_components_reachable_from_root": true,
+    "vulnerability_scans_run": false
+  },
+  "limitations": [
+    "This is the full Nix build-time derivation closure of the v0.2.0 Linux x86_64 default target, not a list of dependencies shipped in the binary.",
+    "Retained/runtime dependencies are supplied in the separate runtime snapshot; solid/dashed edge classification must use exact recorded edge identities, not package-name merging.",
+    "No vulnerability scans were run; optional generated CPE fields were removed with explicit attribution."
+  ],
+  "license_enrichment": {
+    "evidence_file": "license-evidence.json",
+    "evidence_sha256": "1ea6986e3ec51315a989479172c5989acba1d65801a2d2286283d01a21bf34e2",
+    "pre_enrichment_sha256": "a61bfa53d2cece31e15ee294e2cff8e0aebcc26f3c5685d1dc02d7805c37fc65",
+    "enriched_components": [
+      "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv",
+      "/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv",
+      "/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv",
+      "/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv"
+    ],
+    "scope": "These are package-level Nix meta.license values. The list is not an inferred SPDX AND/OR expression or a legal analysis of individual output files. xgcc here has an observed libgcc runtime output; no runtime exception was inferred.",
+    "dependency_graph_changed": false
+  }
+}

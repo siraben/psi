@@ -14,6 +14,18 @@ class GraphTests(unittest.TestCase):
         ids = {n['ref']:n['id'] for n in result['nodes']}
         self.assertEqual(len(ids),3)
         self.assertEqual({(e['source'],e['target']) for e in result['edges']}, {(ids['root'],ids['a']),(ids['a'],ids['b']),(ids['b'],ids['a'])})
+    def test_runtime_edges_stay_solid_and_build_only_are_dashed(self):
+        runtime = graph.read_graph(self.snapshot())
+        document = self.snapshot()
+        document['components'] += [{'bom-ref':'tool','name':'compiler'}, {'bom-ref':'deep','name':'bootstrap'}]
+        document['dependencies'] += [{'ref':'tool','dependsOn':['deep']}]
+        document['dependencies'][0]['dependsOn'].append('tool')
+        mixed = graph.include_build_inputs(runtime, graph.read_graph(document))
+        self.assertEqual({n['ref'] for n in mixed['nodes']}, {'root','a','b','tool'})
+        self.assertEqual(sum(e['scope']=='runtime' for e in mixed['edges']),3)
+        self.assertEqual(sum(e['scope']=='build' for e in mixed['edges']),1)
+        self.assertEqual(mixed['build_count'],5)
+
     def test_unknown_reference_rejected(self):
         document = self.snapshot(); document['dependencies'][0]['dependsOn'].append('missing')
         with self.assertRaisesRegex(ValueError,'Unknown dependency target'): graph.read_graph(document)

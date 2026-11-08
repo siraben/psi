@@ -1,11 +1,11 @@
 {
-  "source_commit": "66a73a8462d352d7527be4ee49239ced334a08ce",
+  "source_commit": "646098f607cd0df976ed1691adeca520a724209d",
   "source_repository": "https://github.com/siraben/psi",
-  "source_url": "https://github.com/siraben/psi/commit/66a73a8462d352d7527be4ee49239ced334a08ce",
+  "source_url": "https://github.com/siraben/psi/commit/646098f607cd0df976ed1691adeca520a724209d",
   "target": ".#default",
   "platform": "x86_64-linux",
   "scope": "Nix runtime closure",
-  "generated_at": "2026-11-08T15:56:37.717095-05:00",
+  "generated_at": "2026-11-08T16:02:35.517397-05:00",
   "tool": {
     "name": "sbomnix",
     "version": "1.7.6+g8e94a4a",
@@ -14,11 +14,11 @@
   },
   "nixpkgs_revision": "4975466d324710c576dc11ad614684e6bd8cad8e",
   "nix_version": "2.35.3+1",
-  "root_bom_ref": "/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv",
-  "root_output_path": "/nix/store/yiyasdgamd9r8fpi3p9h2njj30x3jj38-psi-0.1.0",
+  "root_bom_ref": "/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv",
+  "root_output_path": "/nix/store/vma0g1c85cklkasbv0i62xg44c3bnnrj-psi-0.2.0",
   "sbom_file": "psi-runtime.cdx.json",
-  "sbom_sha256": "4d382fe77a226c53463fae778dda60d9c88a9087b313188fc93902e2bcbf6884",
-  "original_generated_sbom_sha256": "cdfc9891534a3baa88647bf3f005017057f8a1ee3aefd2e2114b1882c1dd1f33",
+  "sbom_sha256": "b794855119ca1dcd0ef4f5a0b00663935e54acf39bedb89e8c83d65e010c475b",
+  "original_generated_sbom_sha256": "09cacfbb9cd77f717e8a33e8ccc5022a56800365976da4c6ad8d9294b09ef133",
   "cyclonedx_version": "1.4",
   "counts": {
     "nodes": 13,
@@ -48,10 +48,23 @@
     "This is one Linux x86_64 Nix default dynamic build, not the static musl, Cosmopolitan, Haiku or Windows build.",
     "Edges are explicit sbomnix CycloneDX dependsOn relationships derived from runtime store references, not C source includes, symbol links or build-time dependencies.",
     "Nodes retain their original CycloneDX bom-ref identities; package names and versions are not used to merge components.",
-    "sbomnix metadata lists every declared output of a derivation; only runtime_output_paths in the compact graph are observed in this runtime closure.",
+    "sbomnix metadata lists every declared output of a derivation; not every declared output is retained in this runtime closure.",
     "xgcc metadata represents its observed libgcc runtime output here, not a claim that the full compiler is shipped.",
     "Nix closure coverage does not enumerate every source file, statically embedded code fragment, dynamically fetched extension or external runtime service.",
     "License fields come from generated package metadata and can be absent; no missing licenses were inferred.",
     "Twelve Nix self references are absent from the tool\u2019s inter-component graph. No graph relationships were invented, and no vulnerability scans were run."
-  ]
+  ],
+  "license_enrichment": {
+    "evidence_file": "license-evidence.json",
+    "evidence_sha256": "1ea6986e3ec51315a989479172c5989acba1d65801a2d2286283d01a21bf34e2",
+    "pre_enrichment_sha256": "be248dbd3e1d1daa4cfa708bae1e06cda4ee37a96ee90d80a75d37bb85ec5c62",
+    "enriched_components": [
+      "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv",
+      "/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv",
+      "/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv",
+      "/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv"
+    ],
+    "scope": "These are package-level Nix meta.license values. The list is not an inferred SPDX AND/OR expression or a legal analysis of individual output files. xgcc here has an observed libgcc runtime output; no runtime exception was inferred.",
+    "dependency_graph_changed": false
+  }
 }

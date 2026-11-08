@@ -2,9 +2,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.4",
   "version": 1,
-  "serialNumber": "urn:uuid:b35729c3-67d7-4d10-9803-cfdeb4f9c550",
+  "serialNumber": "urn:uuid:d1f9f721-2fe9-4fee-a8cd-e32172b16997",
   "metadata": {
-    "timestamp": "2026-11-08T15:56:37.717095-05:00",
+    "timestamp": "2026-11-08T16:02:35.517397-05:00",
     "properties": [
       {
         "name": "sbom_type",
@@ -36,10 +36,10 @@
     ],
     "component": {
       "type": "library",
-      "bom-ref": "/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv",
+      "bom-ref": "/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv",
       "name": "psi",
-      "version": "0.1.0",
-      "purl": "pkg:nix/psi@0.1.0",
+      "version": "0.2.0",
+      "purl": "pkg:nix/psi@0.2.0",
       "description": "psi coding agent",
       "licenses": [
         {
@@ -51,21 +51,21 @@
       "externalReferences": [
         {
           "type": "website",
-          "url": "https://github.com/siraben/psi-coding-agent"
+          "url": "https://github.com/siraben/psi"
         }
       ],
       "properties": [
         {
           "name": "nix:output_path",
-          "value": "/nix/store/yiyasdgamd9r8fpi3p9h2njj30x3jj38-psi-0.1.0"
+          "value": "/nix/store/vma0g1c85cklkasbv0i62xg44c3bnnrj-psi-0.2.0"
         },
         {
           "name": "nix:drv_path",
-          "value": "/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv"
+          "value": "/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv"
         },
         {
           "name": "nix:position",
-          "value": "/nix/store/jwm36bbm420hmgq70ar2vgvzd29zy0jd-source/flake.nix:47"
+          "value": "/nix/store/4y3q2m0546ip8yijk50x6bfj8ql4g8pq-source/flake.nix:47"
         }
       ]
     }
@@ -175,6 +175,17 @@
         {
           "name": "nix:drv_path",
           "value": "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv"
+        },
+        {
+          "name": "psi:license_evidence",
+          "value": "license-evidence.json; exact evaluated drvPath match"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "curl"
+          }
         }
       ]
     },
@@ -402,6 +413,17 @@
         {
           "name": "nix:drv_path",
           "value": "/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv"
+        },
+        {
+          "name": "psi:license_evidence",
+          "value": "license-evidence.json; exact evaluated drvPath match"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
         }
       ]
     },
@@ -419,6 +441,22 @@
         {
           "name": "nix:drv_path",
           "value": "/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv"
+        },
+        {
+          "name": "psi:license_evidence",
+          "value": "license-evidence.json; exact evaluated drvPath match"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-or-later"
+          }
         }
       ]
     },
@@ -546,6 +584,17 @@
         {
           "name": "nix:drv_path",
           "value": "/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv"
+        },
+        {
+          "name": "psi:license_evidence",
+          "value": "license-evidence.json; exact evaluated drvPath match"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-3.0-or-later"
+          }
         }
       ]
     }
@@ -617,7 +666,7 @@
       "ref": "/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv"
     },
     {
-      "ref": "/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv",
+      "ref": "/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv",
       "dependsOn": [
         "/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv",
         "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv",

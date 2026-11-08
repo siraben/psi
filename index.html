@@ -24,8 +24,8 @@
   <title>psi — the portable coding agent</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/dm-sans.871fd1188d.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=f6dcefd94681">
-  <script src="script.js?v=e9a39ae8594f" defer></script>
+  <link rel="stylesheet" href="style.css?v=ab4003d2f324">
+  <script src="script.js?v=971e32627ee7" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -81,459 +81,718 @@
     </section>
     <!-- dependency-graph:start -->
     <section class="dependency-section wrap" id="dependencies" aria-labelledby="dependency-heading">
-      <div class="dependency-heading"><div><p class="eyebrow">Open to inspection</p><h2 id="dependency-heading">Dependencies, in the open.</h2></div><p>Follow the packages behind a Linux build.<br>Every connection comes from its software bill of materials.</p></div>
+      <div class="dependency-heading"><div><p class="eyebrow">Open to inspection</p><h2 id="dependency-heading">Dependencies, in the open.</h2></div><p>What stays with psi, and what builds it.<br>Connections come from its software bills of materials.</p></div>
       <div class="dependency-card">
-        <div class="dependency-toolbar"><div><span class="dependency-dot" aria-hidden="true"></span><strong>Runtime dependencies</strong><span class="dependency-platform">Linux · x86_64</span></div><span>13 packages <span aria-hidden="true">/</span> 21 connections</span></div>
+        <div class="dependency-toolbar"><div class="dependency-controls" role="group" aria-label="Dependency types"><button type="button" data-scope="runtime" aria-pressed="true">Runtime</button><button type="button" data-scope="build" aria-pressed="true">Build</button></div><div class="dependency-toolbar-title"><span class="dependency-dot" aria-hidden="true"></span><strong>Dependency map</strong><span class="dependency-platform">Linux · x86_64</span></div><span class="dependency-count">22 packages / 30 connections</span></div>
         <div class="dependency-layout">
-          <div class="dependency-canvas"><p class="dependency-hint">Select a package to follow its connections.</p><div class="dependency-landscape"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 743.00 499.00" class="dependency-svg" role="group" aria-label="Runtime package dependency graph; select a package for details">
-<g id="lr-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 480.72)">
+          <div class="dependency-canvas"><p class="dependency-hint">Select a package to follow its connections.</p><div class="dependency-view" data-view="runtime" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 743.00 499.00" class="dependency-svg" role="group" aria-label="Runtime dependencies and direct build inputs; select a package for details">
+<g id="runtime-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 480.72)">
 <title>dependencies</title>
 
-<g id="lr-pkg-3bfd777ac8dd" class="node" data-package="pkg-3bfd777ac8dd" role="button" tabindex="0" aria-label="psi 0.1.0: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-a8dbb63e3657" class="node" data-package="pkg-a8dbb63e3657" role="button" tabindex="0" aria-label="psi 0.2.0: inspect dependencies" aria-pressed="false">
 <title>psi</title>
 <path fill="#a83e24" stroke="#a83e24" stroke-width="1.2" d="M42.48,-230.72C42.48,-230.72 12,-230.72 12,-230.72 6,-230.72 0,-224.72 0,-218.72 0,-218.72 0,-197 0,-197 0,-191 6,-185 12,-185 12,-185 42.48,-185 42.48,-185 48.48,-185 54.48,-191 54.48,-197 54.48,-197 54.48,-218.72 54.48,-218.72 54.48,-224.72 48.48,-230.72 42.48,-230.72" />
 <text xml:space="preserve" text-anchor="middle" x="27.24" y="-209.01" font-family="DM Sans" font-size="13.00" fill="#ffffff">psi</text>
-<text xml:space="preserve" text-anchor="middle" x="27.24" y="-195.51" font-family="DM Sans" font-size="13.00" fill="#ffffff">0.1.0</text>
+<text xml:space="preserve" text-anchor="middle" x="27.24" y="-195.51" font-family="DM Sans" font-size="13.00" fill="#ffffff">0.2.0</text>
 </g>
 
-<g id="lr-pkg-3c253d17c343" class="node" data-package="pkg-3c253d17c343" role="button" tabindex="0" aria-label="argtable 3.3.1: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-3c253d17c343" class="node" data-package="pkg-3c253d17c343" role="button" tabindex="0" aria-label="argtable 3.3.1: inspect dependencies" aria-pressed="false">
 <title>argtable</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M324.19,-462.72C324.19,-462.72 274.96,-462.72 274.96,-462.72 268.96,-462.72 262.96,-456.72 262.96,-450.72 262.96,-450.72 262.96,-429 262.96,-429 262.96,-423 268.96,-417 274.96,-417 274.96,-417 324.19,-417 324.19,-417 330.19,-417 336.19,-423 336.19,-429 336.19,-429 336.19,-450.72 336.19,-450.72 336.19,-456.72 330.19,-462.72 324.19,-462.72" />
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-441.01" font-family="DM Sans" font-size="13.00" fill="#232820">argtable</text>
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-427.51" font-family="DM Sans" font-size="13.00" fill="#232820">3.3.1</text>
 </g>
 
-<g id="lr-edge-9" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-3c253d17c343" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-3c253d17c343</title>
+<g id="runtime-edge-12" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-3c253d17c343" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-3c253d17c343</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M37.37,-231.17C57,-281.29 101.48,-394.86 101.48,-394.86 101.48,-394.86 197.56,-416.8 255.55,-430.04" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="254.86,-431.85 260.65,-431.2 255.72,-428.1 254.86,-431.85" />
 </g>
 
-<g id="lr-pkg-55a7af3204c8" class="node" data-package="pkg-55a7af3204c8" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-55a7af3204c8" class="node" data-package="pkg-55a7af3204c8" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
 <title>cjson</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M174.34,-383.72C174.34,-383.72 136.36,-383.72 136.36,-383.72 130.36,-383.72 124.36,-377.72 124.36,-371.72 124.36,-371.72 124.36,-350 124.36,-350 124.36,-344 130.36,-338 136.36,-338 136.36,-338 174.34,-338 174.34,-338 180.34,-338 186.34,-344 186.34,-350 186.34,-350 186.34,-371.72 186.34,-371.72 186.34,-377.72 180.34,-383.72 174.34,-383.72" />
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-362.01" font-family="DM Sans" font-size="13.00" fill="#232820">cjson</text>
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-348.51" font-family="DM Sans" font-size="13.00" fill="#232820">1.7.19</text>
 </g>
 
-<g id="lr-edge-7" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-55a7af3204c8" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-55a7af3204c8</title>
+<g id="runtime-edge-13" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-55a7af3204c8" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-55a7af3204c8</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M45.6,-230.85C67.25,-259.53 101.48,-304.86 101.48,-304.86 101.48,-304.86 114.38,-318.53 127.44,-332.36" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="125.81,-333.44 130.99,-336.11 128.61,-330.79 125.81,-333.44" />
 </g>
 
-<g id="lr-pkg-8c98e9d6c884" class="node" data-package="pkg-8c98e9d6c884" role="button" tabindex="0" aria-label="curl 8.22.0: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-8c98e9d6c884" class="node" data-package="pkg-8c98e9d6c884" role="button" tabindex="0" aria-label="curl 8.22.0: inspect dependencies" aria-pressed="false">
 <title>curl</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M174.34,-293.72C174.34,-293.72 136.36,-293.72 136.36,-293.72 130.36,-293.72 124.36,-287.72 124.36,-281.72 124.36,-281.72 124.36,-260 124.36,-260 124.36,-254 130.36,-248 136.36,-248 136.36,-248 174.34,-248 174.34,-248 180.34,-248 186.34,-254 186.34,-260 186.34,-260 186.34,-281.72 186.34,-281.72 186.34,-287.72 180.34,-293.72 174.34,-293.72" />
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-272.01" font-family="DM Sans" font-size="13.00" fill="#232820">curl</text>
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-258.51" font-family="DM Sans" font-size="13.00" fill="#232820">8.22.0</text>
 </g>
 
-<g id="lr-edge-5" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-8c98e9d6c884" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-8c98e9d6c884</title>
+<g id="runtime-edge-15" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-8c98e9d6c884" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-8c98e9d6c884</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M54.98,-221.22C73.25,-230.35 97.68,-242.55 117.75,-252.58" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="116.69,-254.2 122.47,-254.94 118.41,-250.76 116.69,-254.2" />
 </g>
 
-<g id="lr-pkg-a69c86a0f388" class="node" data-package="pkg-a69c86a0f388" role="button" tabindex="0" aria-label="glibc 2.42-84: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-a69c86a0f388" class="node" data-package="pkg-a69c86a0f388" role="button" tabindex="0" aria-label="glibc 2.42-84: inspect dependencies" aria-pressed="false">
 <title>glibc</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M448.17,-235.72C448.17,-235.72 401.94,-235.72 401.94,-235.72 395.94,-235.72 389.94,-229.72 389.94,-223.72 389.94,-223.72 389.94,-202 389.94,-202 389.94,-196 395.94,-190 401.94,-190 401.94,-190 448.17,-190 448.17,-190 454.17,-190 460.17,-196 460.17,-202 460.17,-202 460.17,-223.72 460.17,-223.72 460.17,-229.72 454.17,-235.72 448.17,-235.72" />
 <text xml:space="preserve" text-anchor="middle" x="425.06" y="-214.01" font-family="DM Sans" font-size="13.00" fill="#232820">glibc</text>
 <text xml:space="preserve" text-anchor="middle" x="425.06" y="-200.51" font-family="DM Sans" font-size="13.00" fill="#232820">2.42-84</text>
 </g>
 
-<g id="lr-edge-8" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-a69c86a0f388" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-a69c86a0f388</title>
+<g id="runtime-edge-17" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M54.84,-203.89C114.97,-194.92 256.21,-173.86 256.21,-173.86 256.21,-173.86 342.94,-173.86 342.94,-173.86 342.94,-173.86 362.98,-183.49 383.13,-193.18" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="382.23,-194.89 388.02,-195.53 383.9,-191.42 382.23,-194.89" />
 </g>
 
-<g id="lr-pkg-5da281038516" class="node" data-package="pkg-5da281038516" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-5da281038516" class="node" data-package="pkg-5da281038516" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
 <title>libedit</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M197.21,-114.72C197.21,-114.72 113.48,-114.72 113.48,-114.72 107.48,-114.72 101.48,-108.72 101.48,-102.72 101.48,-102.72 101.48,-81 101.48,-81 101.48,-75 107.48,-69 113.48,-69 113.48,-69 197.21,-69 197.21,-69 203.21,-69 209.21,-75 209.21,-81 209.21,-81 209.21,-102.72 209.21,-102.72 209.21,-108.72 203.21,-114.72 197.21,-114.72" />
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-93.01" font-family="DM Sans" font-size="13.00" fill="#232820">libedit</text>
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-79.51" font-family="DM Sans" font-size="13.00" fill="#232820">20260508-3.1</text>
 </g>
 
-<g id="lr-edge-6" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-5da281038516" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-5da281038516</title>
+<g id="runtime-edge-14" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-5da281038516" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-5da281038516</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M51.01,-184.54C72.51,-162.52 101.48,-132.86 101.48,-132.86 101.48,-132.86 109.06,-126.98 118.49,-119.67" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="119.6,-121.24 122.77,-116.35 117.25,-118.2 119.6,-121.24" />
 </g>
 
-<g id="lr-pkg-b5a1649674d0" class="node" data-package="pkg-b5a1649674d0" role="button" tabindex="0" aria-label="lua 5.5.0: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-b5a1649674d0" class="node" data-package="pkg-b5a1649674d0" role="button" tabindex="0" aria-label="lua 5.5.0: inspect dependencies" aria-pressed="false">
 <title>lua</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M170.59,-45.72C170.59,-45.72 140.11,-45.72 140.11,-45.72 134.11,-45.72 128.11,-39.72 128.11,-33.72 128.11,-33.72 128.11,-12 128.11,-12 128.11,-6 134.11,0 140.11,0 140.11,0 170.59,0 170.59,0 176.59,0 182.59,-6 182.59,-12 182.59,-12 182.59,-33.72 182.59,-33.72 182.59,-39.72 176.59,-45.72 170.59,-45.72" />
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-24.01" font-family="DM Sans" font-size="13.00" fill="#232820">lua</text>
 <text xml:space="preserve" text-anchor="middle" x="155.35" y="-10.51" font-family="DM Sans" font-size="13.00" fill="#232820">5.5.0</text>
 </g>
 
-<g id="lr-edge-10" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-b5a1649674d0" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-b5a1649674d0</title>
+<g id="runtime-edge-18" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-b5a1649674d0" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-b5a1649674d0</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M39.68,-184.42C60.28,-142.24 101.48,-57.86 101.48,-57.86 101.48,-57.86 110.74,-51.73 121.51,-44.6" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="122.57,-46.21 126.09,-41.57 120.44,-43 122.57,-46.21" />
 </g>
 
-<g id="lr-pkg-8e683176d3a1" class="node" data-package="pkg-8e683176d3a1" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-8e683176d3a1" class="node" data-package="pkg-8e683176d3a1" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
 <title>nss-cacert</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M330.94,-230.72C330.94,-230.72 268.21,-230.72 268.21,-230.72 262.21,-230.72 256.21,-224.72 256.21,-218.72 256.21,-218.72 256.21,-197 256.21,-197 256.21,-191 262.21,-185 268.21,-185 268.21,-185 330.94,-185 330.94,-185 336.94,-185 342.94,-191 342.94,-197 342.94,-197 342.94,-218.72 342.94,-218.72 342.94,-224.72 336.94,-230.72 330.94,-230.72" />
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-209.01" font-family="DM Sans" font-size="13.00" fill="#232820">nss-cacert</text>
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-195.51" font-family="DM Sans" font-size="13.00" fill="#232820">3.126</text>
 </g>
 
-<g id="lr-edge-4" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-8e683176d3a1" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-8e683176d3a1</title>
+<g id="runtime-edge-16" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-8e683176d3a1" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-8e683176d3a1</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M54.65,-207.86C99.5,-207.86 191.24,-207.86 248.54,-207.86" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="248.39,-209.79 253.89,-207.86 248.39,-205.94 248.39,-209.79" />
 </g>
 
-<g id="lr-edge-17" class="edge" data-source="pkg-3c253d17c343" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-0" class="edge" data-source="pkg-3c253d17c343" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-3c253d17c343-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M324.73,-416.49C334.24,-407.28 342.94,-398.86 342.94,-398.86 342.94,-398.86 388.24,-294.98 411.14,-242.48" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="412.79,-243.52 413.22,-237.71 409.26,-241.98 412.79,-243.52" />
 </g>
 
-<g id="lr-edge-13" class="edge" data-source="pkg-55a7af3204c8" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-3" class="edge" data-source="pkg-55a7af3204c8" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-55a7af3204c8-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.74,-355.48C239.61,-346.13 342.94,-327.86 342.94,-327.86 342.94,-327.86 379.58,-275.92 403.61,-241.85" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="405,-243.22 406.59,-237.62 401.85,-241 405,-243.22" />
 </g>
 
-<g id="lr-edge-3" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-8" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.85,-283.08C216.22,-294.84 256.21,-310.86 256.21,-310.86 256.21,-310.86 342.94,-310.86 342.94,-310.86 342.94,-310.86 376.26,-270.61 400.18,-241.7" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="401.65,-242.95 403.67,-237.48 398.68,-240.49 401.65,-242.95" />
 </g>
 
-<g id="lr-pkg-921eb3510c3d" class="node" data-package="pkg-921eb3510c3d" role="button" tabindex="0" aria-label="mbedtls 3.6.7: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-921eb3510c3d" class="node" data-package="pkg-921eb3510c3d" role="button" tabindex="0" aria-label="mbedtls 3.6.7: inspect dependencies" aria-pressed="false">
 <title>mbedtls</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M323.07,-299.72C323.07,-299.72 276.09,-299.72 276.09,-299.72 270.09,-299.72 264.09,-293.72 264.09,-287.72 264.09,-287.72 264.09,-266 264.09,-266 264.09,-260 270.09,-254 276.09,-254 276.09,-254 323.07,-254 323.07,-254 329.07,-254 335.07,-260 335.07,-266 335.07,-266 335.07,-287.72 335.07,-287.72 335.07,-293.72 329.07,-299.72 323.07,-299.72" />
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-278.01" font-family="DM Sans" font-size="13.00" fill="#232820">mbedtls</text>
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-264.51" font-family="DM Sans" font-size="13.00" fill="#232820">3.6.7</text>
 </g>
 
-<g id="lr-edge-1" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-921eb3510c3d" aria-hidden="true">
+<g id="runtime-edge-7" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-921eb3510c3d" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-921eb3510c3d</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.86,-272.15C207.19,-273 234.17,-274.14 256.53,-275.09" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="256.22,-277 261.79,-275.31 256.38,-273.15 256.22,-277" />
 </g>
 
-<g id="lr-edge-2" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-8e683176d3a1" aria-hidden="true">
+<g id="runtime-edge-6" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-8e683176d3a1" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-8e683176d3a1</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.86,-257.34C204.98,-249.32 228.38,-238.95 249.09,-229.78" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="249.79,-231.57 254.04,-227.59 248.23,-228.05 249.79,-231.57" />
 </g>
 
-<g id="lr-pkg-4b27ac5affdb" class="node" data-package="pkg-4b27ac5affdb" role="button" tabindex="0" aria-label="libidn2 2.3.8: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-4b27ac5affdb" class="node" data-package="pkg-4b27ac5affdb" role="button" tabindex="0" aria-label="libidn2 2.3.8: inspect dependencies" aria-pressed="false">
 <title>libidn2</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M558.65,-270.72C558.65,-270.72 519.17,-270.72 519.17,-270.72 513.17,-270.72 507.17,-264.72 507.17,-258.72 507.17,-258.72 507.17,-237 507.17,-237 507.17,-231 513.17,-225 519.17,-225 519.17,-225 558.65,-225 558.65,-225 564.65,-225 570.65,-231 570.65,-237 570.65,-237 570.65,-258.72 570.65,-258.72 570.65,-264.72 564.65,-270.72 558.65,-270.72" />
 <text xml:space="preserve" text-anchor="middle" x="538.91" y="-249.01" font-family="DM Sans" font-size="13.00" fill="#232820">libidn2</text>
 <text xml:space="preserve" text-anchor="middle" x="538.91" y="-235.51" font-family="DM Sans" font-size="13.00" fill="#232820">2.3.8</text>
 </g>
 
-<g id="lr-edge-16" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-4b27ac5affdb" aria-hidden="true">
+<g id="runtime-edge-10" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-4b27ac5affdb" aria-hidden="true">
 <title>pkg-a69c86a0f388-&gt;pkg-4b27ac5affdb</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M460.53,-223.65C472.98,-227.54 487.12,-231.97 499.86,-235.95" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="499.22,-237.77 505.05,-237.58 500.37,-234.1 499.22,-237.77" />
 </g>
 
-<g id="lr-pkg-a34dc0932518" class="node" data-package="pkg-a34dc0932518" role="button" tabindex="0" aria-label="xgcc 15.3.0: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-a34dc0932518" class="node" data-package="pkg-a34dc0932518" role="button" tabindex="0" aria-label="xgcc 15.3.0: inspect dependencies" aria-pressed="false">
 <title>xgcc</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M557.9,-201.72C557.9,-201.72 519.92,-201.72 519.92,-201.72 513.92,-201.72 507.92,-195.72 507.92,-189.72 507.92,-189.72 507.92,-168 507.92,-168 507.92,-162 513.92,-156 519.92,-156 519.92,-156 557.9,-156 557.9,-156 563.9,-156 569.9,-162 569.9,-168 569.9,-168 569.9,-189.72 569.9,-189.72 569.9,-195.72 563.9,-201.72 557.9,-201.72" />
 <text xml:space="preserve" text-anchor="middle" x="538.91" y="-180.01" font-family="DM Sans" font-size="13.00" fill="#232820">xgcc</text>
 <text xml:space="preserve" text-anchor="middle" x="538.91" y="-166.51" font-family="DM Sans" font-size="13.00" fill="#232820">15.3.0</text>
 </g>
 
-<g id="lr-edge-15" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-a34dc0932518" aria-hidden="true">
+<g id="runtime-edge-11" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-a34dc0932518" aria-hidden="true">
 <title>pkg-a69c86a0f388-&gt;pkg-a34dc0932518</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M460.53,-202.38C473.32,-198.49 487.87,-194.07 500.88,-190.11" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="501.09,-192.06 505.79,-188.62 499.97,-188.38 501.09,-192.06" />
 </g>
 
-<g id="lr-edge-12" class="edge" data-source="pkg-5da281038516" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-5" class="edge" data-source="pkg-5da281038516" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-5da281038516-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M209.57,-103.55C264.72,-115.67 342.94,-132.86 342.94,-132.86 342.94,-132.86 372.06,-161.58 395.41,-184.61" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="394.03,-185.95 399.3,-188.45 396.74,-183.21 394.03,-185.95" />
 </g>
 
-<g id="lr-pkg-3f45ed50318e" class="node" data-package="pkg-3f45ed50318e" role="button" tabindex="0" aria-label="ncurses 6.6: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-3f45ed50318e" class="node" data-package="pkg-3f45ed50318e" role="button" tabindex="0" aria-label="ncurses 6.6: inspect dependencies" aria-pressed="false">
 <title>ncurses</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M323.44,-67.72C323.44,-67.72 275.71,-67.72 275.71,-67.72 269.71,-67.72 263.71,-61.72 263.71,-55.72 263.71,-55.72 263.71,-34 263.71,-34 263.71,-28 269.71,-22 275.71,-22 275.71,-22 323.44,-22 323.44,-22 329.44,-22 335.44,-28 335.44,-34 335.44,-34 335.44,-55.72 335.44,-55.72 335.44,-61.72 329.44,-67.72 323.44,-67.72" />
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-46.01" font-family="DM Sans" font-size="13.00" fill="#232820">ncurses</text>
 <text xml:space="preserve" text-anchor="middle" x="299.58" y="-32.51" font-family="DM Sans" font-size="13.00" fill="#232820">6.6</text>
 </g>
 
-<g id="lr-edge-11" class="edge" data-source="pkg-5da281038516" data-target="pkg-3f45ed50318e" aria-hidden="true">
+<g id="runtime-edge-4" class="edge" data-source="pkg-5da281038516" data-target="pkg-3f45ed50318e" aria-hidden="true">
 <title>pkg-5da281038516-&gt;pkg-3f45ed50318e</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M209.71,-74.23C225.3,-69.08 242.1,-63.52 256.85,-58.65" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="257.13,-60.58 261.75,-57.03 255.92,-56.93 257.13,-60.58" />
 </g>
 
-<g id="lr-pkg-bb72fdfc50b2" class="node" data-package="pkg-bb72fdfc50b2" role="button" tabindex="0" aria-label="libunistring 1.4.2: inspect dependencies" aria-pressed="false">
+<g id="runtime-pkg-bb72fdfc50b2" class="node" data-package="pkg-bb72fdfc50b2" role="button" tabindex="0" aria-label="libunistring 1.4.2: inspect dependencies" aria-pressed="false">
 <title>libunistring</title>
 <path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M694.63,-270.72C694.63,-270.72 629.65,-270.72 629.65,-270.72 623.65,-270.72 617.65,-264.72 617.65,-258.72 617.65,-258.72 617.65,-237 617.65,-237 617.65,-231 623.65,-225 629.65,-225 629.65,-225 694.63,-225 694.63,-225 700.63,-225 706.63,-231 706.63,-237 706.63,-237 706.63,-258.72 706.63,-258.72 706.63,-264.72 700.63,-270.72 694.63,-270.72" />
 <text xml:space="preserve" text-anchor="middle" x="662.14" y="-249.01" font-family="DM Sans" font-size="13.00" fill="#232820">libunistring</text>
 <text xml:space="preserve" text-anchor="middle" x="662.14" y="-235.51" font-family="DM Sans" font-size="13.00" fill="#232820">1.4.2</text>
 </g>
 
-<g id="lr-edge-18" class="edge" data-source="pkg-4b27ac5affdb" data-target="pkg-bb72fdfc50b2" aria-hidden="true">
+<g id="runtime-edge-2" class="edge" data-source="pkg-4b27ac5affdb" data-target="pkg-bb72fdfc50b2" aria-hidden="true">
 <title>pkg-4b27ac5affdb-&gt;pkg-bb72fdfc50b2</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M571.13,-247.86C582.97,-247.86 596.78,-247.86 609.98,-247.86" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="609.92,-249.79 615.42,-247.86 609.92,-245.94 609.92,-249.79" />
 </g>
 
-<g id="lr-edge-20" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-20" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-b5a1649674d0-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M183.11,-19.64C212.69,-16.09 256.21,-10.86 256.21,-10.86 256.21,-10.86 342.94,-10.86 342.94,-10.86 342.94,-10.86 389.58,-127 412.12,-183.15" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="410.24,-183.62 414.07,-188 413.81,-182.18 410.24,-183.62" />
 </g>
 
-<g id="lr-edge-19" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-3f45ed50318e" aria-hidden="true">
+<g id="runtime-edge-19" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-3f45ed50318e" aria-hidden="true">
 <title>pkg-b5a1649674d0-&gt;pkg-3f45ed50318e</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M183.1,-27C203.66,-30.18 232.47,-34.63 256.16,-38.3" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="255.82,-40.19 261.55,-39.13 256.4,-36.39 255.82,-40.19" />
 </g>
 
-<g id="lr-edge-0" class="edge" data-source="pkg-921eb3510c3d" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-9" class="edge" data-source="pkg-921eb3510c3d" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-921eb3510c3d-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M335.63,-258.69C350.35,-251.06 367.58,-242.13 382.9,-234.19" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="383.73,-235.93 387.73,-231.69 381.96,-232.51 383.73,-235.93" />
 </g>
 
-<g id="lr-edge-14" class="edge" data-source="pkg-3f45ed50318e" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="runtime-edge-1" class="edge" data-source="pkg-3f45ed50318e" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-3f45ed50318e-&gt;pkg-a69c86a0f388</title>
 <path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M324.73,-68.23C334.24,-77.44 342.94,-85.86 342.94,-85.86 342.94,-85.86 381.52,-146.27 405.47,-183.76" />
 <polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="403.62,-184.44 408.2,-188.04 406.86,-182.36 403.62,-184.44" />
 </g>
 </g>
-</svg></div><div class="dependency-portrait"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 658.00 545.00" class="dependency-svg" role="group" aria-label="Runtime package dependency graph; select a package for details">
-<g id="tb-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 527.32)">
+</svg></div><div class="dependency-view" data-view="build" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 602.00 505.00" class="dependency-svg" role="group" aria-label="Runtime dependencies and direct build inputs; select a package for details">
+<g id="build-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 487)">
 <title>dependencies</title>
+<g id="build-clust1" class="cluster">
+<title>cluster_build</title>
+<path fill="none" stroke="#d0d5c5" stroke-dasharray="5,2" d="M97.48,-224C97.48,-224 545.92,-224 545.92,-224 551.92,-224 557.92,-230 557.92,-236 557.92,-236 557.92,-449 557.92,-449 557.92,-455 551.92,-461 545.92,-461 545.92,-461 97.48,-461 97.48,-461 91.48,-461 85.48,-455 85.48,-449 85.48,-449 85.48,-236 85.48,-236 85.48,-230 91.48,-224 97.48,-224" />
+<text xml:space="preserve" text-anchor="middle" x="321.7" y="-445.6" font-family="DM Sans" font-size="12.00" fill="#59634f">Build-only inputs</text>
+</g>
 
-<g id="tb-pkg-3bfd777ac8dd" class="node" data-package="pkg-3bfd777ac8dd" role="button" tabindex="0" aria-label="psi 0.1.0: inspect dependencies" aria-pressed="false">
+<g id="build-pkg-a8dbb63e3657" class="node" data-package="pkg-a8dbb63e3657" role="button" tabindex="0" aria-label="psi 0.2.0: inspect dependencies" aria-pressed="false">
 <title>psi</title>
-<path fill="#a83e24" stroke="#a83e24" stroke-width="1.2" d="M342.86,-509.32C342.86,-509.32 312.38,-509.32 312.38,-509.32 306.38,-509.32 300.38,-503.32 300.38,-497.32 300.38,-497.32 300.38,-475.6 300.38,-475.6 300.38,-469.6 306.38,-463.6 312.38,-463.6 312.38,-463.6 342.86,-463.6 342.86,-463.6 348.86,-463.6 354.86,-469.6 354.86,-475.6 354.86,-475.6 354.86,-497.32 354.86,-497.32 354.86,-503.32 348.86,-509.32 342.86,-509.32" />
-<text xml:space="preserve" text-anchor="middle" x="327.62" y="-487.61" font-family="DM Sans" font-size="13.00" fill="#ffffff">psi</text>
-<text xml:space="preserve" text-anchor="middle" x="327.62" y="-474.11" font-family="DM Sans" font-size="13.00" fill="#ffffff">0.1.0</text>
+<path fill="#a83e24" stroke="#a83e24" stroke-width="1.2" d="M42.48,-180.86C42.48,-180.86 12,-180.86 12,-180.86 6,-180.86 0,-174.86 0,-168.86 0,-168.86 0,-147.14 0,-147.14 0,-141.14 6,-135.14 12,-135.14 12,-135.14 42.48,-135.14 42.48,-135.14 48.48,-135.14 54.48,-141.14 54.48,-147.14 54.48,-147.14 54.48,-168.86 54.48,-168.86 54.48,-174.86 48.48,-180.86 42.48,-180.86" />
+<text xml:space="preserve" text-anchor="middle" x="27.24" y="-159.15" font-family="DM Sans" font-size="13.00" fill="#ffffff">psi</text>
+<text xml:space="preserve" text-anchor="middle" x="27.24" y="-145.65" font-family="DM Sans" font-size="13.00" fill="#ffffff">0.2.0</text>
 </g>
 
-<g id="tb-pkg-3c253d17c343" class="node" data-package="pkg-3c253d17c343" role="button" tabindex="0" aria-label="argtable 3.3.1: inspect dependencies" aria-pressed="false">
-<title>argtable</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M61.23,-323.88C61.23,-323.88 12,-323.88 12,-323.88 6,-323.88 0,-317.88 0,-311.88 0,-311.88 0,-290.16 0,-290.16 0,-284.16 6,-278.16 12,-278.16 12,-278.16 61.23,-278.16 61.23,-278.16 67.23,-278.16 73.23,-284.16 73.23,-290.16 73.23,-290.16 73.23,-311.88 73.23,-311.88 73.23,-317.88 67.23,-323.88 61.23,-323.88" />
-<text xml:space="preserve" text-anchor="middle" x="36.62" y="-302.17" font-family="DM Sans" font-size="13.00" fill="#232820">argtable</text>
-<text xml:space="preserve" text-anchor="middle" x="36.62" y="-288.67" font-family="DM Sans" font-size="13.00" fill="#232820">3.3.1</text>
+<g id="build-pkg-399939707968" class="node" data-package="pkg-399939707968" role="button" tabindex="0" aria-label="bash 5.3p15: inspect dependencies" aria-pressed="false">
+<title>bash</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M171.71,-285.86C171.71,-285.86 129.98,-285.86 129.98,-285.86 123.98,-285.86 117.98,-279.86 117.98,-273.86 117.98,-273.86 117.98,-252.14 117.98,-252.14 117.98,-246.14 123.98,-240.14 129.98,-240.14 129.98,-240.14 171.71,-240.14 171.71,-240.14 177.71,-240.14 183.71,-246.14 183.71,-252.14 183.71,-252.14 183.71,-273.86 183.71,-273.86 183.71,-279.86 177.71,-285.86 171.71,-285.86" />
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-264.15" font-family="DM Sans" font-size="13.00" fill="#232820">bash</text>
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-250.65" font-family="DM Sans" font-size="13.00" fill="#232820">5.3p15</text>
 </g>
 
-<g id="tb-edge-9" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-3c253d17c343" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-3c253d17c343</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M300.2,-476.88C241.22,-458.42 107.62,-416.6 107.62,-416.6 107.62,-416.6 75.29,-364.43 54.26,-330.49" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="55.96,-329.59 51.43,-325.93 52.69,-331.62 55.96,-329.59" />
+<g id="build-edge-2" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-399939707968" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-399939707968</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M48.9,-181.11C65.3,-199.44 85.48,-222 85.48,-222 85.48,-222 97.8,-229.85 111.66,-238.68" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="110.46,-240.19 116.13,-241.52 112.53,-236.95 110.46,-240.19" />
 </g>
 
-<g id="tb-pkg-55a7af3204c8" class="node" data-package="pkg-55a7af3204c8" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
+<g id="build-pkg-f510466e69a0" class="node" data-package="pkg-f510466e69a0" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
 <title>cjson</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M168.61,-416.6C168.61,-416.6 130.62,-416.6 130.62,-416.6 124.62,-416.6 118.62,-410.6 118.62,-404.6 118.62,-404.6 118.62,-382.88 118.62,-382.88 118.62,-376.88 124.62,-370.88 130.62,-370.88 130.62,-370.88 168.61,-370.88 168.61,-370.88 174.61,-370.88 180.61,-376.88 180.61,-382.88 180.61,-382.88 180.61,-404.6 180.61,-404.6 180.61,-410.6 174.61,-416.6 168.61,-416.6" />
-<text xml:space="preserve" text-anchor="middle" x="149.62" y="-394.89" font-family="DM Sans" font-size="13.00" fill="#232820">cjson</text>
-<text xml:space="preserve" text-anchor="middle" x="149.62" y="-381.39" font-family="DM Sans" font-size="13.00" fill="#232820">1.7.19</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M169.83,-354.86C169.83,-354.86 131.85,-354.86 131.85,-354.86 125.85,-354.86 119.85,-348.86 119.85,-342.86 119.85,-342.86 119.85,-321.14 119.85,-321.14 119.85,-315.14 125.85,-309.14 131.85,-309.14 131.85,-309.14 169.83,-309.14 169.83,-309.14 175.83,-309.14 181.83,-315.14 181.83,-321.14 181.83,-321.14 181.83,-342.86 181.83,-342.86 181.83,-348.86 175.83,-354.86 169.83,-354.86" />
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-333.15" font-family="DM Sans" font-size="13.00" fill="#232820">cjson</text>
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-319.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.7.19</text>
 </g>
 
-<g id="tb-edge-7" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-55a7af3204c8" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-55a7af3204c8</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M299.8,-471.29C269.52,-455.85 220.91,-431.08 187.24,-413.91" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="188.52,-412.41 182.75,-411.63 186.77,-415.84 188.52,-412.41" />
+<g id="build-edge-7" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-f510466e69a0" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-f510466e69a0</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M37.82,-181.27C54.12,-220.84 85.48,-297 85.48,-297 85.48,-297 98.78,-304.23 113.29,-312.12" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="112.2,-313.72 117.95,-314.66 114.04,-310.34 112.2,-313.72" />
 </g>
 
-<g id="tb-pkg-8c98e9d6c884" class="node" data-package="pkg-8c98e9d6c884" role="button" tabindex="0" aria-label="curl 8.22.0: inspect dependencies" aria-pressed="false">
-<title>curl</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M271.61,-416.6C271.61,-416.6 233.62,-416.6 233.62,-416.6 227.62,-416.6 221.62,-410.6 221.62,-404.6 221.62,-404.6 221.62,-382.88 221.62,-382.88 221.62,-376.88 227.62,-370.88 233.62,-370.88 233.62,-370.88 271.61,-370.88 271.61,-370.88 277.61,-370.88 283.61,-376.88 283.61,-382.88 283.61,-382.88 283.61,-404.6 283.61,-404.6 283.61,-410.6 277.61,-416.6 271.61,-416.6" />
-<text xml:space="preserve" text-anchor="middle" x="252.62" y="-394.89" font-family="DM Sans" font-size="13.00" fill="#232820">curl</text>
-<text xml:space="preserve" text-anchor="middle" x="252.62" y="-381.39" font-family="DM Sans" font-size="13.00" fill="#232820">8.22.0</text>
+<g id="build-pkg-7d89fa71c040" class="node" data-package="pkg-7d89fa71c040" role="button" tabindex="0" aria-label="gcc-wrapper 15.3.0: inspect dependencies" aria-pressed="false">
+<title>gcc-wrapper</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M188.21,-423.86C188.21,-423.86 113.48,-423.86 113.48,-423.86 107.48,-423.86 101.48,-417.86 101.48,-411.86 101.48,-411.86 101.48,-390.14 101.48,-390.14 101.48,-384.14 107.48,-378.14 113.48,-378.14 113.48,-378.14 188.21,-378.14 188.21,-378.14 194.21,-378.14 200.21,-384.14 200.21,-390.14 200.21,-390.14 200.21,-411.86 200.21,-411.86 200.21,-417.86 194.21,-423.86 188.21,-423.86" />
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-402.15" font-family="DM Sans" font-size="13.00" fill="#232820">gcc-wrapper</text>
+<text xml:space="preserve" text-anchor="middle" x="150.84" y="-388.65" font-family="DM Sans" font-size="13.00" fill="#232820">15.3.0</text>
 </g>
 
-<g id="tb-edge-5" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-8c98e9d6c884" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-8c98e9d6c884</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M309.08,-463.03C298.9,-450.73 286.21,-435.37 275.43,-422.34" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="277.09,-421.32 272.1,-418.31 274.12,-423.77 277.09,-421.32" />
+<g id="build-edge-5" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-7d89fa71c040" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-7d89fa71c040</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M34.69,-181.46C49.66,-235.85 85.48,-366 85.48,-366 85.48,-366 91.83,-369.46 100.55,-374.19" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="99.57,-375.85 105.32,-376.79 101.4,-372.47 99.57,-375.85" />
 </g>
 
-<g id="tb-pkg-a69c86a0f388" class="node" data-package="pkg-a69c86a0f388" role="button" tabindex="0" aria-label="glibc 2.42-84: inspect dependencies" aria-pressed="false">
-<title>glibc</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M338.73,-231.16C338.73,-231.16 292.5,-231.16 292.5,-231.16 286.5,-231.16 280.5,-225.16 280.5,-219.16 280.5,-219.16 280.5,-197.44 280.5,-197.44 280.5,-191.44 286.5,-185.44 292.5,-185.44 292.5,-185.44 338.73,-185.44 338.73,-185.44 344.73,-185.44 350.73,-191.44 350.73,-197.44 350.73,-197.44 350.73,-219.16 350.73,-219.16 350.73,-225.16 344.73,-231.16 338.73,-231.16" />
-<text xml:space="preserve" text-anchor="middle" x="315.62" y="-209.45" font-family="DM Sans" font-size="13.00" fill="#232820">glibc</text>
-<text xml:space="preserve" text-anchor="middle" x="315.62" y="-195.95" font-family="DM Sans" font-size="13.00" fill="#232820">2.42-84</text>
+<g id="build-pkg-208df737e545" class="node" data-package="pkg-208df737e545" role="button" tabindex="0" aria-label="gnumake 4.4.1: inspect dependencies" aria-pressed="false">
+<title>gnumake</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M328.69,-423.86C328.69,-423.86 273.46,-423.86 273.46,-423.86 267.46,-423.86 261.46,-417.86 261.46,-411.86 261.46,-411.86 261.46,-390.14 261.46,-390.14 261.46,-384.14 267.46,-378.14 273.46,-378.14 273.46,-378.14 328.69,-378.14 328.69,-378.14 334.69,-378.14 340.69,-384.14 340.69,-390.14 340.69,-390.14 340.69,-411.86 340.69,-411.86 340.69,-417.86 334.69,-423.86 328.69,-423.86" />
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-402.15" font-family="DM Sans" font-size="13.00" fill="#232820">gnumake</text>
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-388.65" font-family="DM Sans" font-size="13.00" fill="#232820">4.4.1</text>
 </g>
 
-<g id="tb-edge-8" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-a69c86a0f388" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M335.15,-463.33C350.21,-419.08 382.62,-323.88 382.62,-323.88 382.62,-323.88 382.62,-278.16 382.62,-278.16 382.62,-278.16 360.65,-255.59 341.87,-236.29" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="343.66,-235.37 338.45,-232.77 340.91,-238.05 343.66,-235.37" />
+<g id="build-edge-0" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-208df737e545" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-208df737e545</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.85,-172.41C69.8,-180.51 85.48,-189 85.48,-189 85.48,-189 200.21,-229 200.21,-229 200.21,-229 247.21,-366 247.21,-366 247.21,-366 252.04,-369.19 258.77,-373.65" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="257.65,-375.22 263.3,-376.65 259.78,-372.01 257.65,-375.22" />
 </g>
 
-<g id="tb-pkg-5da281038516" class="node" data-package="pkg-5da281038516" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
+<g id="build-pkg-764b1214619d" class="node" data-package="pkg-764b1214619d" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
 <title>libedit</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M532.48,-416.6C532.48,-416.6 448.75,-416.6 448.75,-416.6 442.75,-416.6 436.75,-410.6 436.75,-404.6 436.75,-404.6 436.75,-382.88 436.75,-382.88 436.75,-376.88 442.75,-370.88 448.75,-370.88 448.75,-370.88 532.48,-370.88 532.48,-370.88 538.48,-370.88 544.48,-376.88 544.48,-382.88 544.48,-382.88 544.48,-404.6 544.48,-404.6 544.48,-410.6 538.48,-416.6 532.48,-416.6" />
-<text xml:space="preserve" text-anchor="middle" x="490.62" y="-394.89" font-family="DM Sans" font-size="13.00" fill="#232820">libedit</text>
-<text xml:space="preserve" text-anchor="middle" x="490.62" y="-381.39" font-family="DM Sans" font-size="13.00" fill="#232820">20260508-3.1</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M342.94,-354.86C342.94,-354.86 259.21,-354.86 259.21,-354.86 253.21,-354.86 247.21,-348.86 247.21,-342.86 247.21,-342.86 247.21,-321.14 247.21,-321.14 247.21,-315.14 253.21,-309.14 259.21,-309.14 259.21,-309.14 342.94,-309.14 342.94,-309.14 348.94,-309.14 354.94,-315.14 354.94,-321.14 354.94,-321.14 354.94,-342.86 354.94,-342.86 354.94,-348.86 348.94,-354.86 342.94,-354.86" />
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-333.15" font-family="DM Sans" font-size="13.00" fill="#232820">libedit</text>
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-319.65" font-family="DM Sans" font-size="13.00" fill="#232820">20260508-3.1</text>
 </g>
 
-<g id="tb-edge-6" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-5da281038516" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-5da281038516</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M355.27,-470.07C379.5,-456.58 415.23,-436.69 443.9,-420.74" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="444.82,-422.43 448.69,-418.07 442.95,-419.07 444.82,-422.43" />
+<g id="build-edge-4" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-764b1214619d" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-764b1214619d</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.73,-162.62C102.97,-171.04 200.21,-188 200.21,-188 200.21,-188 247.21,-297 247.21,-297 247.21,-297 252.04,-300.19 258.77,-304.65" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="257.65,-306.22 263.3,-307.65 259.78,-303.01 257.65,-306.22" />
 </g>
 
-<g id="tb-pkg-b5a1649674d0" class="node" data-package="pkg-b5a1649674d0" role="button" tabindex="0" aria-label="lua 5.5.0: inspect dependencies" aria-pressed="false">
-<title>lua</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M609.86,-416.6C609.86,-416.6 579.38,-416.6 579.38,-416.6 573.38,-416.6 567.38,-410.6 567.38,-404.6 567.38,-404.6 567.38,-382.88 567.38,-382.88 567.38,-376.88 573.38,-370.88 579.38,-370.88 579.38,-370.88 609.86,-370.88 609.86,-370.88 615.86,-370.88 621.86,-376.88 621.86,-382.88 621.86,-382.88 621.86,-404.6 621.86,-404.6 621.86,-410.6 615.86,-416.6 609.86,-416.6" />
-<text xml:space="preserve" text-anchor="middle" x="594.62" y="-394.89" font-family="DM Sans" font-size="13.00" fill="#232820">lua</text>
-<text xml:space="preserve" text-anchor="middle" x="594.62" y="-381.39" font-family="DM Sans" font-size="13.00" fill="#232820">5.5.0</text>
-</g>
-
-<g id="tb-edge-10" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-b5a1649674d0" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-b5a1649674d0</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M355.12,-477.15C415.76,-458.84 555.62,-416.6 555.62,-416.6 555.62,-416.6 557.78,-415.38 561.1,-413.53" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="561.66,-415.42 565.52,-411.05 559.78,-412.06 561.66,-415.42" />
-</g>
-
-<g id="tb-pkg-8e683176d3a1" class="node" data-package="pkg-8e683176d3a1" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
+<g id="build-pkg-6911562f71a5" class="node" data-package="pkg-6911562f71a5" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
 <title>nss-cacert</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M358.98,-323.88C358.98,-323.88 296.25,-323.88 296.25,-323.88 290.25,-323.88 284.25,-317.88 284.25,-311.88 284.25,-311.88 284.25,-290.16 284.25,-290.16 284.25,-284.16 290.25,-278.16 296.25,-278.16 296.25,-278.16 358.98,-278.16 358.98,-278.16 364.98,-278.16 370.98,-284.16 370.98,-290.16 370.98,-290.16 370.98,-311.88 370.98,-311.88 370.98,-317.88 364.98,-323.88 358.98,-323.88" />
-<text xml:space="preserve" text-anchor="middle" x="327.62" y="-302.17" font-family="DM Sans" font-size="13.00" fill="#232820">nss-cacert</text>
-<text xml:space="preserve" text-anchor="middle" x="327.62" y="-288.67" font-family="DM Sans" font-size="13.00" fill="#232820">3.126</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M332.44,-285.86C332.44,-285.86 269.71,-285.86 269.71,-285.86 263.71,-285.86 257.71,-279.86 257.71,-273.86 257.71,-273.86 257.71,-252.14 257.71,-252.14 257.71,-246.14 263.71,-240.14 269.71,-240.14 269.71,-240.14 332.44,-240.14 332.44,-240.14 338.44,-240.14 344.44,-246.14 344.44,-252.14 344.44,-252.14 344.44,-273.86 344.44,-273.86 344.44,-279.86 338.44,-285.86 332.44,-285.86" />
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-264.15" font-family="DM Sans" font-size="13.00" fill="#232820">nss-cacert</text>
+<text xml:space="preserve" text-anchor="middle" x="301.07" y="-250.65" font-family="DM Sans" font-size="13.00" fill="#232820">3.126</text>
 </g>
 
-<g id="tb-edge-4" class="edge" data-source="pkg-3bfd777ac8dd" data-target="pkg-8e683176d3a1" aria-hidden="true">
-<title>pkg-3bfd777ac8dd-&gt;pkg-8e683176d3a1</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M327.62,-463.33C327.62,-430.28 327.62,-367.97 327.62,-331.22" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="329.54,-331.54 327.62,-326.04 325.69,-331.54 329.54,-331.54" />
+<g id="build-edge-3" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-6911562f71a5" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-6911562f71a5</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.85,-150.1C69.8,-145.66 85.48,-141 85.48,-141 85.48,-141 200.21,-141 200.21,-141 200.21,-141 246.95,-198.1 276.47,-234.17" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="274.93,-235.32 279.91,-238.36 277.91,-232.88 274.93,-235.32" />
 </g>
 
-<g id="tb-edge-17" class="edge" data-source="pkg-3c253d17c343" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="build-pkg-3565baeb6b53" class="node" data-package="pkg-3565baeb6b53" role="button" tabindex="0" aria-label="pkg-config-wrapper 0.29.2: inspect dependencies" aria-pressed="false">
+<title>pkg-config-wrapper</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M529.92,-423.86C529.92,-423.86 413.94,-423.86 413.94,-423.86 407.94,-423.86 401.94,-417.86 401.94,-411.86 401.94,-411.86 401.94,-390.14 401.94,-390.14 401.94,-384.14 407.94,-378.14 413.94,-378.14 413.94,-378.14 529.92,-378.14 529.92,-378.14 535.92,-378.14 541.92,-384.14 541.92,-390.14 541.92,-390.14 541.92,-411.86 541.92,-411.86 541.92,-417.86 535.92,-423.86 529.92,-423.86" />
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-402.15" font-family="DM Sans" font-size="13.00" fill="#232820">pkg-config-wrapper</text>
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-388.65" font-family="DM Sans" font-size="13.00" fill="#232820">0.29.2</text>
+</g>
+
+<g id="build-edge-1" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-3565baeb6b53" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-3565baeb6b53</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.85,-147.77C69.8,-142.03 85.48,-136 85.48,-136 85.48,-136 200.21,-136 200.21,-136 200.21,-136 354.94,-229 354.94,-229 354.94,-229 401.94,-366 401.94,-366 401.94,-366 409.02,-369.59 418.64,-374.47" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="417.52,-376.06 423.29,-376.83 419.26,-372.63 417.52,-376.06" />
+</g>
+
+<g id="build-pkg-de8a6a7e1364" class="node" data-package="pkg-de8a6a7e1364" role="button" tabindex="0" aria-label="stdenv-linux 26.05pre-git: inspect dependencies" aria-pressed="false">
+<title>stdenv-linux</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M508.17,-354.86C508.17,-354.86 435.69,-354.86 435.69,-354.86 429.69,-354.86 423.69,-348.86 423.69,-342.86 423.69,-342.86 423.69,-321.14 423.69,-321.14 423.69,-315.14 429.69,-309.14 435.69,-309.14 435.69,-309.14 508.17,-309.14 508.17,-309.14 514.17,-309.14 520.17,-315.14 520.17,-321.14 520.17,-321.14 520.17,-342.86 520.17,-342.86 520.17,-348.86 514.17,-354.86 508.17,-354.86" />
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-333.15" font-family="DM Sans" font-size="13.00" fill="#232820">stdenv-linux</text>
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-319.65" font-family="DM Sans" font-size="13.00" fill="#232820">26.05pre-git</text>
+</g>
+
+<g id="build-edge-6" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-de8a6a7e1364" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-de8a6a7e1364</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M40.24,-134.73C57.02,-102.18 85.48,-47 85.48,-47 85.48,-47 354.94,-47 354.94,-47 354.94,-47 401.94,-297 401.94,-297 401.94,-297 409.02,-300.59 418.64,-305.47" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="417.52,-307.06 423.29,-307.83 419.26,-303.63 417.52,-307.06" />
+</g>
+
+<g id="build-pkg-fb7366ea1fbc" class="node" data-package="pkg-fb7366ea1fbc" role="button" tabindex="0" aria-label="zlib 1.3.2: inspect dependencies" aria-pressed="false">
+<title>zlib</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M487.17,-285.86C487.17,-285.86 456.69,-285.86 456.69,-285.86 450.69,-285.86 444.69,-279.86 444.69,-273.86 444.69,-273.86 444.69,-252.14 444.69,-252.14 444.69,-246.14 450.69,-240.14 456.69,-240.14 456.69,-240.14 487.17,-240.14 487.17,-240.14 493.17,-240.14 499.17,-246.14 499.17,-252.14 499.17,-252.14 499.17,-273.86 499.17,-273.86 499.17,-279.86 493.17,-285.86 487.17,-285.86" />
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-264.15" font-family="DM Sans" font-size="13.00" fill="#232820">zlib</text>
+<text xml:space="preserve" text-anchor="middle" x="471.93" y="-250.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.3.2</text>
+</g>
+
+<g id="build-edge-8" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-fb7366ea1fbc" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-fb7366ea1fbc</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M36.69,-134.69C52.61,-90.74 85.48,0 85.48,0 85.48,0 354.94,0 354.94,0 354.94,0 427.49,-164.51 457.84,-233.31" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="455.92,-233.74 459.9,-238 459.45,-232.19 455.92,-233.74" />
+</g>
+
+
+</g>
+</svg></div><div class="dependency-view" data-view="both"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0.00 0.00 833.00 864.00" class="dependency-svg" role="group" aria-label="Runtime dependencies and direct build inputs; select a package for details">
+<g id="both-graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 846)">
+<title>dependencies</title>
+<g id="both-clust1" class="cluster">
+<title>cluster_build</title>
+<path fill="none" stroke="#d0d5c5" stroke-dasharray="5,2" d="M101.98,-583C101.98,-583 554.92,-583 554.92,-583 560.92,-583 566.92,-589 566.92,-595 566.92,-595 566.92,-808 566.92,-808 566.92,-814 560.92,-820 554.92,-820 554.92,-820 101.98,-820 101.98,-820 95.98,-820 89.98,-814 89.98,-808 89.98,-808 89.98,-595 89.98,-595 89.98,-589 95.98,-583 101.98,-583" />
+<text xml:space="preserve" text-anchor="middle" x="328.45" y="-804.6" font-family="DM Sans" font-size="12.00" fill="#59634f">Build-only inputs</text>
+</g>
+
+<g id="both-pkg-a8dbb63e3657" class="node" data-package="pkg-a8dbb63e3657" role="button" tabindex="0" aria-label="psi 0.2.0: inspect dependencies" aria-pressed="false">
+<title>psi</title>
+<path fill="#a83e24" stroke="#a83e24" stroke-width="1.2" d="M42.48,-468.86C42.48,-468.86 12,-468.86 12,-468.86 6,-468.86 0,-462.86 0,-456.86 0,-456.86 0,-435.14 0,-435.14 0,-429.14 6,-423.14 12,-423.14 12,-423.14 42.48,-423.14 42.48,-423.14 48.48,-423.14 54.48,-429.14 54.48,-435.14 54.48,-435.14 54.48,-456.86 54.48,-456.86 54.48,-462.86 48.48,-468.86 42.48,-468.86" />
+<text xml:space="preserve" text-anchor="middle" x="27.24" y="-447.15" font-family="DM Sans" font-size="13.00" fill="#ffffff">psi</text>
+<text xml:space="preserve" text-anchor="middle" x="27.24" y="-433.65" font-family="DM Sans" font-size="13.00" fill="#ffffff">0.2.0</text>
+</g>
+
+<g id="both-pkg-3c253d17c343" class="node" data-package="pkg-3c253d17c343" role="button" tabindex="0" aria-label="argtable 3.3.1: inspect dependencies" aria-pressed="false">
+<title>argtable</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M179.96,-249.86C179.96,-249.86 130.73,-249.86 130.73,-249.86 124.73,-249.86 118.73,-243.86 118.73,-237.86 118.73,-237.86 118.73,-216.14 118.73,-216.14 118.73,-210.14 124.73,-204.14 130.73,-204.14 130.73,-204.14 179.96,-204.14 179.96,-204.14 185.96,-204.14 191.96,-210.14 191.96,-216.14 191.96,-216.14 191.96,-237.86 191.96,-237.86 191.96,-243.86 185.96,-249.86 179.96,-249.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-228.15" font-family="DM Sans" font-size="13.00" fill="#232820">argtable</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-214.65" font-family="DM Sans" font-size="13.00" fill="#232820">3.3.1</text>
+</g>
+
+<g id="both-edge-15" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-3c253d17c343" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-3c253d17c343</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M36.06,-422.7C52.67,-373.18 89.98,-262 89.98,-262 89.98,-262 100.08,-256.51 112.28,-249.88" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="112.89,-251.73 116.8,-247.41 111.05,-248.35 112.89,-251.73" />
+</g>
+
+<g id="both-pkg-55a7af3204c8" class="node" data-package="pkg-55a7af3204c8" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
+<title>cjson</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M174.34,-180.86C174.34,-180.86 136.36,-180.86 136.36,-180.86 130.36,-180.86 124.36,-174.86 124.36,-168.86 124.36,-168.86 124.36,-147.14 124.36,-147.14 124.36,-141.14 130.36,-135.14 136.36,-135.14 136.36,-135.14 174.34,-135.14 174.34,-135.14 180.34,-135.14 186.34,-141.14 186.34,-147.14 186.34,-147.14 186.34,-168.86 186.34,-168.86 186.34,-174.86 180.34,-180.86 174.34,-180.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-159.15" font-family="DM Sans" font-size="13.00" fill="#232820">cjson</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-145.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.7.19</text>
+</g>
+
+<g id="both-edge-16" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-55a7af3204c8" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-55a7af3204c8</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M33.94,-422.65C49.22,-360.02 89.98,-193 89.98,-193 89.98,-193 103.28,-185.77 117.79,-177.88" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="118.54,-179.66 122.45,-175.34 116.7,-176.28 118.54,-179.66" />
+</g>
+
+<g id="both-pkg-8c98e9d6c884" class="node" data-package="pkg-8c98e9d6c884" role="button" tabindex="0" aria-label="curl 8.22.0: inspect dependencies" aria-pressed="false">
+<title>curl</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M174.34,-62.86C174.34,-62.86 136.36,-62.86 136.36,-62.86 130.36,-62.86 124.36,-56.86 124.36,-50.86 124.36,-50.86 124.36,-29.14 124.36,-29.14 124.36,-23.14 130.36,-17.14 136.36,-17.14 136.36,-17.14 174.34,-17.14 174.34,-17.14 180.34,-17.14 186.34,-23.14 186.34,-29.14 186.34,-29.14 186.34,-50.86 186.34,-50.86 186.34,-56.86 180.34,-62.86 174.34,-62.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-41.15" font-family="DM Sans" font-size="13.00" fill="#232820">curl</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-27.65" font-family="DM Sans" font-size="13.00" fill="#232820">8.22.0</text>
+</g>
+
+<g id="both-edge-21" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-8c98e9d6c884" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-8c98e9d6c884</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M32.2,-422.74C45.82,-342.62 89.98,-83 89.98,-83 89.98,-83 103.52,-73.95 118.18,-64.16" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="119.03,-65.91 122.54,-61.25 116.89,-62.7 119.03,-65.91" />
+</g>
+
+<g id="both-pkg-a69c86a0f388" class="node" data-package="pkg-a69c86a0f388" role="button" tabindex="0" aria-label="glibc 2.42-84: inspect dependencies" aria-pressed="false">
+<title>glibc</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M504.05,-211.86C504.05,-211.86 457.82,-211.86 457.82,-211.86 451.82,-211.86 445.82,-205.86 445.82,-199.86 445.82,-199.86 445.82,-178.14 445.82,-178.14 445.82,-172.14 451.82,-166.14 457.82,-166.14 457.82,-166.14 504.05,-166.14 504.05,-166.14 510.05,-166.14 516.05,-172.14 516.05,-178.14 516.05,-178.14 516.05,-199.86 516.05,-199.86 516.05,-205.86 510.05,-211.86 504.05,-211.86" />
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-190.15" font-family="DM Sans" font-size="13.00" fill="#232820">glibc</text>
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-176.65" font-family="DM Sans" font-size="13.00" fill="#232820">2.42-84</text>
+</g>
+
+<g id="both-edge-23" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-a69c86a0f388</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M31.52,-422.65C44.28,-331.69 89.98,-6 89.98,-6 89.98,-6 256.21,0 256.21,0 256.21,0 363.94,0 363.94,0 363.94,0 429.31,-106.52 461.9,-159.62" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="460.24,-160.6 464.76,-164.28 463.52,-158.58 460.24,-160.6" />
+</g>
+
+<g id="both-pkg-5da281038516" class="node" data-package="pkg-5da281038516" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
+<title>libedit</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M197.21,-318.86C197.21,-318.86 113.48,-318.86 113.48,-318.86 107.48,-318.86 101.48,-312.86 101.48,-306.86 101.48,-306.86 101.48,-285.14 101.48,-285.14 101.48,-279.14 107.48,-273.14 113.48,-273.14 113.48,-273.14 197.21,-273.14 197.21,-273.14 203.21,-273.14 209.21,-279.14 209.21,-285.14 209.21,-285.14 209.21,-306.86 209.21,-306.86 209.21,-312.86 203.21,-318.86 197.21,-318.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-297.15" font-family="DM Sans" font-size="13.00" fill="#232820">libedit</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-283.65" font-family="DM Sans" font-size="13.00" fill="#232820">20260508-3.1</text>
+</g>
+
+<g id="both-edge-17" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-5da281038516" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-5da281038516</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M40.73,-422.73C58.77,-389.12 89.98,-331 89.98,-331 89.98,-331 96.33,-327.54 105.05,-322.81" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="105.9,-324.53 109.82,-320.21 104.07,-321.15 105.9,-324.53" />
+</g>
+
+<g id="both-pkg-b5a1649674d0" class="node" data-package="pkg-b5a1649674d0" role="button" tabindex="0" aria-label="lua 5.5.0: inspect dependencies" aria-pressed="false">
+<title>lua</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M170.59,-387.86C170.59,-387.86 140.11,-387.86 140.11,-387.86 134.11,-387.86 128.11,-381.86 128.11,-375.86 128.11,-375.86 128.11,-354.14 128.11,-354.14 128.11,-348.14 134.11,-342.14 140.11,-342.14 140.11,-342.14 170.59,-342.14 170.59,-342.14 176.59,-342.14 182.59,-348.14 182.59,-354.14 182.59,-354.14 182.59,-375.86 182.59,-375.86 182.59,-381.86 176.59,-387.86 170.59,-387.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-366.15" font-family="DM Sans" font-size="13.00" fill="#232820">lua</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-352.65" font-family="DM Sans" font-size="13.00" fill="#232820">5.5.0</text>
+</g>
+
+<g id="both-edge-24" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-b5a1649674d0" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-b5a1649674d0</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M54.78,-428.8C71.52,-417.96 89.98,-406 89.98,-406 89.98,-406 105.91,-395.85 121.92,-385.65" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="122.66,-387.47 126.26,-382.89 120.59,-384.22 122.66,-387.47" />
+</g>
+
+<g id="both-pkg-8e683176d3a1" class="node" data-package="pkg-8e683176d3a1" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
+<title>nss-cacert</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M341.44,-130.86C341.44,-130.86 278.71,-130.86 278.71,-130.86 272.71,-130.86 266.71,-124.86 266.71,-118.86 266.71,-118.86 266.71,-97.14 266.71,-97.14 266.71,-91.14 272.71,-85.14 278.71,-85.14 278.71,-85.14 341.44,-85.14 341.44,-85.14 347.44,-85.14 353.44,-91.14 353.44,-97.14 353.44,-97.14 353.44,-118.86 353.44,-118.86 353.44,-124.86 347.44,-130.86 341.44,-130.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-109.15" font-family="DM Sans" font-size="13.00" fill="#232820">nss-cacert</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-95.65" font-family="DM Sans" font-size="13.00" fill="#232820">3.126</text>
+</g>
+
+<g id="both-edge-22" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-8e683176d3a1" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-8e683176d3a1</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M32.73,-422.58C46.94,-348.49 89.98,-124 89.98,-124 89.98,-124 194.35,-116.38 259.02,-111.66" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="259.15,-113.58 264.5,-111.26 258.87,-109.74 259.15,-113.58" />
+</g>
+
+<g id="both-pkg-399939707968" class="node" data-package="pkg-399939707968" role="button" tabindex="0" aria-label="bash 5.3p15: inspect dependencies" aria-pressed="false">
+<title>bash</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M176.21,-644.86C176.21,-644.86 134.48,-644.86 134.48,-644.86 128.48,-644.86 122.48,-638.86 122.48,-632.86 122.48,-632.86 122.48,-611.14 122.48,-611.14 122.48,-605.14 128.48,-599.14 134.48,-599.14 134.48,-599.14 176.21,-599.14 176.21,-599.14 182.21,-599.14 188.21,-605.14 188.21,-611.14 188.21,-611.14 188.21,-632.86 188.21,-632.86 188.21,-638.86 182.21,-644.86 176.21,-644.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-623.15" font-family="DM Sans" font-size="13.00" fill="#232820">bash</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-609.65" font-family="DM Sans" font-size="13.00" fill="#232820">5.3p15</text>
+</g>
+
+<g id="both-edge-14" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-399939707968" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-399939707968</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M38.85,-469.21C56.51,-507.81 89.98,-581 89.98,-581 89.98,-581 102.3,-588.85 116.16,-597.68" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="114.96,-599.19 120.63,-600.52 117.03,-595.95 114.96,-599.19" />
+</g>
+
+<g id="both-pkg-f510466e69a0" class="node" data-package="pkg-f510466e69a0" role="button" tabindex="0" aria-label="cjson 1.7.19: inspect dependencies" aria-pressed="false">
+<title>cjson</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M174.34,-713.86C174.34,-713.86 136.36,-713.86 136.36,-713.86 130.36,-713.86 124.36,-707.86 124.36,-701.86 124.36,-701.86 124.36,-680.14 124.36,-680.14 124.36,-674.14 130.36,-668.14 136.36,-668.14 136.36,-668.14 174.34,-668.14 174.34,-668.14 180.34,-668.14 186.34,-674.14 186.34,-680.14 186.34,-680.14 186.34,-701.86 186.34,-701.86 186.34,-707.86 180.34,-713.86 174.34,-713.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-692.15" font-family="DM Sans" font-size="13.00" fill="#232820">cjson</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-678.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.7.19</text>
+</g>
+
+<g id="both-edge-26" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-f510466e69a0" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-f510466e69a0</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M35.08,-469.28C51.16,-523.95 89.98,-656 89.98,-656 89.98,-656 103.28,-663.23 117.79,-671.12" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="116.7,-672.72 122.45,-673.66 118.54,-669.34 116.7,-672.72" />
+</g>
+
+<g id="both-pkg-7d89fa71c040" class="node" data-package="pkg-7d89fa71c040" role="button" tabindex="0" aria-label="gcc-wrapper 15.3.0: inspect dependencies" aria-pressed="false">
+<title>gcc-wrapper</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M192.71,-782.86C192.71,-782.86 117.98,-782.86 117.98,-782.86 111.98,-782.86 105.98,-776.86 105.98,-770.86 105.98,-770.86 105.98,-749.14 105.98,-749.14 105.98,-743.14 111.98,-737.14 117.98,-737.14 117.98,-737.14 192.71,-737.14 192.71,-737.14 198.71,-737.14 204.71,-743.14 204.71,-749.14 204.71,-749.14 204.71,-770.86 204.71,-770.86 204.71,-776.86 198.71,-782.86 192.71,-782.86" />
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-761.15" font-family="DM Sans" font-size="13.00" fill="#232820">gcc-wrapper</text>
+<text xml:space="preserve" text-anchor="middle" x="155.35" y="-747.65" font-family="DM Sans" font-size="13.00" fill="#232820">15.3.0</text>
+</g>
+
+<g id="both-edge-20" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-7d89fa71c040" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-7d89fa71c040</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M33.4,-469.31C48.24,-536.36 89.98,-725 89.98,-725 89.98,-725 96.33,-728.46 105.05,-733.19" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="104.07,-734.85 109.82,-735.79 105.9,-731.47 104.07,-734.85" />
+</g>
+
+<g id="both-pkg-208df737e545" class="node" data-package="pkg-208df737e545" role="button" tabindex="0" aria-label="gnumake 4.4.1: inspect dependencies" aria-pressed="false">
+<title>gnumake</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M337.69,-713.86C337.69,-713.86 282.46,-713.86 282.46,-713.86 276.46,-713.86 270.46,-707.86 270.46,-701.86 270.46,-701.86 270.46,-680.14 270.46,-680.14 270.46,-674.14 276.46,-668.14 282.46,-668.14 282.46,-668.14 337.69,-668.14 337.69,-668.14 343.69,-668.14 349.69,-674.14 349.69,-680.14 349.69,-680.14 349.69,-701.86 349.69,-701.86 349.69,-707.86 343.69,-713.86 337.69,-713.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-692.15" font-family="DM Sans" font-size="13.00" fill="#232820">gnumake</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-678.65" font-family="DM Sans" font-size="13.00" fill="#232820">4.4.1</text>
+</g>
+
+<g id="both-edge-12" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-208df737e545" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-208df737e545</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M44.46,-469.12C62.75,-495.19 89.98,-534 89.98,-534 89.98,-534 209.21,-588 209.21,-588 209.21,-588 256.21,-656 256.21,-656 256.21,-656 261.04,-659.19 267.77,-663.65" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="266.65,-665.22 272.3,-666.65 268.78,-662.01 266.65,-665.22" />
+</g>
+
+<g id="both-pkg-764b1214619d" class="node" data-package="pkg-764b1214619d" role="button" tabindex="0" aria-label="libedit 20260508-3.1: inspect dependencies" aria-pressed="false">
+<title>libedit</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M351.94,-644.86C351.94,-644.86 268.21,-644.86 268.21,-644.86 262.21,-644.86 256.21,-638.86 256.21,-632.86 256.21,-632.86 256.21,-611.14 256.21,-611.14 256.21,-605.14 262.21,-599.14 268.21,-599.14 268.21,-599.14 351.94,-599.14 351.94,-599.14 357.94,-599.14 363.94,-605.14 363.94,-611.14 363.94,-611.14 363.94,-632.86 363.94,-632.86 363.94,-638.86 357.94,-644.86 351.94,-644.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-623.15" font-family="DM Sans" font-size="13.00" fill="#232820">libedit</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-609.65" font-family="DM Sans" font-size="13.00" fill="#232820">20260508-3.1</text>
+</g>
+
+<g id="both-edge-19" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-764b1214619d" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-764b1214619d</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.78,-463.63C71.52,-474.74 89.98,-487 89.98,-487 89.98,-487 209.21,-547 209.21,-547 209.21,-547 243.93,-573.07 272.42,-594.47" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="271.02,-595.83 276.57,-597.59 273.33,-592.75 271.02,-595.83" />
+</g>
+
+<g id="both-pkg-6911562f71a5" class="node" data-package="pkg-6911562f71a5" role="button" tabindex="0" aria-label="nss-cacert 3.126: inspect dependencies" aria-pressed="false">
+<title>nss-cacert</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M341.44,-782.86C341.44,-782.86 278.71,-782.86 278.71,-782.86 272.71,-782.86 266.71,-776.86 266.71,-770.86 266.71,-770.86 266.71,-749.14 266.71,-749.14 266.71,-743.14 272.71,-737.14 278.71,-737.14 278.71,-737.14 341.44,-737.14 341.44,-737.14 347.44,-737.14 353.44,-743.14 353.44,-749.14 353.44,-749.14 353.44,-770.86 353.44,-770.86 353.44,-776.86 347.44,-782.86 341.44,-782.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-761.15" font-family="DM Sans" font-size="13.00" fill="#232820">nss-cacert</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-747.65" font-family="DM Sans" font-size="13.00" fill="#232820">3.126</text>
+</g>
+
+<g id="both-edge-18" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-6911562f71a5" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-6911562f71a5</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M32.39,-469.37C46.23,-547.4 89.98,-794 89.98,-794 89.98,-794 209.21,-794 209.21,-794 209.21,-794 234.38,-785.43 259.44,-776.9" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="259.84,-778.8 264.42,-775.2 258.6,-775.15 259.84,-778.8" />
+</g>
+
+<g id="both-pkg-3565baeb6b53" class="node" data-package="pkg-3565baeb6b53" role="button" tabindex="0" aria-label="pkg-config-wrapper 0.29.2: inspect dependencies" aria-pressed="false">
+<title>pkg-config-wrapper</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M538.92,-713.86C538.92,-713.86 422.94,-713.86 422.94,-713.86 416.94,-713.86 410.94,-707.86 410.94,-701.86 410.94,-701.86 410.94,-680.14 410.94,-680.14 410.94,-674.14 416.94,-668.14 422.94,-668.14 422.94,-668.14 538.92,-668.14 538.92,-668.14 544.92,-668.14 550.92,-674.14 550.92,-680.14 550.92,-680.14 550.92,-701.86 550.92,-701.86 550.92,-707.86 544.92,-713.86 538.92,-713.86" />
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-692.15" font-family="DM Sans" font-size="13.00" fill="#232820">pkg-config-wrapper</text>
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-678.65" font-family="DM Sans" font-size="13.00" fill="#232820">0.29.2</text>
+</g>
+
+<g id="both-edge-13" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-3565baeb6b53" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-3565baeb6b53</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.94,-451.9C105.28,-463.03 209.21,-486 209.21,-486 209.21,-486 363.94,-588 363.94,-588 363.94,-588 410.94,-656 410.94,-656 410.94,-656 418.02,-659.59 427.64,-664.47" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="426.52,-666.06 432.29,-666.83 428.26,-662.63 426.52,-666.06" />
+</g>
+
+<g id="both-pkg-de8a6a7e1364" class="node" data-package="pkg-de8a6a7e1364" role="button" tabindex="0" aria-label="stdenv-linux 26.05pre-git: inspect dependencies" aria-pressed="false">
+<title>stdenv-linux</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M517.17,-644.86C517.17,-644.86 444.69,-644.86 444.69,-644.86 438.69,-644.86 432.69,-638.86 432.69,-632.86 432.69,-632.86 432.69,-611.14 432.69,-611.14 432.69,-605.14 438.69,-599.14 444.69,-599.14 444.69,-599.14 517.17,-599.14 517.17,-599.14 523.17,-599.14 529.17,-605.14 529.17,-611.14 529.17,-611.14 529.17,-632.86 529.17,-632.86 529.17,-638.86 523.17,-644.86 517.17,-644.86" />
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-623.15" font-family="DM Sans" font-size="13.00" fill="#232820">stdenv-linux</text>
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-609.65" font-family="DM Sans" font-size="13.00" fill="#232820">26.05pre-git</text>
+</g>
+
+<g id="both-edge-25" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-de8a6a7e1364" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-de8a6a7e1364</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M54.86,-446.56C134.26,-448.21 363.94,-453 363.94,-453 363.94,-453 426.79,-544.57 459.96,-592.9" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="458.32,-593.91 463.02,-597.36 461.49,-591.73 458.32,-593.91" />
+</g>
+
+<g id="both-pkg-fb7366ea1fbc" class="node" data-package="pkg-fb7366ea1fbc" role="button" tabindex="0" aria-label="zlib 1.3.2: inspect dependencies" aria-pressed="false">
+<title>zlib</title>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" stroke-dasharray="5,2" d="M496.17,-782.86C496.17,-782.86 465.69,-782.86 465.69,-782.86 459.69,-782.86 453.69,-776.86 453.69,-770.86 453.69,-770.86 453.69,-749.14 453.69,-749.14 453.69,-743.14 459.69,-737.14 465.69,-737.14 465.69,-737.14 496.17,-737.14 496.17,-737.14 502.17,-737.14 508.17,-743.14 508.17,-749.14 508.17,-749.14 508.17,-770.86 508.17,-770.86 508.17,-776.86 502.17,-782.86 496.17,-782.86" />
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-761.15" font-family="DM Sans" font-size="13.00" fill="#232820">zlib</text>
+<text xml:space="preserve" text-anchor="middle" x="480.93" y="-747.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.3.2</text>
+</g>
+
+<g id="both-edge-27" class="edge" data-source="pkg-a8dbb63e3657" data-target="pkg-fb7366ea1fbc" aria-hidden="true">
+<title>pkg-a8dbb63e3657-&gt;pkg-fb7366ea1fbc</title>
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" stroke-dasharray="5,2" d="M32.2,-469.39C45.82,-549.95 89.98,-811 89.98,-811 89.98,-811 209.21,-811 209.21,-811 209.21,-811 363.94,-794 363.94,-794 363.94,-794 412.4,-779.8 446.67,-769.75" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="446.84,-771.71 451.58,-768.31 445.76,-768.01 446.84,-771.71" />
+</g>
+
+<g id="both-edge-0" class="edge" data-source="pkg-3c253d17c343" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-3c253d17c343-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M73.61,-285.32C83.56,-281.36 91.62,-278.16 91.62,-278.16 91.62,-278.16 208.3,-242.29 273.24,-222.33" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="273.69,-224.2 278.39,-220.74 272.56,-220.52 273.69,-224.2" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M192.52,-222.75C253.02,-215.65 374.38,-201.39 438.32,-193.89" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="438.41,-195.81 443.65,-193.26 437.96,-191.99 438.41,-195.81" />
 </g>
 
-<g id="tb-edge-13" class="edge" data-source="pkg-55a7af3204c8" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-3" class="edge" data-source="pkg-55a7af3204c8" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-55a7af3204c8-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M154.3,-370.38C161.28,-337.03 173.62,-278.16 173.62,-278.16 173.62,-278.16 231.71,-249.99 273.58,-229.68" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="274.41,-231.42 278.51,-227.29 272.73,-227.96 274.41,-231.42" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.79,-160.92C245.08,-166.5 372.51,-178.71 438.49,-185.03" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="437.99,-186.92 443.65,-185.52 438.35,-183.08 437.99,-186.92" />
 </g>
 
-<g id="tb-edge-3" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-8" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M228.79,-370.57C207.16,-350.44 178.62,-323.88 178.62,-323.88 178.62,-323.88 178.62,-278.16 178.62,-278.16 178.62,-278.16 233.37,-250.64 273.65,-230.39" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="274.31,-232.22 278.35,-228.03 272.58,-228.78 274.31,-232.22" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.85,-29.31C216.22,-19.02 256.21,-5 256.21,-5 256.21,-5 363.94,-5 363.94,-5 363.94,-5 428.66,-107.67 461.41,-159.62" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="459.71,-160.53 464.27,-164.16 462.97,-158.48 459.71,-160.53" />
 </g>
 
-<g id="tb-pkg-921eb3510c3d" class="node" data-package="pkg-921eb3510c3d" role="button" tabindex="0" aria-label="mbedtls 3.6.7: inspect dependencies" aria-pressed="false">
+<g id="both-pkg-921eb3510c3d" class="node" data-package="pkg-921eb3510c3d" role="button" tabindex="0" aria-label="mbedtls 3.6.7: inspect dependencies" aria-pressed="false">
 <title>mbedtls</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M249.11,-323.88C249.11,-323.88 202.12,-323.88 202.12,-323.88 196.12,-323.88 190.12,-317.88 190.12,-311.88 190.12,-311.88 190.12,-290.16 190.12,-290.16 190.12,-284.16 196.12,-278.16 202.12,-278.16 202.12,-278.16 249.11,-278.16 249.11,-278.16 255.11,-278.16 261.11,-284.16 261.11,-290.16 261.11,-290.16 261.11,-311.88 261.11,-311.88 261.11,-317.88 255.11,-323.88 249.11,-323.88" />
-<text xml:space="preserve" text-anchor="middle" x="225.62" y="-302.17" font-family="DM Sans" font-size="13.00" fill="#232820">mbedtls</text>
-<text xml:space="preserve" text-anchor="middle" x="225.62" y="-288.67" font-family="DM Sans" font-size="13.00" fill="#232820">3.6.7</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M333.57,-61.86C333.57,-61.86 286.59,-61.86 286.59,-61.86 280.59,-61.86 274.59,-55.86 274.59,-49.86 274.59,-49.86 274.59,-28.14 274.59,-28.14 274.59,-22.14 280.59,-16.14 286.59,-16.14 286.59,-16.14 333.57,-16.14 333.57,-16.14 339.57,-16.14 345.57,-22.14 345.57,-28.14 345.57,-28.14 345.57,-49.86 345.57,-49.86 345.57,-55.86 339.57,-61.86 333.57,-61.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-40.15" font-family="DM Sans" font-size="13.00" fill="#232820">mbedtls</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-26.65" font-family="DM Sans" font-size="13.00" fill="#232820">3.6.7</text>
 </g>
 
-<g id="tb-edge-1" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-921eb3510c3d" aria-hidden="true">
+<g id="both-edge-7" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-921eb3510c3d" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-921eb3510c3d</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M245.94,-370.31C242.41,-358.45 238.03,-343.74 234.25,-331.02" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="236.14,-330.65 232.73,-325.93 232.45,-331.75 236.14,-330.65" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.89,-39.8C209.78,-39.65 241.4,-39.44 266.74,-39.28" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="266.74,-41.2 272.23,-39.24 266.72,-37.35 266.74,-41.2" />
 </g>
 
-<g id="tb-edge-2" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-8e683176d3a1" aria-hidden="true">
+<g id="both-edge-6" class="edge" data-source="pkg-8c98e9d6c884" data-target="pkg-8e683176d3a1" aria-hidden="true">
 <title>pkg-8c98e9d6c884-&gt;pkg-8e683176d3a1</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M271.15,-370.31C281.33,-358.01 294.02,-342.65 304.8,-329.62" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="306.11,-331.05 308.13,-325.59 303.14,-328.6 306.11,-331.05" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M186.89,-53.6C207.65,-62.84 235.6,-75.29 259.52,-85.94" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="258.68,-87.67 264.49,-88.15 260.25,-84.15 258.68,-87.67" />
 </g>
 
-<g id="tb-pkg-4b27ac5affdb" class="node" data-package="pkg-4b27ac5affdb" role="button" tabindex="0" aria-label="libidn2 2.3.8: inspect dependencies" aria-pressed="false">
+<g id="both-pkg-4b27ac5affdb" class="node" data-package="pkg-4b27ac5affdb" role="button" tabindex="0" aria-label="libidn2 2.3.8: inspect dependencies" aria-pressed="false">
 <title>libidn2</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M292.36,-138.44C292.36,-138.44 252.88,-138.44 252.88,-138.44 246.88,-138.44 240.88,-132.44 240.88,-126.44 240.88,-126.44 240.88,-104.72 240.88,-104.72 240.88,-98.72 246.88,-92.72 252.88,-92.72 252.88,-92.72 292.36,-92.72 292.36,-92.72 298.36,-92.72 304.36,-98.72 304.36,-104.72 304.36,-104.72 304.36,-126.44 304.36,-126.44 304.36,-132.44 298.36,-138.44 292.36,-138.44" />
-<text xml:space="preserve" text-anchor="middle" x="272.62" y="-116.73" font-family="DM Sans" font-size="13.00" fill="#232820">libidn2</text>
-<text xml:space="preserve" text-anchor="middle" x="272.62" y="-103.23" font-family="DM Sans" font-size="13.00" fill="#232820">2.3.8</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M649.4,-246.86C649.4,-246.86 609.92,-246.86 609.92,-246.86 603.92,-246.86 597.92,-240.86 597.92,-234.86 597.92,-234.86 597.92,-213.14 597.92,-213.14 597.92,-207.14 603.92,-201.14 609.92,-201.14 609.92,-201.14 649.4,-201.14 649.4,-201.14 655.4,-201.14 661.4,-207.14 661.4,-213.14 661.4,-213.14 661.4,-234.86 661.4,-234.86 661.4,-240.86 655.4,-246.86 649.4,-246.86" />
+<text xml:space="preserve" text-anchor="middle" x="629.66" y="-225.15" font-family="DM Sans" font-size="13.00" fill="#232820">libidn2</text>
+<text xml:space="preserve" text-anchor="middle" x="629.66" y="-211.65" font-family="DM Sans" font-size="13.00" fill="#232820">2.3.8</text>
 </g>
 
-<g id="tb-edge-16" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-4b27ac5affdb" aria-hidden="true">
+<g id="both-edge-10" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-4b27ac5affdb" aria-hidden="true">
 <title>pkg-a69c86a0f388-&gt;pkg-4b27ac5affdb</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M304.99,-184.87C299.31,-172.9 292.26,-158.03 286.19,-145.23" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="288,-144.53 283.9,-140.39 284.52,-146.18 288,-144.53" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M516.33,-197.21C538.59,-202.52 567.6,-209.43 590.56,-214.91" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="589.91,-216.74 595.71,-216.14 590.8,-212.99 589.91,-216.74" />
 </g>
 
-<g id="tb-pkg-a34dc0932518" class="node" data-package="pkg-a34dc0932518" role="button" tabindex="0" aria-label="xgcc 15.3.0: inspect dependencies" aria-pressed="false">
+<g id="both-pkg-a34dc0932518" class="node" data-package="pkg-a34dc0932518" role="button" tabindex="0" aria-label="xgcc 15.3.0: inspect dependencies" aria-pressed="false">
 <title>xgcc</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M377.61,-138.44C377.61,-138.44 339.62,-138.44 339.62,-138.44 333.62,-138.44 327.62,-132.44 327.62,-126.44 327.62,-126.44 327.62,-104.72 327.62,-104.72 327.62,-98.72 333.62,-92.72 339.62,-92.72 339.62,-92.72 377.61,-92.72 377.61,-92.72 383.61,-92.72 389.61,-98.72 389.61,-104.72 389.61,-104.72 389.61,-126.44 389.61,-126.44 389.61,-132.44 383.61,-138.44 377.61,-138.44" />
-<text xml:space="preserve" text-anchor="middle" x="358.62" y="-116.73" font-family="DM Sans" font-size="13.00" fill="#232820">xgcc</text>
-<text xml:space="preserve" text-anchor="middle" x="358.62" y="-103.23" font-family="DM Sans" font-size="13.00" fill="#232820">15.3.0</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M648.65,-177.86C648.65,-177.86 610.67,-177.86 610.67,-177.86 604.67,-177.86 598.67,-171.86 598.67,-165.86 598.67,-165.86 598.67,-144.14 598.67,-144.14 598.67,-138.14 604.67,-132.14 610.67,-132.14 610.67,-132.14 648.65,-132.14 648.65,-132.14 654.65,-132.14 660.65,-138.14 660.65,-144.14 660.65,-144.14 660.65,-165.86 660.65,-165.86 660.65,-171.86 654.65,-177.86 648.65,-177.86" />
+<text xml:space="preserve" text-anchor="middle" x="629.66" y="-156.15" font-family="DM Sans" font-size="13.00" fill="#232820">xgcc</text>
+<text xml:space="preserve" text-anchor="middle" x="629.66" y="-142.65" font-family="DM Sans" font-size="13.00" fill="#232820">15.3.0</text>
 </g>
 
-<g id="tb-edge-15" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-a34dc0932518" aria-hidden="true">
+<g id="both-edge-11" class="edge" data-source="pkg-a69c86a0f388" data-target="pkg-a34dc0932518" aria-hidden="true">
 <title>pkg-a69c86a0f388-&gt;pkg-a34dc0932518</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M326.24,-184.87C331.92,-172.9 338.97,-158.03 345.04,-145.23" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="346.71,-146.18 347.33,-140.39 343.23,-144.53 346.71,-146.18" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M516.33,-181.03C538.9,-175.8 568.4,-168.96 591.5,-163.61" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="591.76,-165.53 596.68,-162.41 590.89,-161.78 591.76,-165.53" />
 </g>
 
-<g id="tb-edge-12" class="edge" data-source="pkg-5da281038516" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-5" class="edge" data-source="pkg-5da281038516" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-5da281038516-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M477.34,-370.38C457.55,-337.03 422.62,-278.16 422.62,-278.16 422.62,-278.16 386.57,-254.96 356.32,-235.49" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="357.55,-234 351.88,-232.64 355.47,-237.24 357.55,-234" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M209.78,-278.33C273.95,-257.11 380.2,-221.98 438.49,-202.7" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="439.02,-204.56 443.63,-201 437.81,-200.9 439.02,-204.56" />
 </g>
 
-<g id="tb-pkg-3f45ed50318e" class="node" data-package="pkg-3f45ed50318e" role="button" tabindex="0" aria-label="ncurses 6.6: inspect dependencies" aria-pressed="false">
+<g id="both-pkg-3f45ed50318e" class="node" data-package="pkg-3f45ed50318e" role="button" tabindex="0" aria-label="ncurses 6.6: inspect dependencies" aria-pressed="false">
 <title>ncurses</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M547.48,-323.88C547.48,-323.88 499.75,-323.88 499.75,-323.88 493.75,-323.88 487.75,-317.88 487.75,-311.88 487.75,-311.88 487.75,-290.16 487.75,-290.16 487.75,-284.16 493.75,-278.16 499.75,-278.16 499.75,-278.16 547.48,-278.16 547.48,-278.16 553.48,-278.16 559.48,-284.16 559.48,-290.16 559.48,-290.16 559.48,-311.88 559.48,-311.88 559.48,-317.88 553.48,-323.88 547.48,-323.88" />
-<text xml:space="preserve" text-anchor="middle" x="523.62" y="-302.17" font-family="DM Sans" font-size="13.00" fill="#232820">ncurses</text>
-<text xml:space="preserve" text-anchor="middle" x="523.62" y="-288.67" font-family="DM Sans" font-size="13.00" fill="#232820">6.6</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M333.94,-340.86C333.94,-340.86 286.21,-340.86 286.21,-340.86 280.21,-340.86 274.21,-334.86 274.21,-328.86 274.21,-328.86 274.21,-307.14 274.21,-307.14 274.21,-301.14 280.21,-295.14 286.21,-295.14 286.21,-295.14 333.94,-295.14 333.94,-295.14 339.94,-295.14 345.94,-301.14 345.94,-307.14 345.94,-307.14 345.94,-328.86 345.94,-328.86 345.94,-334.86 339.94,-340.86 333.94,-340.86" />
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-319.15" font-family="DM Sans" font-size="13.00" fill="#232820">ncurses</text>
+<text xml:space="preserve" text-anchor="middle" x="310.08" y="-305.65" font-family="DM Sans" font-size="13.00" fill="#232820">6.6</text>
 </g>
 
-<g id="tb-edge-11" class="edge" data-source="pkg-5da281038516" data-target="pkg-3f45ed50318e" aria-hidden="true">
+<g id="both-edge-4" class="edge" data-source="pkg-5da281038516" data-target="pkg-3f45ed50318e" aria-hidden="true">
 <title>pkg-5da281038516-&gt;pkg-3f45ed50318e</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M498.77,-370.31C503.09,-358.45 508.44,-343.74 513.07,-331.02" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="514.86,-331.72 514.93,-325.89 511.24,-330.4 514.86,-331.72" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M209.76,-303.69C228.44,-306.39 249.15,-309.37 266.79,-311.91" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="266.13,-313.76 271.85,-312.64 266.68,-309.95 266.13,-313.76" />
 </g>
 
-<g id="tb-pkg-bb72fdfc50b2" class="node" data-package="pkg-bb72fdfc50b2" role="button" tabindex="0" aria-label="libunistring 1.4.2: inspect dependencies" aria-pressed="false">
+<g id="both-pkg-bb72fdfc50b2" class="node" data-package="pkg-bb72fdfc50b2" role="button" tabindex="0" aria-label="libunistring 1.4.2: inspect dependencies" aria-pressed="false">
 <title>libunistring</title>
-<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M305.11,-45.72C305.11,-45.72 240.12,-45.72 240.12,-45.72 234.12,-45.72 228.12,-39.72 228.12,-33.72 228.12,-33.72 228.12,-12 228.12,-12 228.12,-6 234.12,0 240.12,0 240.12,0 305.11,0 305.11,0 311.11,0 317.11,-6 317.11,-12 317.11,-12 317.11,-33.72 317.11,-33.72 317.11,-39.72 311.11,-45.72 305.11,-45.72" />
-<text xml:space="preserve" text-anchor="middle" x="272.62" y="-24.01" font-family="DM Sans" font-size="13.00" fill="#232820">libunistring</text>
-<text xml:space="preserve" text-anchor="middle" x="272.62" y="-10.51" font-family="DM Sans" font-size="13.00" fill="#232820">1.4.2</text>
+<path fill="#f5f3ec" stroke="#bcc3b2" stroke-width="1.2" d="M785.38,-246.86C785.38,-246.86 720.4,-246.86 720.4,-246.86 714.4,-246.86 708.4,-240.86 708.4,-234.86 708.4,-234.86 708.4,-213.14 708.4,-213.14 708.4,-207.14 714.4,-201.14 720.4,-201.14 720.4,-201.14 785.38,-201.14 785.38,-201.14 791.38,-201.14 797.38,-207.14 797.38,-213.14 797.38,-213.14 797.38,-234.86 797.38,-234.86 797.38,-240.86 791.38,-246.86 785.38,-246.86" />
+<text xml:space="preserve" text-anchor="middle" x="752.89" y="-225.15" font-family="DM Sans" font-size="13.00" fill="#232820">libunistring</text>
+<text xml:space="preserve" text-anchor="middle" x="752.89" y="-211.65" font-family="DM Sans" font-size="13.00" fill="#232820">1.4.2</text>
 </g>
 
-<g id="tb-edge-18" class="edge" data-source="pkg-4b27ac5affdb" data-target="pkg-bb72fdfc50b2" aria-hidden="true">
+<g id="both-edge-2" class="edge" data-source="pkg-4b27ac5affdb" data-target="pkg-bb72fdfc50b2" aria-hidden="true">
 <title>pkg-4b27ac5affdb-&gt;pkg-bb72fdfc50b2</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M272.62,-92.15C272.62,-80.4 272.62,-65.86 272.62,-53.21" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="274.54,-53.34 272.62,-47.84 270.69,-53.34 274.54,-53.34" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M661.88,-224C673.72,-224 687.53,-224 700.73,-224" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="700.67,-225.93 706.17,-224 700.67,-222.08 700.67,-225.93" />
 </g>
 
-<g id="tb-edge-20" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-29" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-b5a1649674d0-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M589.93,-370.38C582.95,-337.03 570.62,-278.16 570.62,-278.16 570.62,-278.16 430.33,-240.28 357.87,-220.71" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="358.64,-218.92 352.83,-219.35 357.63,-222.64 358.64,-218.92" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M183.06,-363.33C239.13,-359.82 363.94,-352 363.94,-352 363.94,-352 425.83,-265.02 459.19,-218.14" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="460.64,-219.43 462.26,-213.83 457.5,-217.2 460.64,-219.43" />
 </g>
 
-<g id="tb-edge-19" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-3f45ed50318e" aria-hidden="true">
+<g id="both-edge-28" class="edge" data-source="pkg-b5a1649674d0" data-target="pkg-3f45ed50318e" aria-hidden="true">
 <title>pkg-b5a1649674d0-&gt;pkg-3f45ed50318e</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M577.06,-370.31C567.43,-358.01 555.41,-342.65 545.21,-329.62" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="546.99,-328.76 542.08,-325.62 543.96,-331.14 546.99,-328.76" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M182.95,-356.81C206.11,-349.68 240.1,-339.23 266.95,-330.96" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="267.19,-332.9 271.88,-329.45 266.06,-329.22 267.19,-332.9" />
 </g>
 
-<g id="tb-edge-0" class="edge" data-source="pkg-921eb3510c3d" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-9" class="edge" data-source="pkg-921eb3510c3d" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-921eb3510c3d-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M247.86,-277.59C260.18,-265.18 275.58,-249.66 288.58,-236.55" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="289.84,-238.02 292.34,-232.76 287.1,-235.31 289.84,-238.02" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M346.04,-62.15C355.87,-68.66 363.94,-74 363.94,-74 363.94,-74 417.2,-126.8 451.54,-160.85" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="449.91,-161.94 455.17,-164.45 452.62,-159.21 449.91,-161.94" />
 </g>
 
-<g id="tb-edge-14" class="edge" data-source="pkg-3f45ed50318e" data-target="pkg-a69c86a0f388" aria-hidden="true">
+<g id="both-edge-1" class="edge" data-source="pkg-3f45ed50318e" data-target="pkg-a69c86a0f388" aria-hidden="true">
 <title>pkg-3f45ed50318e-&gt;pkg-a69c86a0f388</title>
-<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M487.38,-284.22C451.18,-268.43 395.58,-244.18 357.51,-227.57" />
-<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="358.56,-225.93 352.75,-225.5 357.02,-229.46 358.56,-225.93" />
+<path fill="none" stroke="#b6bfae" stroke-width="1.2" d="M341.65,-294.64C370.37,-272.7 413.36,-239.86 443.77,-216.63" />
+<polygon fill="#b6bfae" stroke="#b6bfae" stroke-width="1.2" points="444.65,-218.38 447.85,-213.51 442.31,-215.32 444.65,-218.38" />
 </g>
+
+
 </g>
-</svg></div><p class="dependency-key"><span aria-hidden="true">A → B</span><span>A depends on B</span><button type="button" class="dependency-reset" hidden>Show all connections</button></p></div>
-          <aside class="dependency-details" aria-labelledby="dependency-detail-name"><p class="eyebrow">Package details</p><h3 id="dependency-detail-name">Explore the graph</h3><p class="dependency-detail-version">Select any package.</p><p class="dependency-detail-license">Versions, licenses, and direct connections are recorded in the SBOM.</p><div class="dependency-relations" hidden><h4>Depends on</h4><ul class="dependency-outgoing"></ul><h4>Used by</h4><ul class="dependency-incoming"></ul></div><p class="dependency-status sr-only" aria-live="polite"></p></aside>
+</svg></div><p class="dependency-key"><span class="dependency-legend-solid">Retained at runtime</span><span class="dependency-legend-dashed">Build-time only</span><span>A → B: A depends on B</span><button type="button" class="dependency-reset" hidden>Show all connections</button></p></div>
+          <aside class="dependency-details" aria-labelledby="dependency-detail-name"><p class="eyebrow">Package details</p><h3 id="dependency-detail-name">Explore the graph</h3><p class="dependency-detail-version">Select any package.</p><p class="dependency-detail-license">Select a node to see its version, package license metadata, and shown connections.</p><div class="dependency-relations" hidden><h4>Shown dependencies</h4><ul class="dependency-outgoing"></ul><h4>Shown dependents</h4><ul class="dependency-incoming"></ul></div><p class="dependency-status sr-only" aria-live="polite"></p></aside>
         </div>
-        <div class="dependency-footnote"><p>Snapshot of the Nix runtime closure for <code>.#default</code> at <a href="https://github.com/siraben/psi/commit/66a73a8462d352d7527be4ee49239ced334a08ce">66a73a8</a>. Other platforms and static builds differ. Build tools and source-only dependencies are outside this graph.</p><a href="assets/sbom/psi-runtime.cdx.json" download>Download SBOM <svg class="arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4v16m-7-7 7 7 7-7"/></svg></a></div>
+        <div class="dependency-footnote"><p>Nix runtime closure + direct build inputs for <code>.#default</code> at <a href="https://github.com/siraben/psi/commit/646098f607cd0df976ed1691adeca520a724209d">646098f</a>. Other platforms and static builds differ. The full build closure contains 918 packages; the diagram shows runtime relationships and direct build-input relationships.</p><a href="assets/sbom/psi-runtime.cdx.json" download>Runtime SBOM <svg class="arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4v16m-7-7 7 7 7-7"/></svg></a><a href="assets/sbom/psi-buildtime.cdx.json" download>Full build SBOM <svg class="arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4v16m-7-7 7 7 7-7"/></svg></a></div>
       </div>
-      <details class="dependency-table"><summary>Read the dependency list</summary><div class="dependency-table-scroll" role="region" aria-label="Package dependency list" tabindex="0"><table><caption>Packages and direct relationships recorded in this runtime SBOM</caption><thead><tr><th scope="col">Package</th><th scope="col">Version</th><th scope="col">Depends on</th><th scope="col">License</th></tr></thead><tbody><tr><th scope="row">psi</th><td>0.1.0</td><td>argtable, cjson, curl, glibc, libedit, lua, nss-cacert</td><td>MIT</td></tr><tr><th scope="row">argtable</th><td>3.3.1</td><td>glibc</td><td>BSD-3-Clause</td></tr><tr><th scope="row">cjson</th><td>1.7.19</td><td>glibc</td><td>MIT</td></tr><tr><th scope="row">curl</th><td>8.22.0</td><td>glibc, mbedtls, nss-cacert</td><td>Not recorded</td></tr><tr><th scope="row">glibc</th><td>2.42-84</td><td>libidn2, xgcc</td><td>LGPL-2.0-or-later</td></tr><tr><th scope="row">libedit</th><td>20260508-3.1</td><td>glibc, ncurses</td><td>BSD-3-Clause</td></tr><tr><th scope="row">libidn2</th><td>2.3.8</td><td>libunistring</td><td>GPL-2.0-or-later, GPL-3.0-or-later, LGPL-3.0-or-later</td></tr><tr><th scope="row">libunistring</th><td>1.4.2</td><td>None recorded</td><td>LGPL-3.0-or-later</td></tr><tr><th scope="row">lua</th><td>5.5.0</td><td>glibc, ncurses</td><td>Not recorded</td></tr><tr><th scope="row">mbedtls</th><td>3.6.7</td><td>glibc</td><td>Not recorded</td></tr><tr><th scope="row">ncurses</th><td>6.6</td><td>glibc</td><td>MIT</td></tr><tr><th scope="row">nss-cacert</th><td>3.126</td><td>None recorded</td><td>MPL-2.0</td></tr><tr><th scope="row">xgcc</th><td>15.3.0</td><td>None recorded</td><td>Not recorded</td></tr></tbody></table></div></details>
-      <script type="application/json" id="dependency-data">{"root":"pkg-3bfd777ac8dd","nodes":[{"id":"pkg-3bfd777ac8dd","name":"psi","version":"0.1.0","licenses":["MIT"],"ref":"/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv"},{"id":"pkg-3c253d17c343","name":"argtable","version":"3.3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/vga7yy636kjk44jrl66zk2ijpk2j1bln-argtable-3.3.1.drv"},{"id":"pkg-55a7af3204c8","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/k2b3kfciqbr28np060h7089daayrp9j4-cjson-1.7.19.drv"},{"id":"pkg-8c98e9d6c884","name":"curl","version":"8.22.0","licenses":[],"ref":"/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv"},{"id":"pkg-a69c86a0f388","name":"glibc","version":"2.42-84","licenses":["LGPL-2.0-or-later"],"ref":"/nix/store/sayi2sas6kn7q181jy7ic8h8hy2jiqn7-glibc-2.42-84.drv"},{"id":"pkg-5da281038516","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/i3859vh7aavv629nhh5gx297k11wgxbw-libedit-20260508-3.1.drv"},{"id":"pkg-4b27ac5affdb","name":"libidn2","version":"2.3.8","licenses":["GPL-2.0-or-later","GPL-3.0-or-later","LGPL-3.0-or-later"],"ref":"/nix/store/w9dasq0vml1ampyrl329c8p623cxmspw-libidn2-2.3.8.drv"},{"id":"pkg-bb72fdfc50b2","name":"libunistring","version":"1.4.2","licenses":["LGPL-3.0-or-later"],"ref":"/nix/store/mr7xnk9g5qd6awp2xy913phrbp83bh49-libunistring-1.4.2.drv"},{"id":"pkg-b5a1649674d0","name":"lua","version":"5.5.0","licenses":[],"ref":"/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv"},{"id":"pkg-921eb3510c3d","name":"mbedtls","version":"3.6.7","licenses":[],"ref":"/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv"},{"id":"pkg-3f45ed50318e","name":"ncurses","version":"6.6","licenses":["MIT"],"ref":"/nix/store/nklz0i5v4yss7dypw7qqm2xl4iiw4p8g-ncurses-6.6.drv"},{"id":"pkg-8e683176d3a1","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv"},{"id":"pkg-a34dc0932518","name":"xgcc","version":"15.3.0","licenses":[],"ref":"/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv"}],"edges":[{"source":"pkg-921eb3510c3d","target":"pkg-a69c86a0f388"},{"source":"pkg-8c98e9d6c884","target":"pkg-921eb3510c3d"},{"source":"pkg-8c98e9d6c884","target":"pkg-8e683176d3a1"},{"source":"pkg-8c98e9d6c884","target":"pkg-a69c86a0f388"},{"source":"pkg-3bfd777ac8dd","target":"pkg-8e683176d3a1"},{"source":"pkg-3bfd777ac8dd","target":"pkg-8c98e9d6c884"},{"source":"pkg-3bfd777ac8dd","target":"pkg-5da281038516"},{"source":"pkg-3bfd777ac8dd","target":"pkg-55a7af3204c8"},{"source":"pkg-3bfd777ac8dd","target":"pkg-a69c86a0f388"},{"source":"pkg-3bfd777ac8dd","target":"pkg-3c253d17c343"},{"source":"pkg-3bfd777ac8dd","target":"pkg-b5a1649674d0"},{"source":"pkg-5da281038516","target":"pkg-3f45ed50318e"},{"source":"pkg-5da281038516","target":"pkg-a69c86a0f388"},{"source":"pkg-55a7af3204c8","target":"pkg-a69c86a0f388"},{"source":"pkg-3f45ed50318e","target":"pkg-a69c86a0f388"},{"source":"pkg-a69c86a0f388","target":"pkg-a34dc0932518"},{"source":"pkg-a69c86a0f388","target":"pkg-4b27ac5affdb"},{"source":"pkg-3c253d17c343","target":"pkg-a69c86a0f388"},{"source":"pkg-4b27ac5affdb","target":"pkg-bb72fdfc50b2"},{"source":"pkg-b5a1649674d0","target":"pkg-3f45ed50318e"},{"source":"pkg-b5a1649674d0","target":"pkg-a69c86a0f388"}]}</script>
+      <details class="dependency-table"><summary>Read the dependency list</summary><div class="dependency-table-scroll" role="region" aria-label="Package dependency list" tabindex="0"><table><caption>Shown packages and their visible relationships from the runtime and build SBOMs</caption><thead><tr><th scope="col">Package</th><th scope="col">Version</th><th scope="col">Shown dependencies</th><th scope="col">License</th></tr></thead><tbody><tr><th scope="row">psi</th><td>0.2.0</td><td>argtable, bash, cjson, cjson, curl, gcc-wrapper, glibc, gnumake, libedit, libedit, lua, nss-cacert, nss-cacert, pkg-config-wrapper, stdenv-linux, zlib</td><td>MIT</td></tr><tr><th scope="row">argtable</th><td>3.3.1</td><td>glibc</td><td>BSD-3-Clause</td></tr><tr><th scope="row">cjson</th><td>1.7.19</td><td>glibc</td><td>MIT</td></tr><tr><th scope="row">curl</th><td>8.22.0</td><td>glibc, mbedtls, nss-cacert</td><td>curl</td></tr><tr><th scope="row">glibc</th><td>2.42-84</td><td>libidn2, xgcc</td><td>LGPL-2.0-or-later</td></tr><tr><th scope="row">libedit</th><td>20260508-3.1</td><td>glibc, ncurses</td><td>BSD-3-Clause</td></tr><tr><th scope="row">libidn2</th><td>2.3.8</td><td>libunistring</td><td>GPL-2.0-or-later, GPL-3.0-or-later, LGPL-3.0-or-later</td></tr><tr><th scope="row">libunistring</th><td>1.4.2</td><td>None recorded</td><td>LGPL-3.0-or-later</td></tr><tr><th scope="row">lua</th><td>5.5.0</td><td>glibc, ncurses</td><td>MIT</td></tr><tr><th scope="row">mbedtls</th><td>3.6.7</td><td>glibc</td><td>Apache-2.0, GPL-2.0-or-later</td></tr><tr><th scope="row">ncurses</th><td>6.6</td><td>glibc</td><td>MIT</td></tr><tr><th scope="row">nss-cacert</th><td>3.126</td><td>None recorded</td><td>MPL-2.0</td></tr><tr><th scope="row">xgcc</th><td>15.3.0</td><td>None recorded</td><td>GPL-3.0-or-later</td></tr><tr><th scope="row">bash</th><td>5.3p15</td><td>None recorded</td><td>GPL-3.0-or-later</td></tr><tr><th scope="row">cjson</th><td>1.7.19</td><td>None recorded</td><td>MIT</td></tr><tr><th scope="row">gcc-wrapper</th><td>15.3.0</td><td>None recorded</td><td>GPL-3.0-or-later</td></tr><tr><th scope="row">gnumake</th><td>4.4.1</td><td>None recorded</td><td>GPL-3.0-or-later</td></tr><tr><th scope="row">libedit</th><td>20260508-3.1</td><td>None recorded</td><td>BSD-3-Clause</td></tr><tr><th scope="row">nss-cacert</th><td>3.126</td><td>None recorded</td><td>MPL-2.0</td></tr><tr><th scope="row">pkg-config-wrapper</th><td>0.29.2</td><td>None recorded</td><td>GPL-2.0-or-later</td></tr><tr><th scope="row">stdenv-linux</th><td>26.05pre-git</td><td>None recorded</td><td>MIT</td></tr><tr><th scope="row">zlib</th><td>1.3.2</td><td>None recorded</td><td>Zlib</td></tr></tbody></table></div></details>
+      <script type="application/json" id="dependency-data">{"root":"pkg-a8dbb63e3657","nodes":[{"id":"pkg-a8dbb63e3657","name":"psi","version":"0.2.0","licenses":["MIT"],"ref":"/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv","scope":"runtime"},{"id":"pkg-3c253d17c343","name":"argtable","version":"3.3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/vga7yy636kjk44jrl66zk2ijpk2j1bln-argtable-3.3.1.drv","scope":"runtime"},{"id":"pkg-55a7af3204c8","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/k2b3kfciqbr28np060h7089daayrp9j4-cjson-1.7.19.drv","scope":"runtime"},{"id":"pkg-8c98e9d6c884","name":"curl","version":"8.22.0","licenses":["curl"],"ref":"/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv","scope":"runtime"},{"id":"pkg-a69c86a0f388","name":"glibc","version":"2.42-84","licenses":["LGPL-2.0-or-later"],"ref":"/nix/store/sayi2sas6kn7q181jy7ic8h8hy2jiqn7-glibc-2.42-84.drv","scope":"runtime"},{"id":"pkg-5da281038516","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/i3859vh7aavv629nhh5gx297k11wgxbw-libedit-20260508-3.1.drv","scope":"runtime"},{"id":"pkg-4b27ac5affdb","name":"libidn2","version":"2.3.8","licenses":["GPL-2.0-or-later","GPL-3.0-or-later","LGPL-3.0-or-later"],"ref":"/nix/store/w9dasq0vml1ampyrl329c8p623cxmspw-libidn2-2.3.8.drv","scope":"runtime"},{"id":"pkg-bb72fdfc50b2","name":"libunistring","version":"1.4.2","licenses":["LGPL-3.0-or-later"],"ref":"/nix/store/mr7xnk9g5qd6awp2xy913phrbp83bh49-libunistring-1.4.2.drv","scope":"runtime"},{"id":"pkg-b5a1649674d0","name":"lua","version":"5.5.0","licenses":["MIT"],"ref":"/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv","scope":"runtime"},{"id":"pkg-921eb3510c3d","name":"mbedtls","version":"3.6.7","licenses":["Apache-2.0","GPL-2.0-or-later"],"ref":"/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv","scope":"runtime"},{"id":"pkg-3f45ed50318e","name":"ncurses","version":"6.6","licenses":["MIT"],"ref":"/nix/store/nklz0i5v4yss7dypw7qqm2xl4iiw4p8g-ncurses-6.6.drv","scope":"runtime"},{"id":"pkg-8e683176d3a1","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv","scope":"runtime"},{"id":"pkg-a34dc0932518","name":"xgcc","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv","scope":"runtime"},{"id":"pkg-399939707968","name":"bash","version":"5.3p15","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/s3s5s80y5sq8fvxivxxz3bqfpyhx8cb4-bash-5.3p15.drv","scope":"build"},{"id":"pkg-f510466e69a0","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/w0g6hwxkdv9y8fzh7w3aq5adwnf8mfx9-cjson-1.7.19.drv","scope":"build"},{"id":"pkg-7d89fa71c040","name":"gcc-wrapper","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/lyb848yjq8pnlwkqnzlnkvjzqa4cvaqh-gcc-wrapper-15.3.0.drv","scope":"build"},{"id":"pkg-208df737e545","name":"gnumake","version":"4.4.1","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/0hw4dy0k3b0jpm1h944arm44rnp57xp7-gnumake-4.4.1.drv","scope":"build"},{"id":"pkg-764b1214619d","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/nzmha5s1p11m6cqy8f5glac7v8sn0jbn-libedit-20260508-3.1.drv","scope":"build"},{"id":"pkg-6911562f71a5","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4l57kqgxxv4gra88g30f8maycrvbx5dc-nss-cacert-3.126.drv","scope":"build"},{"id":"pkg-3565baeb6b53","name":"pkg-config-wrapper","version":"0.29.2","licenses":["GPL-2.0-or-later"],"ref":"/nix/store/4f4faayl06s0gvr7cnvcpvrcwh7lxaan-pkg-config-wrapper-0.29.2.drv","scope":"build"},{"id":"pkg-de8a6a7e1364","name":"stdenv-linux","version":"26.05pre-git","licenses":["MIT"],"ref":"/nix/store/r5ssr70bc8l2hmjn56mnpbpgr9dizn40-stdenv-linux.drv","scope":"build"},{"id":"pkg-fb7366ea1fbc","name":"zlib","version":"1.3.2","licenses":["Zlib"],"ref":"/nix/store/i8p91had6cfdr9mlknyv7m7akfdsllfg-zlib-1.3.2.drv","scope":"build"}],"edges":[{"source":"pkg-3c253d17c343","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-3f45ed50318e","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-4b27ac5affdb","target":"pkg-bb72fdfc50b2","scope":"runtime"},{"source":"pkg-55a7af3204c8","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-921eb3510c3d","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-921eb3510c3d","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-4b27ac5affdb","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-a34dc0932518","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-208df737e545","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-3565baeb6b53","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-399939707968","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-3c253d17c343","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-55a7af3204c8","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-5da281038516","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-6911562f71a5","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-764b1214619d","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-7d89fa71c040","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-8c98e9d6c884","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-b5a1649674d0","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-de8a6a7e1364","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-f510466e69a0","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-fb7366ea1fbc","scope":"build"},{"source":"pkg-b5a1649674d0","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-b5a1649674d0","target":"pkg-a69c86a0f388","scope":"runtime"}],"runtime_count":13,"build_count":918,"build_edges":4660,"views":{"runtime":{"root":"pkg-a8dbb63e3657","nodes":[{"id":"pkg-a8dbb63e3657","name":"psi","version":"0.2.0","licenses":["MIT"],"ref":"/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv","scope":"runtime"},{"id":"pkg-3c253d17c343","name":"argtable","version":"3.3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/vga7yy636kjk44jrl66zk2ijpk2j1bln-argtable-3.3.1.drv","scope":"runtime"},{"id":"pkg-55a7af3204c8","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/k2b3kfciqbr28np060h7089daayrp9j4-cjson-1.7.19.drv","scope":"runtime"},{"id":"pkg-8c98e9d6c884","name":"curl","version":"8.22.0","licenses":["curl"],"ref":"/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv","scope":"runtime"},{"id":"pkg-a69c86a0f388","name":"glibc","version":"2.42-84","licenses":["LGPL-2.0-or-later"],"ref":"/nix/store/sayi2sas6kn7q181jy7ic8h8hy2jiqn7-glibc-2.42-84.drv","scope":"runtime"},{"id":"pkg-5da281038516","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/i3859vh7aavv629nhh5gx297k11wgxbw-libedit-20260508-3.1.drv","scope":"runtime"},{"id":"pkg-4b27ac5affdb","name":"libidn2","version":"2.3.8","licenses":["GPL-2.0-or-later","GPL-3.0-or-later","LGPL-3.0-or-later"],"ref":"/nix/store/w9dasq0vml1ampyrl329c8p623cxmspw-libidn2-2.3.8.drv","scope":"runtime"},{"id":"pkg-bb72fdfc50b2","name":"libunistring","version":"1.4.2","licenses":["LGPL-3.0-or-later"],"ref":"/nix/store/mr7xnk9g5qd6awp2xy913phrbp83bh49-libunistring-1.4.2.drv","scope":"runtime"},{"id":"pkg-b5a1649674d0","name":"lua","version":"5.5.0","licenses":["MIT"],"ref":"/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv","scope":"runtime"},{"id":"pkg-921eb3510c3d","name":"mbedtls","version":"3.6.7","licenses":["Apache-2.0","GPL-2.0-or-later"],"ref":"/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv","scope":"runtime"},{"id":"pkg-3f45ed50318e","name":"ncurses","version":"6.6","licenses":["MIT"],"ref":"/nix/store/nklz0i5v4yss7dypw7qqm2xl4iiw4p8g-ncurses-6.6.drv","scope":"runtime"},{"id":"pkg-8e683176d3a1","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv","scope":"runtime"},{"id":"pkg-a34dc0932518","name":"xgcc","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv","scope":"runtime"}],"edges":[{"source":"pkg-3c253d17c343","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-3f45ed50318e","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-4b27ac5affdb","target":"pkg-bb72fdfc50b2","scope":"runtime"},{"source":"pkg-55a7af3204c8","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-921eb3510c3d","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-921eb3510c3d","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-4b27ac5affdb","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-a34dc0932518","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-3c253d17c343","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-55a7af3204c8","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-5da281038516","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-8c98e9d6c884","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-b5a1649674d0","scope":"runtime"},{"source":"pkg-b5a1649674d0","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-b5a1649674d0","target":"pkg-a69c86a0f388","scope":"runtime"}]},"build":{"root":"pkg-a8dbb63e3657","nodes":[{"id":"pkg-a8dbb63e3657","name":"psi","version":"0.2.0","licenses":["MIT"],"ref":"/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv","scope":"runtime"},{"id":"pkg-399939707968","name":"bash","version":"5.3p15","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/s3s5s80y5sq8fvxivxxz3bqfpyhx8cb4-bash-5.3p15.drv","scope":"build"},{"id":"pkg-f510466e69a0","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/w0g6hwxkdv9y8fzh7w3aq5adwnf8mfx9-cjson-1.7.19.drv","scope":"build"},{"id":"pkg-7d89fa71c040","name":"gcc-wrapper","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/lyb848yjq8pnlwkqnzlnkvjzqa4cvaqh-gcc-wrapper-15.3.0.drv","scope":"build"},{"id":"pkg-208df737e545","name":"gnumake","version":"4.4.1","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/0hw4dy0k3b0jpm1h944arm44rnp57xp7-gnumake-4.4.1.drv","scope":"build"},{"id":"pkg-764b1214619d","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/nzmha5s1p11m6cqy8f5glac7v8sn0jbn-libedit-20260508-3.1.drv","scope":"build"},{"id":"pkg-6911562f71a5","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4l57kqgxxv4gra88g30f8maycrvbx5dc-nss-cacert-3.126.drv","scope":"build"},{"id":"pkg-3565baeb6b53","name":"pkg-config-wrapper","version":"0.29.2","licenses":["GPL-2.0-or-later"],"ref":"/nix/store/4f4faayl06s0gvr7cnvcpvrcwh7lxaan-pkg-config-wrapper-0.29.2.drv","scope":"build"},{"id":"pkg-de8a6a7e1364","name":"stdenv-linux","version":"26.05pre-git","licenses":["MIT"],"ref":"/nix/store/r5ssr70bc8l2hmjn56mnpbpgr9dizn40-stdenv-linux.drv","scope":"build"},{"id":"pkg-fb7366ea1fbc","name":"zlib","version":"1.3.2","licenses":["Zlib"],"ref":"/nix/store/i8p91had6cfdr9mlknyv7m7akfdsllfg-zlib-1.3.2.drv","scope":"build"}],"edges":[{"source":"pkg-a8dbb63e3657","target":"pkg-208df737e545","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-3565baeb6b53","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-399939707968","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-6911562f71a5","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-764b1214619d","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-7d89fa71c040","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-de8a6a7e1364","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-f510466e69a0","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-fb7366ea1fbc","scope":"build"}]},"both":{"root":"pkg-a8dbb63e3657","nodes":[{"id":"pkg-a8dbb63e3657","name":"psi","version":"0.2.0","licenses":["MIT"],"ref":"/nix/store/x5mbxkrski5nvsk7fygk9a2b3dzdqzwj-psi-0.2.0.drv","scope":"runtime"},{"id":"pkg-3c253d17c343","name":"argtable","version":"3.3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/vga7yy636kjk44jrl66zk2ijpk2j1bln-argtable-3.3.1.drv","scope":"runtime"},{"id":"pkg-55a7af3204c8","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/k2b3kfciqbr28np060h7089daayrp9j4-cjson-1.7.19.drv","scope":"runtime"},{"id":"pkg-8c98e9d6c884","name":"curl","version":"8.22.0","licenses":["curl"],"ref":"/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv","scope":"runtime"},{"id":"pkg-a69c86a0f388","name":"glibc","version":"2.42-84","licenses":["LGPL-2.0-or-later"],"ref":"/nix/store/sayi2sas6kn7q181jy7ic8h8hy2jiqn7-glibc-2.42-84.drv","scope":"runtime"},{"id":"pkg-5da281038516","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/i3859vh7aavv629nhh5gx297k11wgxbw-libedit-20260508-3.1.drv","scope":"runtime"},{"id":"pkg-4b27ac5affdb","name":"libidn2","version":"2.3.8","licenses":["GPL-2.0-or-later","GPL-3.0-or-later","LGPL-3.0-or-later"],"ref":"/nix/store/w9dasq0vml1ampyrl329c8p623cxmspw-libidn2-2.3.8.drv","scope":"runtime"},{"id":"pkg-bb72fdfc50b2","name":"libunistring","version":"1.4.2","licenses":["LGPL-3.0-or-later"],"ref":"/nix/store/mr7xnk9g5qd6awp2xy913phrbp83bh49-libunistring-1.4.2.drv","scope":"runtime"},{"id":"pkg-b5a1649674d0","name":"lua","version":"5.5.0","licenses":["MIT"],"ref":"/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv","scope":"runtime"},{"id":"pkg-921eb3510c3d","name":"mbedtls","version":"3.6.7","licenses":["Apache-2.0","GPL-2.0-or-later"],"ref":"/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv","scope":"runtime"},{"id":"pkg-3f45ed50318e","name":"ncurses","version":"6.6","licenses":["MIT"],"ref":"/nix/store/nklz0i5v4yss7dypw7qqm2xl4iiw4p8g-ncurses-6.6.drv","scope":"runtime"},{"id":"pkg-8e683176d3a1","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4gy3qj5xycy38vx5ynz85dyg6c5xp1pj-nss-cacert-3.126.drv","scope":"runtime"},{"id":"pkg-a34dc0932518","name":"xgcc","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv","scope":"runtime"},{"id":"pkg-399939707968","name":"bash","version":"5.3p15","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/s3s5s80y5sq8fvxivxxz3bqfpyhx8cb4-bash-5.3p15.drv","scope":"build"},{"id":"pkg-f510466e69a0","name":"cjson","version":"1.7.19","licenses":["MIT"],"ref":"/nix/store/w0g6hwxkdv9y8fzh7w3aq5adwnf8mfx9-cjson-1.7.19.drv","scope":"build"},{"id":"pkg-7d89fa71c040","name":"gcc-wrapper","version":"15.3.0","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/lyb848yjq8pnlwkqnzlnkvjzqa4cvaqh-gcc-wrapper-15.3.0.drv","scope":"build"},{"id":"pkg-208df737e545","name":"gnumake","version":"4.4.1","licenses":["GPL-3.0-or-later"],"ref":"/nix/store/0hw4dy0k3b0jpm1h944arm44rnp57xp7-gnumake-4.4.1.drv","scope":"build"},{"id":"pkg-764b1214619d","name":"libedit","version":"20260508-3.1","licenses":["BSD-3-Clause"],"ref":"/nix/store/nzmha5s1p11m6cqy8f5glac7v8sn0jbn-libedit-20260508-3.1.drv","scope":"build"},{"id":"pkg-6911562f71a5","name":"nss-cacert","version":"3.126","licenses":["MPL-2.0"],"ref":"/nix/store/4l57kqgxxv4gra88g30f8maycrvbx5dc-nss-cacert-3.126.drv","scope":"build"},{"id":"pkg-3565baeb6b53","name":"pkg-config-wrapper","version":"0.29.2","licenses":["GPL-2.0-or-later"],"ref":"/nix/store/4f4faayl06s0gvr7cnvcpvrcwh7lxaan-pkg-config-wrapper-0.29.2.drv","scope":"build"},{"id":"pkg-de8a6a7e1364","name":"stdenv-linux","version":"26.05pre-git","licenses":["MIT"],"ref":"/nix/store/r5ssr70bc8l2hmjn56mnpbpgr9dizn40-stdenv-linux.drv","scope":"build"},{"id":"pkg-fb7366ea1fbc","name":"zlib","version":"1.3.2","licenses":["Zlib"],"ref":"/nix/store/i8p91had6cfdr9mlknyv7m7akfdsllfg-zlib-1.3.2.drv","scope":"build"}],"edges":[{"source":"pkg-3c253d17c343","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-3f45ed50318e","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-4b27ac5affdb","target":"pkg-bb72fdfc50b2","scope":"runtime"},{"source":"pkg-55a7af3204c8","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-5da281038516","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-921eb3510c3d","scope":"runtime"},{"source":"pkg-8c98e9d6c884","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-921eb3510c3d","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-4b27ac5affdb","scope":"runtime"},{"source":"pkg-a69c86a0f388","target":"pkg-a34dc0932518","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-208df737e545","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-3565baeb6b53","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-399939707968","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-3c253d17c343","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-55a7af3204c8","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-5da281038516","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-6911562f71a5","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-764b1214619d","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-7d89fa71c040","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-8c98e9d6c884","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-8e683176d3a1","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-a69c86a0f388","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-b5a1649674d0","scope":"runtime"},{"source":"pkg-a8dbb63e3657","target":"pkg-de8a6a7e1364","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-f510466e69a0","scope":"build"},{"source":"pkg-a8dbb63e3657","target":"pkg-fb7366ea1fbc","scope":"build"},{"source":"pkg-b5a1649674d0","target":"pkg-3f45ed50318e","scope":"runtime"},{"source":"pkg-b5a1649674d0","target":"pkg-a69c86a0f388","scope":"runtime"}]}}}</script>
     </section>
     <!-- dependency-graph:end -->
     <section class="portability-section" id="portability"><div class="wrap portability-inner">
