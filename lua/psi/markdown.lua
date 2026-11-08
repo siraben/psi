@@ -1,14 +1,5 @@
--- psi.markdown: pure-Lua markdown token renderer.
---
--- Two entry points:
---   M.render(text)      whole-string; returns ANSI-styled text.
---   M.new_stream()      stateful; feed(chunk) emits styled completed
---                       lines, flush() emits any trailing partial line.
---
--- Streaming design: we buffer characters until newline, then style
--- that line as a unit. Partial lines stay invisible until \n arrives.
--- This is simple and never restyles already-emitted output; the cost
--- is that single long paragraph deltas only paint on line boundaries.
+-- Whole-string and line-based ANSI markdown rendering.
+-- Streams emit completed lines; flush emits the trailing partial line.
 
 local ansi = require("psi.ansi")
 local glyphs = require("psi.glyphs")
@@ -308,31 +299,32 @@ end
 
 -- ---------- public API ----------
 
--- Render one plain (non-ANSI) wrapped display line with the given
--- fence flag. The TUI drawer calls this per wrapped line; fence
--- state is tracked across wrapped lines by the TUI's build path
--- (see psi_tui_render_wrapped) rather than here.
---
--- Memoisation: each TUI repaint runs every visible wrapped line
--- through here. Under a running stream the viewport is repainted
--- at ~20 Hz for ~40 lines — most of them unchanged between
--- frames. Caching by (fence, text) is a big win on slow hosts
--- (~50× on iSH/i686) and free on fast ones. The cache grows until
--- it hits CACHE_MAX, at which point we blow it away and start
--- over; simpler than implementing LRU, and the entry set is
--- small (one entry per distinct wrapped line currently in
--- memory).
+-- Cache styled wrapped lines only within the current rendering environment.
 local cache = {}
 local cache_size = 0
 local CACHE_MAX = 4096
+local cache_style = {}
 
--- Exposed for tests and /reload handlers that want a clean slate.
 function M.clear_render_cache()
   cache = {}
   cache_size = 0
 end
 
 function M.render_line(line, in_code_fence)
+  if
+    cache_style.generation ~= ansi.generation()
+    or cache_style.ansi ~= ansi.enabled
+    or cache_style.color ~= ansi.color_enabled
+    or cache_style.unicode ~= glyphs.enabled
+  then
+    M.clear_render_cache()
+    cache_style = {
+      generation = ansi.generation(),
+      ansi = ansi.enabled,
+      color = ansi.color_enabled,
+      unicode = glyphs.enabled,
+    }
+  end
   line = line or ""
   local key = (in_code_fence and "1|" or "0|") .. line
   local hit = cache[key]
