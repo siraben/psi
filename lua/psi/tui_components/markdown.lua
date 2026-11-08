@@ -642,6 +642,7 @@ local function render_component(self, width)
     and self.cache_text == self.text
     and self.cache_prefix_first == self.prefix_first
     and self.cache_prefix_rest == self.prefix_rest
+    and self.cache_unicode == glyphs.enabled
   then
     return self.cache_lines
   end
@@ -650,6 +651,7 @@ local function render_component(self, width)
   self.cache_text = self.text
   self.cache_prefix_first = self.prefix_first
   self.cache_prefix_rest = self.prefix_rest
+  self.cache_unicode = glyphs.enabled
   self.cache_lines = lines
   return lines
 end

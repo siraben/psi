@@ -17,4 +17,9 @@ local out = {}
 for _, line in ipairs(lines or {}) do
   out[#out + 1] = line
 end
+local component = Markdown.new({ text = "| a | b |\n| --- | --- |\n| 1 | 2 |" })
+glyphs.set_enabled(true)
+assert(table.concat(component:render(40), "\n"):find("┌", 1, true))
+glyphs.set_enabled(false)
+assert(not table.concat(component:render(40), "\n"):find("┌", 1, true))
 return table.concat(out, "|")
