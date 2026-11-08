@@ -113,9 +113,9 @@ const dependencySection = document.getElementById('dependencies');
 if (dependencySection) {
   const graph = JSON.parse(document.getElementById('dependency-data').textContent);
   const packages = new Map(graph.nodes.map(node => [node.id, node]));
-  let activeGraph = graph.views.both;
+  let activeGraph = graph.views.runtime;
   let selectedPackage = null;
-  const enabledScopes = new Set(['runtime', 'build']);
+  const enabledScopes = new Set(['runtime']);
   const reset = dependencySection.querySelector('.dependency-reset');
   const relations = dependencySection.querySelector('.dependency-relations');
   const selectPackage = id => {
