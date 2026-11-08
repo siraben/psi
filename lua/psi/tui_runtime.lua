@@ -69,6 +69,8 @@ local TUI_CONST = {
 -- additional helpers must live on this table, not as top-level locals.
 local chat = { FRAME = "frame", CHAT = "chat" }
 chat.paste = require("psi.tui_editor_paste")
+chat.clipboard = require("psi.clipboard")
+chat.clipboard.image = require("psi.clipboard_image")
 chat.startup = require("psi.tui_startup")
 chat.theme = require("psi.theme")
 chat.glyphs = require("psi.glyphs")
@@ -5150,6 +5152,43 @@ local function submit(state, queue_kind)
   state.dirty = true
 end
 
+function chat.read_clipboard(state, reader)
+  if state.clipboard_reading then
+    return nil
+  end
+  state.clipboard_reading = true
+  local input, cursor, mode = state.input, state.cursor, state.editor_mode
+  local previous = {
+    busy = state.busy,
+    kind = state.busy_kind,
+    label = state.busy_label,
+    phase = state.busy_phase,
+    started = state.busy_started_at,
+  }
+  if not previous.busy then
+    psi.abort_reset()
+    state.busy, state.busy_kind = true, "clipboard"
+    state.busy_label, state.busy_started_at = "reading clipboard", os.time()
+  end
+  local ok, value, backend, detail = pcall(require("psi.sched").run, reader)
+  if not previous.busy then
+    state.busy, state.busy_kind = previous.busy, previous.kind
+    state.busy_label, state.busy_phase = previous.label, previous.phase
+    state.busy_started_at = previous.started
+  end
+  state.clipboard_reading, state.dirty = nil, true
+  if
+    not ok
+    or psi.is_aborted()
+    or state.input ~= input
+    or state.cursor ~= cursor
+    or state.editor_mode ~= mode
+  then
+    return nil
+  end
+  return value, backend, detail
+end
+
 local function apply_action(state, action, arg)
   if action == nil or action == "" or action == "noop" then
     state.pending_key = nil
@@ -5174,6 +5213,42 @@ local function apply_action(state, action, arg)
     end
     state.editor_mode = "insert"
     insert_text(state, arg or "")
+    return
+  end
+  if action == "clipboard-paste" then
+    local clipboard = chat.clipboard
+    local image_reader = state.clipboard_image_reader or clipboard.image.read_system
+    local reader = state.clipboard_reader or clipboard.read_system
+    local captured
+    local value, kind = chat.read_clipboard(state, function()
+      local context = {}
+      -- Shell drafts paste text; image paths belong to model prompts.
+      if state.input:sub(1, 1) ~= "!" then
+        local ok, path = pcall(image_reader, context)
+        if ok and type(path) == "string" and path ~= "" then
+          captured = path
+          return path, "image"
+        end
+      end
+      return reader(context), "text"
+    end)
+    if kind == "image" then
+      if value:find("[%c]") then
+        os.remove(value)
+        chat.flush_clipboard_keys(state)
+        return
+      end
+      local path = value:find("[%s\"']") and psi.json_encode(value) or value
+      local before = state.input:sub(1, state.cursor)
+      local after = state.input:sub(state.cursor + 1)
+      path = (before:match("%S$") and " " or "") .. path .. (after:match("^%S") and " " or "")
+      insert_text(state, path, true)
+    elseif captured then
+      os.remove(captured)
+    elseif type(value) == "string" and value ~= "" then
+      insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(value)), true)
+    end
+    chat.flush_clipboard_keys(state)
     return
   end
   if action == "submit" then
@@ -5588,7 +5663,10 @@ local function apply_action(state, action, arg)
 end
 
 function chat.normalize_pasted_text(text)
-  return tui_text.normalize_line_endings(text):gsub("\t", "    ")
+  return tui_text
+    .normalize_line_endings(text)
+    :gsub("\t", "    ")
+    :gsub("[%z\1-\8\11\12\14-\31\127]", "")
 end
 
 local function handle_key_event(state, event)
@@ -5597,6 +5675,14 @@ local function handle_key_event(state, event)
   end
   if event.key == "resize" then
     state.dirty = true
+    return
+  end
+  if state.clipboard_reading then
+    state.clipboard_keys = state.clipboard_keys or {}
+    state.clipboard_keys[#state.clipboard_keys + 1] = event
+    if event.key == "escape" or event.key == "ctrl-c" then
+      psi.abort_trigger()
+    end
     return
   end
   if event.key ~= "up" and event.key ~= "down" then
@@ -5741,6 +5827,21 @@ local function handle_key_event(state, event)
     return
   end
   apply_action(state, result.action, result.arg)
+end
+
+function chat.flush_clipboard_keys(state)
+  if state.clipboard_flushing then
+    return
+  end
+  state.clipboard_flushing = true
+  local keys = state.clipboard_keys or {}
+  state.clipboard_keys = keys
+  local i = 1
+  while keys[i] do
+    handle_key_event(state, keys[i])
+    i = i + 1
+  end
+  state.clipboard_keys, state.clipboard_flushing = nil, nil
 end
 
 local function tick(state)
@@ -6555,6 +6656,10 @@ function M._debug_edit_keys(input, cursor, events, apply_startup_hooks, debug_op
     selection_anchor = nil,
     selection_kind = nil,
     clipboard = "",
+    clipboard_image_reader = debug_options.clipboard_image_reader or function()
+      return nil
+    end,
+    clipboard_reader = debug_options.clipboard_reader,
     clipboard_writers_disabled = debug_options.clipboard_writers ~= true,
     pending_key = nil,
     block_edit = nil,
