@@ -1,7 +1,6 @@
 local agent = require("psi.agent_session")
 local agent_runtime = require("psi.agent_session_runtime")
 local ansi = require("psi.ansi")
-local clipboard = require("psi.clipboard")
 local commands = require("psi.slash_commands")
 local markdown = require("psi.markdown")
 local prelude = require("psi.prelude")
@@ -70,6 +69,7 @@ local TUI_CONST = {
 -- additional helpers must live on this table, not as top-level locals.
 local chat = { FRAME = "frame", CHAT = "chat" }
 chat.paste = require("psi.tui_editor_paste")
+chat.clipboard = require("psi.clipboard")
 chat.startup = require("psi.tui_startup")
 chat.theme = require("psi.theme")
 chat.thinking = require("psi.thinking")
@@ -5164,7 +5164,7 @@ local function apply_action(state, action, arg)
     return
   end
   if action == "clipboard-paste" then
-    local reader = state.clipboard_reader or clipboard.read_system
+    local reader = state.clipboard_reader or chat.clipboard.read_system
     local text = chat.read_clipboard(state, reader)
     if type(text) == "string" and text ~= "" then
       insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(text)), true)

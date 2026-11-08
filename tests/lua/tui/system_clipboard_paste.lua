@@ -1,6 +1,7 @@
 --[==[psi-test
 expect = "aX\nY    Zb|9||ab|1||a|0|aQb|2|visual|block|0"
 ]==]
+assert(load("local _runtime_headroom = false\n" .. psi.embedded_source("psi.tui_runtime")))
 local rt = require("psi.tui_runtime")
 
 local pasted = rt._debug_edit_keys("ab", 1, { { key = "ctrl-v" } }, false, {
