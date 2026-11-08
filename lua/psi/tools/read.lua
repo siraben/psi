@@ -9,6 +9,7 @@ local mime = require("psi.mime")
 local text_decode = require("psi.text_decode")
 local truncate = require("psi.truncate")
 local base64 = require("psi.base64")
+local capabilities = require("psi.provider_capabilities")
 
 local TEXT_READ_MAX_BYTES = truncate.DEFAULT_MAX_BYTES
 local INLINE_IMAGE_RAW_LIMIT_BYTES = image_policy.INLINE_RAW_LIMIT_BYTES
@@ -34,23 +35,7 @@ local function model_supports_images(meta)
   if type(meta) ~= "table" or type(meta.model) ~= "string" or meta.model == "" then
     return nil
   end
-  local id = meta.model
-  if type(meta.provider) == "string" and meta.provider ~= "" and not id:match("^[^/]+/") then
-    id = meta.provider .. "/" .. id
-  end
-
-  local ok, api_registry = pcall(require, "psi.api_registry")
-  local model = ok and api_registry and api_registry.model and api_registry.model(id) or nil
-  local input = type(model) == "table" and model.input or nil
-  if type(input) ~= "table" then
-    return nil
-  end
-  for _, modality in ipairs(input) do
-    if modality == "image" then
-      return true
-    end
-  end
-  return false
+  return capabilities.supports_images(meta.provider, meta.model)
 end
 
 local function image_read_limit_text()
@@ -259,7 +244,7 @@ local function impl(input, meta)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "read",
     description = "Read the contents of a file. Supports text files, images (jpg, png, gif, webp), and mode='bytes' for binary byte ranges rendered as hex/ascii. Images are sent as attachments when image reading is enabled. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete. Oversized images are omitted because psi does not auto-resize images.",
     prompt_snippet = "Read file contents",

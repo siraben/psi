@@ -186,7 +186,7 @@ local function impl(input, meta)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "grep",
     description = string.format(
       "Search file contents for a pattern and return matching lines with file paths and "

@@ -15,6 +15,8 @@ local notice = require("psi.notice")
 local tools = require("psi.tools")
 local transform = require("psi.transform_messages")
 
+local capabilities = require("psi.provider_capabilities")
+
 local M = {}
 
 local BASE_URL_ENV = "PSI_OPENAI_CODEX_BASE_URL"
@@ -90,28 +92,8 @@ local function split_tool_id(id)
   return tostring(id or ""), nil
 end
 
-local function codex_registry_id(model)
-  local id = tostring(model or "")
-  if id == "" or id:match("^openai%-codex/") then
-    return id
-  end
-  -- The provider loop passes bare Codex model slugs; the registry keys are provider-qualified.
-  return "openai-codex/" .. id
-end
-
 local function model_supports_images(model)
-  local ok, registry = pcall(require, "psi.api_registry")
-  local id = codex_registry_id(model)
-  local meta = ok and registry and registry.model and registry.model(id) or nil
-  local input = type(meta) == "table" and meta.input or nil
-  if type(input) == "table" then
-    for _, modality in ipairs(input) do
-      if modality == "image" then
-        return true
-      end
-    end
-  end
-  return false
+  return capabilities.supports_images("openai-codex", model) == true
 end
 
 local function response_input_from_session(session, _system_prompt, _cfg, model)

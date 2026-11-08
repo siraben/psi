@@ -63,7 +63,7 @@ return function()
     newText = helpers.schema_type("string"),
   }, { "oldText", "newText" })
 
-  helpers.register(registry, records, {
+  helpers.register({
     name = "edit",
     description = "Edit a single file using exact text replacement. Prefer small, precise edits over broad rewrites.",
     prompt_snippet = "Make precise file edits with exact text replacement, including multiple disjoint edits in one call",

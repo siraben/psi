@@ -166,7 +166,7 @@ local function impl(input, meta)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "find",
     description = string.format(
       "Find files by glob pattern relative to a directory. Output is truncated to "

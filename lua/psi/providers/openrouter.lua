@@ -15,6 +15,8 @@ local stream_parser = require("psi.stream_parser")
 local notice = require("psi.notice")
 local auth_storage = require("psi.auth_storage")
 
+local capabilities = require("psi.provider_capabilities")
+
 local M = {}
 
 local PROVIDER = "openrouter"
@@ -41,21 +43,7 @@ local function resolve_model(m)
 end
 
 local function model_supports_images(model)
-  local ok, registry = pcall(require, "psi.api_registry")
-  local meta = ok
-      and registry
-      and registry.model
-      and registry.model("openrouter/" .. tostring(model or ""))
-    or nil
-  local input = type(meta) == "table" and meta.input or nil
-  if type(input) == "table" then
-    for _, modality in ipairs(input) do
-      if modality == "image" then
-        return true
-      end
-    end
-  end
-  return false
+  return capabilities.supports_images("openrouter", model) == true
 end
 
 -- Auth-file entry (with $VAR/${VAR}/!command resolution) takes

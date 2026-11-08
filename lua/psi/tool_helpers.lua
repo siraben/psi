@@ -1,6 +1,8 @@
 -- psi.tool_helpers: shared helpers for built-in tool modules.
 
 local prelude = require("psi.prelude")
+local registry = require("psi.tool_registry")
+local records = require("psi.records")
 
 local M = {}
 
@@ -16,7 +18,7 @@ function M.schema_object(properties, required)
   }
 end
 
-function M.register(registry, records, spec)
+function M.register(spec)
   registry.register(
     records.new_tool(
       spec.name,
