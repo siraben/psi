@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Run inside the feature-matrix CI job. Reads MAKE_FLAGS and SMOKE_EXCLUDES
 # from the environment (passed via the workflow step's `env:` block), and
-# expects CI_BUILD_DIR to be set by .github/actions/setup.
+# requires an explicit build directory.
 
 set -euo pipefail
+
+: "${CI_BUILD_DIR:?CI_BUILD_DIR must name the build directory}"
+export MAKE_FLAGS="${MAKE_FLAGS:-}" SMOKE_EXCLUDES="${SMOKE_EXCLUDES:-}"
 
 # Variables are expanded by the inner bash inside the nix shell, not here.
 # shellcheck disable=SC2016
@@ -13,7 +16,7 @@ nix develop --command bash -euxo pipefail -c '
     read -r -a make_args <<< "$MAKE_FLAGS"
   fi
 
-  smoke_args=(--psi build/psi --no-live)
+  smoke_args=(--psi "$CI_BUILD_DIR/psi" --no-live)
   if [ -n "$SMOKE_EXCLUDES" ]; then
     IFS=, read -r -a excludes <<< "$SMOKE_EXCLUDES"
     for exclude in "${excludes[@]}"; do
