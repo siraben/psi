@@ -3,6 +3,7 @@
 local settings = require("psi.settings_manager")
 local base64 = require("psi.base64")
 local platform = require("psi.platform")
+local sched = require("psi.sched")
 
 local M = {}
 
@@ -86,7 +87,10 @@ local function read_backends(context)
   if env_nonempty(context, "TERMUX_VERSION") then
     backends[#backends + 1] = READ_CLIPBOARD_CMDS.termux
   end
-  if env_nonempty(context, "WAYLAND_DISPLAY") then
+  if
+    env_nonempty(context, "WAYLAND_DISPLAY")
+    or context_env(context, "XDG_SESSION_TYPE") == "wayland"
+  then
     backends[#backends + 1] = READ_CLIPBOARD_CMDS.wayland
   end
   if env_nonempty(context, "DISPLAY") then
@@ -97,6 +101,46 @@ local function read_backends(context)
   -- pbpaste succeeds there and simply fails on hosts where it is absent.
   backends[#backends + 1] = READ_CLIPBOARD_CMDS.macos
   return backends
+end
+
+local function capture_argv(argv, context)
+  local windows = context.is_windows
+  if windows == nil then
+    windows = platform.is_windows()
+  end
+  if windows then
+    if argv[1] ~= "powershell.exe" then
+      return nil
+    end
+    local bytes = {}
+    local function unit(cp)
+      bytes[#bytes + 1] = string.char(cp % 256, math.floor(cp / 256))
+    end
+    for _, cp in utf8.codes(argv[#argv]) do
+      if cp > 0xffff then
+        cp = cp - 0x10000
+        unit(0xd800 + math.floor(cp / 1024))
+        unit(0xdc00 + cp % 1024)
+      else
+        unit(cp)
+      end
+    end
+    return {
+      "cmd.exe",
+      "/d",
+      "/c",
+      "powershell.exe -NoProfile -NonInteractive -EncodedCommand " .. base64.encode(
+        table.concat(bytes)
+      ) .. " 2>NUL",
+    }
+  end
+  -- Keep the wrapper alive until the reader exits, including readers that
+  -- close stdout early. Only stdout is clipboard data.
+  local wrapped = { "sh", "-c", '"$@" 2>/dev/null; status=$?; exit "$status"', "psi-clipboard" }
+  for _, arg in ipairs(argv) do
+    wrapped[#wrapped + 1] = arg
+  end
+  return wrapped
 end
 
 local function default_read_runner(argv, context)
@@ -114,6 +158,10 @@ local function default_read_runner(argv, context)
     and type(psi.process_terminate) == "function"
     and type(psi.time_ms) == "function"
   then
+    argv = capture_argv(argv, context)
+    if not argv then
+      return { status = -1, output = "" }
+    end
     local handle = psi.process_begin_argv(argv)
     if handle == nil then
       return { status = -1, output = "", truncated = false }
@@ -127,7 +175,8 @@ local function default_read_runner(argv, context)
         pcall(psi.process_finish, handle)
         return { status = -1, output = "", truncated = false }
       end
-      local ok, _, done = pcall(psi.process_poll, handle, math.min(50, remaining))
+      local poll = sched.in_coroutine() and sched.proc_poll or psi.process_poll
+      local ok, _, done = pcall(poll, handle, math.min(50, remaining))
       if not ok then
         pcall(psi.process_terminate, handle)
         pcall(psi.process_finish, handle)
@@ -141,9 +190,6 @@ local function default_read_runner(argv, context)
         return { status = -1, output = "", truncated = false }
       end
     end
-  end
-  if type(psi.process_run_argv) == "function" then
-    return psi.process_run_argv(argv)
   end
   return { status = -1, output = "", truncated = false }
 end

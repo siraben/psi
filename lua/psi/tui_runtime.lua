@@ -5100,6 +5100,43 @@ local function submit(state, queue_kind)
   state.dirty = true
 end
 
+function chat.read_clipboard(state, reader)
+  if state.clipboard_reading then
+    return nil
+  end
+  state.clipboard_reading = true
+  local input, cursor, mode = state.input, state.cursor, state.editor_mode
+  local previous = {
+    busy = state.busy,
+    kind = state.busy_kind,
+    label = state.busy_label,
+    phase = state.busy_phase,
+    started = state.busy_started_at,
+  }
+  if not previous.busy then
+    psi.abort_reset()
+    state.busy, state.busy_kind = true, "clipboard"
+    state.busy_label, state.busy_started_at = "reading clipboard", os.time()
+  end
+  local ok, value, backend, detail = pcall(require("psi.sched").run, reader)
+  if not previous.busy then
+    state.busy, state.busy_kind = previous.busy, previous.kind
+    state.busy_label, state.busy_phase = previous.label, previous.phase
+    state.busy_started_at = previous.started
+  end
+  state.clipboard_reading, state.dirty = nil, true
+  if
+    not ok
+    or psi.is_aborted()
+    or state.input ~= input
+    or state.cursor ~= cursor
+    or state.editor_mode ~= mode
+  then
+    return nil
+  end
+  return value, backend, detail
+end
+
 local function apply_action(state, action, arg)
   if action == nil or action == "" or action == "noop" then
     state.pending_key = nil
@@ -5128,9 +5165,9 @@ local function apply_action(state, action, arg)
   end
   if action == "clipboard-paste" then
     local reader = state.clipboard_reader or clipboard.read_system
-    local ok, text = pcall(reader)
-    if ok and type(text) == "string" and text ~= "" then
-      insert_text(state, chat.normalize_pasted_text(text))
+    local text = chat.read_clipboard(state, reader)
+    if type(text) == "string" and text ~= "" then
+      insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(text)), true)
     end
     return
   end
@@ -5546,7 +5583,8 @@ local function apply_action(state, action, arg)
 end
 
 function chat.normalize_pasted_text(text)
-  return tui_text.normalize_line_endings(text)
+  return tui_text
+    .normalize_line_endings(text)
     :gsub("\t", "    ")
     :gsub("[%z\1-\8\11\12\14-\31\127]", "")
 end

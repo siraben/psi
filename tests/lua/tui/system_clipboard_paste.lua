@@ -38,6 +38,42 @@ local bracketed = rt._debug_edit_keys(
   }
 )
 
+local atomic = rt._debug_edit_keys(
+  "",
+  0,
+  {
+    { key = "text", text = "abc" },
+    { key = "ctrl-v" },
+    { key = "ctrl--" },
+  },
+  false,
+  {
+    clipboard_reader = function()
+      return "XYZ"
+    end,
+  }
+)
+assert(atomic.input == "abc", "clipboard paste is one undo operation")
+local large = string.rep("clipboard content\n", 100)
+local compact = rt._debug_edit_keys("", 0, { { key = "ctrl-v" } }, false, {
+  clipboard_reader = function()
+    return large
+  end,
+})
+assert(compact.input ~= large and compact.expanded_input == large)
+local tick, old_tick = 0, psi.host_tick
+psi.host_tick = function()
+  tick = tick + 1
+end
+rt._debug_edit_keys("", 0, { { key = "ctrl-v" } }, false, {
+  clipboard_reader = function()
+    require("psi.sched").yield_tick()
+    return "cooperative"
+  end,
+})
+psi.host_tick = old_tick
+assert(tick > 0)
+
 -- Vim owns Ctrl-V in normal/visual mode, while insert mode still falls
 -- through to the system clipboard action.
 local vim = require("psi.extensions.vim_keybindings")
