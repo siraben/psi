@@ -3,30 +3,17 @@
 
 #include "psi/common.h"
 
-/* Context shared between the agent loop and Lua FFI primitives.
- *
- * Each VM owns one host context (stored in the Lua state's extraspace).
- * The agent loop in anthropic.c stamps `active_observer` and
- * `active_tool_id` on it around each tool dispatch so FFI primitives
- * (psi.process_run, etc.) can stream progress back to the observer and
- * honor `abort_signal`. Outside of a dispatch, those three fields are
- * NULL. */
+/* Each VM owns one host context, reached through Lua state's extraspace.
+ * psi_vm_call_agent scopes the observer and abort signal to the Lua
+ * agent call; asynchronous tool progress carries an explicit tool ID. */
 
 struct psi_session;
 struct psi_vm;
 struct psi_agent_observer;
 struct psi_abort_signal;
 
-/* Usage-mirror for the TUI status line.
- *
- * Written by psi.set_usage() (from lua/psi/context.lua record_usage)
- * and read by psi.tui.status_line, both on the single main thread
- * that owns lua_State. The mirror predates the coroutine rewrite,
- * when a worker thread wrote and the main thread read concurrently —
- * the `volatile` qualifier protected against torn reads and
- * compiler reordering in that era. After the rewrite there is
- * exactly one thread touching these fields; `volatile` would only
- * cost us register keeping / constant folding. Plain `long`. */
+/* Usage mirror for the TUI status line. Lua and the renderer access it
+ * on the single main thread that owns lua_State. */
 struct psi_host_usage {
     long input;
     long output;

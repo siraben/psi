@@ -27,8 +27,8 @@ extern const int __hostos;
 #endif
 
 /* Process-global so the SIGINT handler can reach it without args.
- * TUI mode runs its own UI-thread/worker split and never routes Ctrl-C
- * through these hooks; only CLI modes install them. */
+ * TUI mode handles Ctrl-C through its terminal event loop instead;
+ * only CLI modes install these hooks. */
 static struct psi_abort_signal *g_print_abort = NULL;
 static struct sigaction g_prev_sigint_sa;
 static int g_sigint_installed = 0;
