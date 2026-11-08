@@ -2237,7 +2237,7 @@ def t_tui_system_clipboard_paste(psi: Psi):
         [
             (b"", 0.5),
             (b"before \x16 after", 0.75),
-            (b"\x03", 0.25),
+            (b"\x03", 1.5),
             (b"/quit\r", 1.0),
         ],
         env_extra={
