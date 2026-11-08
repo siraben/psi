@@ -2231,6 +2231,10 @@ def t_tui_system_clipboard_paste(psi: Psi):
     pbpaste = clipboard_bin / "pbpaste"
     pbpaste.write_text("#!/bin/sh\nprintf 'clipboard smoke'\n")
     pbpaste.chmod(0o755)
+    for name in ("osascript", "wl-paste", "xclip", "xsel", "powershell.exe", "termux-clipboard-get"):
+        helper = clipboard_bin / name
+        helper.write_text("#!/bin/sh\nexit 1\n")
+        helper.chmod(0o755)
 
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -2267,10 +2271,14 @@ def t_tui_system_clipboard_image_paste(psi: Psi):
         "printf 'ok\\n'\n"
     )
     osascript.chmod(0o755)
+    for name in ("wl-paste", "xclip", "pbpaste", "powershell.exe", "termux-clipboard-get"):
+        helper = clipboard_bin / name
+        helper.write_text("#!/bin/sh\nexit 1\n")
+        helper.chmod(0o755)
 
     raw = run_pty(
         [psi.binary, "--tui"],
-        [(b"", 0.5), (b"image: \x16", 0.75), (b"\x03", 0.25), (b"/quit\r", 1.0)],
+        [(b"", 0.5), (b"image: \x16", 0.75), (b"\x03", 1.5), (b"/quit\r", 1.0)],
         env_extra={
             "PATH": str(clipboard_bin) + os.pathsep + psi.env["PATH"],
             "TMPDIR": str(clipboard_tmp),

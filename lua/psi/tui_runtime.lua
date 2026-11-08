@@ -5184,6 +5184,7 @@ local function apply_action(state, action, arg)
     if kind == "image" then
       if value:find("[%c]") then
         os.remove(value)
+        chat.flush_clipboard_keys(state)
         return
       end
       local path = value:find("[%s\"']") and psi.json_encode(value) or value
