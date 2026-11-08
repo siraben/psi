@@ -6,13 +6,14 @@
 -- magic-sniffed, and renamed to the matching extension before it is exposed.
 
 local clipboard = require("psi.clipboard")
+local image_policy = require("psi.image_policy")
 local mime = require("psi.mime")
 local platform = require("psi.platform")
 
 local M = {}
 
 local DEFAULT_TIMEOUT_MS = 5000
-local MAX_IMAGE_BYTES = 16 * 1024 * 1024
+local MAX_IMAGE_BYTES = image_policy.INLINE_RAW_LIMIT_BYTES
 local MAX_CAPTURE_BYTES = MAX_IMAGE_BYTES + 1
 
 local SUPPORTED_MIMES = {
@@ -29,12 +30,12 @@ local EXTENSIONS = {
   ["image/gif"] = "gif",
 }
 
-local MACOS_SCRIPT = [[
+local MACOS_SCRIPT = ([[
 on run argv
   set outputPath to item 1 of argv
   try
     set imageData to the clipboard as «class PNGf»
-    if (length of imageData) > 16777216 then return "too-large"
+    if (length of imageData) > IMAGE_LIMIT then return "too-large"
     set fileRef to open for access POSIX file outputPath with write permission
     try
       set eof fileRef to 0
@@ -51,7 +52,7 @@ on run argv
     return "empty"
   end try
 end run
-]]
+]]):gsub("IMAGE_LIMIT", tostring(MAX_IMAGE_BYTES))
 
 local WINDOWS_SCRIPT = table.concat({
   "Add-Type -AssemblyName System.Windows.Forms",
@@ -62,7 +63,7 @@ local WINDOWS_SCRIPT = table.concat({
   "$stream = New-Object System.IO.MemoryStream",
   "try {",
   "$img.Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)",
-  "if ($stream.Length -gt 16777216) { exit 4 }",
+  "if ($stream.Length -gt " .. MAX_IMAGE_BYTES .. ") { exit 4 }",
   "[System.IO.File]::WriteAllBytes($path, $stream.ToArray())",
   "} finally { $stream.Dispose(); $img.Dispose() }",
 }, "; ")
@@ -235,7 +236,7 @@ end
 local function wayland_backends(context)
   local result = run_command({ "wl-paste", "--list-types" }, context)
   if not command_ok(result) then
-    return {}
+    return {}, false
   end
   local out = {}
   for _, target in ipairs(listed_mimes(result.output)) do
@@ -246,7 +247,7 @@ local function wayland_backends(context)
       mime_base = target.base,
     }
   end
-  return out
+  return out, true
 end
 
 local function xclip_backends(context)
@@ -257,8 +258,10 @@ local function xclip_backends(context)
       append_unique_mime(types, target.raw)
     end
   end
-  for _, mime_type in ipairs(SUPPORTED_MIMES) do
-    append_unique_mime(types, mime_type)
+  if not command_ok(result) then
+    for _, mime_type in ipairs(SUPPORTED_MIMES) do
+      append_unique_mime(types, mime_type)
+    end
   end
   local out = {}
   for _, target in ipairs(types) do
@@ -269,37 +272,19 @@ local function xclip_backends(context)
       mime_base = target.base,
     }
   end
-  return out
+  return out, command_ok(result)
 end
 
-local function image_backends(context)
-  local windows = context.is_windows
-  if windows == nil then
-    windows = platform.is_windows()
-  end
-  if windows then
-    return { { name = "powershell", kind = "windows", mime = "image/png" } }
-  end
-  if env_nonempty(context, "TERMUX_VERSION") then
-    return {}
-  end
-
-  local out = {}
-  local wayland = env_nonempty(context, "WAYLAND_DISPLAY")
-    or context_env(context, "XDG_SESSION_TYPE") == "wayland"
-  if wayland then
-    for _, backend in ipairs(wayland_backends(context)) do
-      out[#out + 1] = backend
+local function capture(backends, context)
+  local last_error
+  for _, backend in ipairs(backends) do
+    local path, name, mime_or_error = try_backend(backend, context)
+    if path then
+      return path, name, mime_or_error
     end
+    last_error = mime_or_error or last_error
   end
-  if wayland or env_nonempty(context, "DISPLAY") then
-    for _, backend in ipairs(xclip_backends(context)) do
-      out[#out + 1] = backend
-    end
-  end
-  -- Feature detection: osascript succeeds on macOS and fails elsewhere.
-  out[#out + 1] = { name = "osascript", kind = "macos", mime = "image/png" }
-  return out
+  return nil, last_error or "clipboard image unavailable"
 end
 
 function M.extension_for_mime(mime_type)
@@ -311,21 +296,39 @@ end
 -- the plain-text clipboard without changing editor state.
 function M.read_system(context)
   context = type(context) == "table" and context or {}
+  if image_policy.blocked() then
+    return nil, image_policy.DISABLED_TEXT
+  end
   if type(psi.time_ms) == "function" and context.deadline_ms == nil then
     local timeout_ms = tonumber(context.timeout_ms) or DEFAULT_TIMEOUT_MS
     context.deadline_ms = psi.time_ms() + math.max(1, timeout_ms)
   end
-  local last_error
-  for _, backend in ipairs(image_backends(context)) do
-    local path, name, mime_or_error = try_backend(backend, context)
-    if path ~= nil then
-      return path, name, mime_or_error
-    end
-    if mime_or_error ~= nil then
-      last_error = mime_or_error
+  local windows = context.is_windows
+  if windows == nil then
+    windows = platform.is_windows()
+  end
+  if windows then
+    return capture({ { name = "powershell", kind = "windows", mime = "image/png" } }, context)
+  end
+  if env_nonempty(context, "TERMUX_VERSION") then
+    return nil, "clipboard image unavailable"
+  end
+  local wayland = env_nonempty(context, "WAYLAND_DISPLAY")
+    or context_env(context, "XDG_SESSION_TYPE") == "wayland"
+  if wayland then
+    local backends, available = wayland_backends(context)
+    if available then
+      return capture(backends, context)
     end
   end
-  return nil, last_error or "clipboard image unavailable"
+  if wayland or env_nonempty(context, "DISPLAY") then
+    local backends, available = xclip_backends(context)
+    local path, name, detected = capture(backends, context)
+    if path or available then
+      return path, name, detected
+    end
+  end
+  return capture({ { name = "osascript", kind = "macos", mime = "image/png" } }, context)
 end
 
 M.MAX_IMAGE_BYTES = MAX_IMAGE_BYTES

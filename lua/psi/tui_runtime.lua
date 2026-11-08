@@ -5167,15 +5167,34 @@ local function apply_action(state, action, arg)
   if action == "clipboard-paste" then
     local clipboard = chat.clipboard
     local image_reader = state.clipboard_image_reader or clipboard.image.read_system
-    local image_ok, image_path = pcall(image_reader)
-    if image_ok and type(image_path) == "string" and image_path ~= "" then
-      insert_text(state, image_path)
-      return
-    end
     local reader = state.clipboard_reader or clipboard.read_system
-    local text = chat.read_clipboard(state, reader)
-    if type(text) == "string" and text ~= "" then
-      insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(text)), true)
+    local captured
+    local value, kind = chat.read_clipboard(state, function()
+      local context = {}
+      -- Shell drafts paste text; image paths belong to model prompts.
+      if state.input:sub(1, 1) ~= "!" then
+        local ok, path = pcall(image_reader, context)
+        if ok and type(path) == "string" and path ~= "" then
+          captured = path
+          return path, "image"
+        end
+      end
+      return reader(context), "text"
+    end)
+    if kind == "image" then
+      if value:find("[%c]") then
+        os.remove(value)
+        return
+      end
+      local path = value:find("[%s\"']") and psi.json_encode(value) or value
+      local before = state.input:sub(1, state.cursor)
+      local after = state.input:sub(state.cursor + 1)
+      path = (before:match("%S$") and " " or "") .. path .. (after:match("^%S") and " " or "")
+      insert_text(state, path, true)
+    elseif captured then
+      os.remove(captured)
+    elseif type(value) == "string" and value ~= "" then
+      insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(value)), true)
     end
     chat.flush_clipboard_keys(state)
     return

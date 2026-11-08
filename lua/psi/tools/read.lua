@@ -11,8 +11,7 @@ local truncate = require("psi.truncate")
 local base64 = require("psi.base64")
 
 local TEXT_READ_MAX_BYTES = truncate.DEFAULT_MAX_BYTES
-local INLINE_IMAGE_BASE64_LIMIT_BYTES = 4718592
-local INLINE_IMAGE_RAW_LIMIT_BYTES = math.floor(INLINE_IMAGE_BASE64_LIMIT_BYTES * 3 / 4)
+local INLINE_IMAGE_RAW_LIMIT_BYTES = image_policy.INLINE_RAW_LIMIT_BYTES
 local NON_VISION_IMAGE_NOTE =
   "[Current model does not support images. The image will be omitted from this request.]"
 

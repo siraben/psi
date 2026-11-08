@@ -226,11 +226,16 @@ psi> /apropos transcript               # everything matching a pattern
 Source of truth: `DEFINITIONS` in `lua/psi/keybindings.lua`.
 
 `app.clipboard.paste` defaults to Ctrl-V and prefers a supported image from the
-system clipboard, inserting its secure temporary path for the agent to read.
-When no image is available, it inserts plain text through Termux, Wayland, X11,
-macOS, or Windows PowerShell backends. Clipboard reads are best-effort and
-leave the editor unchanged when unavailable. Vim normal/visual mode retains
-Ctrl-V for visual-block selection.
+system clipboard, inserting a separated, quoted path for the agent to read.
+Captures use private temporary files and the read tool's 3.375 MiB inline-image
+limit. A successfully inspected clipboard owns the result; text-only Wayland
+content does not fall through to an older X11 image. Reads share a bounded,
+cancellable budget. Plain-text and shell-draft paste use the normal atomic paste
+path, including large-paste markers. Vim normal/visual mode retains Ctrl-V.
+
+Failed, cancelled, and discarded captures are removed. Successful captures remain
+in the temporary directory so undo, queued prompts, and session paths remain
+usable; delete them when no longer needed. System temporary-file cleanup applies.
 
 **CommandAction** (from `psi.records.new_command_action(kind, payload)`):
 ```lua

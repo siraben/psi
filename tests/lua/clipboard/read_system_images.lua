@@ -47,7 +47,7 @@ local x_path, x_backend, x_mime = image.read_system({
   is_windows = false,
   run_argv = function(argv)
     if argv[1] == "wl-paste" then
-      return { status = 0, output = "image/png\n" }
+      return { status = 1, output = "unavailable" }
     end
     if argv[1] == "xclip" and argv[5] == "TARGETS" then
       return { status = 0, output = "image/jpeg\n" }
@@ -137,6 +137,23 @@ local oversized_path = image.read_system({
   end,
 })
 
+assert(image.MAX_IMAGE_BYTES == require("psi.image_policy").INLINE_RAW_LIMIT_BYTES)
+local x11_probes = 0
+local owned = image.read_system({
+  env = { WAYLAND_DISPLAY = "wayland-0", DISPLAY = ":0" },
+  is_windows = false,
+  run_argv = function(argv)
+    if argv[1] == "wl-paste" then
+      return { status = 0, output = "text/plain\n" }
+    end
+    x11_probes = x11_probes + 1
+    return { status = 0, output = "image/jpeg\n" }
+  end,
+  run_image_backend = function()
+    error("text-only Wayland clipboard owns the result")
+  end,
+})
+assert(owned == nil and x11_probes == 0)
 local result = table.concat({
   way_backend,
   way_mime,
@@ -161,7 +178,7 @@ local result = table.concat({
   tostring(powershell_script:find("$path = '", 1, true) ~= nil),
   tostring(
     powershell_script:find("MemoryStream", 1, true) ~= nil
-      and powershell_script:find("$stream.Length -gt 16777216", 1, true) ~= nil
+      and powershell_script:find("$stream.Length -gt " .. image.MAX_IMAGE_BYTES, 1, true) ~= nil
   ),
 }, "|")
 

@@ -1,5 +1,5 @@
 --[==[psi-test
-expect = "a/tmp/capture.pngb|17|0|aTEXTb|5|1|afallbackb|9|1"
+expect = "a /tmp/capture.png b|19|0|aTEXTb|5|1|afallbackb|9|1"
 ]==]
 local rt = require("psi.tui_runtime")
 
@@ -36,6 +36,37 @@ local error_fallback = rt._debug_edit_keys("ab", 1, { { key = "ctrl-v" } }, fals
   end,
 })
 
+local repeated = rt._debug_edit_keys("", 0, { { key = "ctrl-v" }, { key = "ctrl-v" } }, false, {
+  clipboard_image_reader = function()
+    return "/tmp/image.png"
+  end,
+})
+assert(repeated.input == "/tmp/image.png /tmp/image.png")
+local undo = rt._debug_edit_keys("ab", 1, { { key = "ctrl-v" }, { key = "ctrl--" } }, false, {
+  clipboard_image_reader = function()
+    return "/tmp/screen shot.png"
+  end,
+})
+assert(undo.input == "ab")
+local path = TMP .. "/cancelled.png"
+assert(psi.file_write(path, "owned capture"))
+rt._debug_edit_keys("", 0, { { key = "ctrl-v" } }, false, {
+  clipboard_image_reader = function()
+    psi.abort_trigger()
+    return path
+  end,
+})
+psi.abort_reset()
+assert(not psi.file_exists(path), "discarded captures are removed")
+local shell = rt._debug_edit_keys("! ", 2, { { key = "ctrl-v" } }, false, {
+  clipboard_image_reader = function()
+    error("shell drafts must not capture images")
+  end,
+  clipboard_reader = function()
+    return "text"
+  end,
+})
+assert(shell.input == "! text")
 return table.concat({
   pasted_image.input,
   tostring(pasted_image.cursor),

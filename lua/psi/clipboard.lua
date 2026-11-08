@@ -125,14 +125,17 @@ local function capture_argv(argv, context)
         unit(cp)
       end
     end
-    return {
-      "cmd.exe",
-      "/d",
-      "/c",
-      "powershell.exe -NoProfile -NonInteractive -EncodedCommand " .. base64.encode(
-        table.concat(bytes)
-      ) .. " 2>NUL",
-    }
+    local command = { "powershell.exe" }
+    for i = 2, #argv - 2 do
+      local flag = argv[i]
+      if flag ~= "-NoProfile" and flag ~= "-NonInteractive" and flag ~= "-STA" then
+        return nil
+      end
+      command[#command + 1] = flag
+    end
+    command[#command + 1] = "-EncodedCommand"
+    command[#command + 1] = base64.encode(table.concat(bytes))
+    return { "cmd.exe", "/d", "/c", table.concat(command, " ") .. " 2>NUL" }
   end
   -- Keep the wrapper alive until the reader exits, including readers that
   -- close stdout early. Only stdout is clipboard data.
