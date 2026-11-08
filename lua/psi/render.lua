@@ -2,7 +2,7 @@
 
 local records = require("psi.records")
 local prelude = require("psi.prelude")
-local tool_execution = require("psi.tui_components.tool_execution")
+local tool_presentation = require("psi.tool_presentation")
 
 local M = {}
 
@@ -10,11 +10,7 @@ local M = {}
 
 local hooks = {}
 
--- Event catalog. The keys here are the names the hook-dispatch path
--- (modes.fire / handle_event) emits. Exposed via M.events() so
--- extensions can discover what's hookable without grep. Keep in sync
--- with docs/extensions.md §"Event catalog" and with the fire() sites
--- in psi.modes / psi.anthropic / psi.session.
+-- Extension-facing event catalog; keep in sync with docs/extensions.md.
 local event_catalog = {
   "before-turn",
   "assistant-text",
@@ -153,14 +149,14 @@ function M.render_tool_call(p)
   local tool = payload_tool(p)
   local id = payload_id(p)
   local frame = id and M.lookup_frame(id) or nil
-  return tool_block_leading() .. tool_execution.render_call(tool, payload_input(p), frame)
+  return tool_block_leading() .. tool_presentation.render_call(tool, payload_input(p), frame)
 end
 
 function M.render_tool_result(p)
   local tool = payload_tool(p)
   local id = payload_id(p)
   local frame = id and M.lookup_frame(id) or nil
-  return tool_execution.render_result(tool, payload_result(p), frame)
+  return tool_presentation.render_result(tool, payload_result(p), frame)
 end
 
 -- ---------- frame capture/release ----------

@@ -407,6 +407,7 @@ end
 local overrides = nil
 local resolved = nil
 local conflicts = nil
+local revision = 0
 
 local function merge(dst, src)
   for id, keys in pairs(src or {}) do
@@ -487,7 +488,12 @@ local function ensure_resolved()
   return resolved
 end
 
+function M.revision()
+  return revision
+end
+
 function M.reload()
+  revision = revision + 1
   overrides = load_overrides()
   resolved = nil
   conflicts = nil

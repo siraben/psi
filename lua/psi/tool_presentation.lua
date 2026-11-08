@@ -1,0 +1,618 @@
+-- Shared tool call/result presentation for event renderers and TUI components.
+
+local ansi = require("psi.ansi")
+local keybindings = require("psi.keybindings")
+local diff = require("psi.diff")
+local diff_presentation = require("psi.diff_presentation")
+local text = require("psi.tui_text")
+
+local M = {}
+
+local ESC = string.char(27)
+local RESET = ESC .. "[0m"
+
+M.BG_PENDING = "48;5;236"
+M.BG_SUCCESS = "48;5;22"
+M.BG_ERROR = "48;5;52"
+
+-- FG_TITLE pairs a bold weight with the theme text slot ("37") so that
+-- it flips with the active theme. pi renders toolTitle in the "text"
+-- color; a bare bold code would leave black text on light themes.
+local FG_TITLE = "1;37"
+local FG_ACCENT = "36"
+local FG_MUTED = "38;5;242"
+local FG_DIM = "90"
+local FG_WARNING = "33"
+local FG_ERROR = "31"
+
+local PREVIEW_READ = 10
+local PREVIEW_WRITE = 10
+local PREVIEW_BASH = 10
+local PREVIEW_GREP = 15
+local PREVIEW_LIST = 20
+local PREVIEW_GENERIC = 8
+
+local function fg(code, value)
+  return ansi.color(code, tostring(value or ""))
+end
+
+local function shorten_path(path)
+  if type(path) ~= "string" or path == "" then
+    return path
+  end
+  local home = os.getenv("HOME")
+  if home and home ~= "" and path:sub(1, #home) == home then
+    return "~" .. path:sub(#home + 1)
+  end
+  return path
+end
+
+local function sanitize_output(value)
+  local raw = text.strip_ansi(tostring(value or ""))
+  raw = raw:gsub("\r\n", "\n")
+  if raw:find("\r", 1, true) then
+    local out = {}
+    local line = {}
+    for i = 1, #raw do
+      local ch = raw:sub(i, i)
+      if ch == "\r" then
+        line = {}
+      elseif ch == "\n" then
+        out[#out + 1] = table.concat(line)
+        line = {}
+      else
+        line[#line + 1] = ch
+      end
+    end
+    out[#out + 1] = table.concat(line)
+    raw = table.concat(out, "\n")
+  end
+  raw = raw:gsub("[%z\001-\008\011\012\014-\031\127]", "")
+  return raw:gsub("\t", "   ")
+end
+
+local function sanitize_command(value)
+  local raw = text.strip_ansi(tostring(value or ""))
+  raw = raw:gsub("\r\n", "\n"):gsub("\r", "\n")
+  raw = raw:gsub("[%z\001-\008\011\012\014-\031\127]", function(ch)
+    return string.format("\\x%02X", ch:byte())
+  end)
+  return raw:gsub("\t", "   ")
+end
+
+local function split_lines(value)
+  local cleaned = sanitize_output(value)
+  if cleaned == "" then
+    return {}
+  end
+  local out = {}
+  for line in (cleaned .. "\n"):gmatch("(.-)\n") do
+    out[#out + 1] = line
+  end
+  while #out > 0 and out[#out] == "" do
+    out[#out] = nil
+  end
+  return out
+end
+
+local function line_count(value)
+  return #split_lines(value)
+end
+
+local function muted_line(value)
+  return fg(FG_MUTED, value)
+end
+
+local function dim_line(value)
+  return fg(FG_DIM, value)
+end
+
+local function warning_line(value)
+  return fg(FG_WARNING, value)
+end
+
+local function collapsed_hint(description)
+  local keys = {}
+  for _, key in ipairs(keybindings.keys("app.tools.expand")) do
+    keys[#keys + 1] = keybindings.key_display(key):lower():gsub("%-", "+")
+  end
+  local shortcut = table.concat(keys, "/")
+  if shortcut == "" then
+    return muted_line("... (" .. description .. ")")
+  end
+  return muted_line("... (" .. description .. ",")
+    .. " "
+    .. dim_line(shortcut)
+    .. muted_line(" to expand)")
+end
+
+local function preview_head(value, limit, show_total)
+  local src = split_lines(value)
+  local out = {}
+  local n = math.min(#src, limit)
+  for i = 1, n do
+    out[#out + 1] = muted_line(src[i])
+  end
+  if #src > limit then
+    local description = tostring(#src - limit) .. " more lines"
+    if show_total then
+      description = description .. ", " .. tostring(#src) .. " total"
+    end
+    out[#out + 1] = collapsed_hint(description)
+  end
+  return table.concat(out, "\n")
+end
+
+local function preview_tail(value, limit)
+  local src = split_lines(value)
+  local out = {}
+  local first = math.max(1, #src - limit + 1)
+  if first > 1 then
+    out[#out + 1] = collapsed_hint(tostring(first - 1) .. " earlier lines")
+  end
+  for i = first, #src do
+    out[#out + 1] = muted_line(src[i])
+  end
+  return table.concat(out, "\n")
+end
+
+local function append_warning(lines, message)
+  if type(message) == "string" and message ~= "" then
+    lines[#lines + 1] = warning_line(message)
+  end
+end
+
+local function result_warning_lines(result)
+  local out = {}
+  if result:get("entry_limit_reached") then
+    append_warning(out, "Result limit reached; output was clipped.")
+  end
+  if result:get("truncated") then
+    append_warning(out, "Output was truncated.")
+  end
+  local clipped = tonumber(result:get("lines_clipped"))
+  if clipped and clipped > 0 then
+    append_warning(out, tostring(clipped) .. " result lines were clipped.")
+  end
+  local temp_path = result:get("temp_file_path") or result:get("fullOutputPath")
+  if type(temp_path) == "string" and temp_path ~= "" then
+    append_warning(out, "Full output saved to " .. shorten_path(temp_path))
+  end
+  return out
+end
+
+local function bg_line(bg_code, line)
+  line = line or ""
+  if not ansi.enabled or not ansi.color_enabled then
+    return line
+  end
+  local bg = ESC .. "[" .. ansi.resolve(bg_code) .. "m"
+  line = line:gsub(ESC .. "%[0m", RESET .. bg)
+  return bg .. line .. RESET
+end
+
+local function split_styled_lines(value)
+  local rendered = tostring(value or "")
+  if rendered == "" then
+    return {}
+  end
+  if rendered:sub(-1) == "\n" then
+    rendered = rendered:sub(1, -2)
+  end
+  local out = {}
+  local cursor = 1
+  while true do
+    local nl = rendered:find("\n", cursor, true)
+    out[#out + 1] = nl and rendered:sub(cursor, nl - 1) or rendered:sub(cursor)
+    if not nl then
+      break
+    end
+    cursor = nl + 1
+  end
+  return out
+end
+
+local function box_block(bg_code, value, opts)
+  opts = opts or {}
+  local lines = split_styled_lines(value)
+  if #lines == 0 and not opts.force then
+    return ""
+  end
+  local out = {}
+  if opts.top ~= false then
+    out[#out + 1] = bg_line(bg_code, "")
+  end
+  for _, line in ipairs(lines) do
+    out[#out + 1] = bg_line(bg_code, " " .. line)
+  end
+  if opts.bottom ~= false then
+    out[#out + 1] = bg_line(bg_code, "")
+  end
+  return table.concat(out, "\n") .. "\n"
+end
+
+local function path_arg(input)
+  local raw = input and (input.path or input.file_path)
+  if type(raw) == "string" and raw ~= "" then
+    return raw
+  end
+  return nil
+end
+
+local function format_bash_call(input)
+  local command = sanitize_command(input.command or "")
+  local display = command ~= "" and command or fg(FG_MUTED, "...")
+  local line = fg(FG_TITLE, "$ " .. display)
+  local timeout = tonumber(input.timeout)
+  if timeout then
+    line = line .. fg(FG_MUTED, " (timeout " .. tostring(timeout) .. "s)")
+  end
+  return line
+end
+
+local function format_read_call(input)
+  local raw = path_arg(input)
+  local path = raw and shorten_path(raw) or nil
+  local shown = path and fg(FG_ACCENT, path) or fg(FG_MUTED, "...")
+  local offset = tonumber(input.offset)
+  local limit = tonumber(input.limit)
+  if offset ~= nil or limit ~= nil then
+    local start_line = offset or 1
+    local end_line = limit and (start_line + limit - 1) or nil
+    shown = shown
+      .. fg(
+        FG_WARNING,
+        ":" .. tostring(start_line) .. (end_line and ("-" .. tostring(end_line)) or "")
+      )
+  end
+  return fg(FG_TITLE, "read") .. " " .. shown
+end
+
+local function format_write_call(input, expanded)
+  local raw = path_arg(input)
+  local header = fg(FG_TITLE, "write")
+    .. " "
+    .. (raw and fg(FG_ACCENT, shorten_path(raw)) or fg(FG_MUTED, "..."))
+  local body =
+    preview_head(input.content or input.text, expanded and math.huge or PREVIEW_WRITE, true)
+  if body == "" then
+    return header
+  end
+  return header .. "\n\n" .. body
+end
+
+local function edit_preview(input, frame)
+  if not frame or type(frame.before_text) ~= "string" then
+    return nil
+  end
+  -- Preview styling is cached with the frame and its rendering inputs.
+  if
+    frame.preview_cache_input == input
+    and frame.preview_cache_before == frame.before_text
+    and frame.preview_cache_style == ansi.generation()
+    and frame.preview_cache_ansi == ansi.enabled
+    and frame.preview_cache_color == ansi.color_enabled
+  then
+    return frame.preview_cache_text, frame.preview_cache_bg
+  end
+  local edits = diff.edits_from_input(input)
+  if not edits then
+    return nil
+  end
+  local raw = path_arg(input)
+  local preview, err = diff.preview_edits(frame.before_text, edits, raw or frame.path or "")
+  frame.preview_cache_input = input
+  frame.preview_cache_before = frame.before_text
+  frame.preview_cache_style = ansi.generation()
+  frame.preview_cache_ansi = ansi.enabled
+  frame.preview_cache_color = ansi.color_enabled
+  if preview then
+    frame.preview_diff = preview.diff
+    frame.preview_error = nil
+    frame.preview_cache_text = diff_presentation.render_diff(preview.diff)
+    frame.preview_cache_bg = M.BG_SUCCESS
+  else
+    frame.preview_diff = nil
+    frame.preview_error = err
+    frame.preview_cache_text = fg(FG_ERROR, err or "edit preview failed")
+    frame.preview_cache_bg = M.BG_ERROR
+  end
+  return frame.preview_cache_text, frame.preview_cache_bg
+end
+
+local function format_edit_call(input, frame)
+  local raw = path_arg(input)
+  local header = fg(FG_TITLE, "edit")
+    .. " "
+    .. (raw and fg(FG_ACCENT, shorten_path(raw)) or fg(FG_MUTED, "..."))
+  local preview, bg = edit_preview(input, frame)
+  if preview and preview ~= "" then
+    return header .. "\n\n" .. preview, bg
+  end
+  return header, nil
+end
+
+local function format_grep_call(input)
+  local pattern = sanitize_output(input.pattern or "")
+  local raw_path = type(input.path) == "string" and input.path or "."
+  local path = shorten_path(raw_path ~= "" and raw_path or ".")
+  local out = fg(FG_TITLE, "grep")
+    .. " "
+    .. (pattern ~= "" and fg(FG_ACCENT, "/" .. pattern .. "/") or fg(FG_MUTED, "//"))
+    .. fg(FG_MUTED, " in " .. path)
+  if type(input.glob) == "string" and input.glob ~= "" then
+    out = out .. fg(FG_MUTED, " (" .. sanitize_output(input.glob) .. ")")
+  end
+  if tonumber(input.limit) ~= nil then
+    out = out .. fg(FG_MUTED, " limit " .. tostring(input.limit))
+  end
+  return out
+end
+
+local function format_find_call(input)
+  local pattern = sanitize_output(input.pattern or "")
+  local raw_path = type(input.path) == "string" and input.path or "."
+  local path = shorten_path(raw_path ~= "" and raw_path or ".")
+  local out = fg(FG_TITLE, "find")
+    .. " "
+    .. (pattern ~= "" and fg(FG_ACCENT, pattern) or fg(FG_MUTED, "..."))
+    .. fg(FG_MUTED, " in " .. path)
+  if tonumber(input.limit) ~= nil then
+    out = out .. fg(FG_MUTED, " (limit " .. tostring(input.limit) .. ")")
+  end
+  return out
+end
+
+local function format_ls_call(input)
+  local raw_path = type(input.path) == "string" and input.path or "."
+  local path = shorten_path(raw_path ~= "" and raw_path or ".")
+  local out = fg(FG_TITLE, "ls") .. " " .. fg(FG_ACCENT, path)
+  if tonumber(input.limit) ~= nil then
+    out = out .. fg(FG_MUTED, " (limit " .. tostring(input.limit) .. ")")
+  end
+  return out
+end
+
+local function format_lua_call(input)
+  local mode = type(input.mode) == "string" and input.mode or "summary"
+  local body = mode == "eval"
+      and type(input.expression) == "string"
+      and fg(FG_ACCENT, input.expression)
+    or fg(FG_MUTED, mode)
+  return fg(FG_TITLE, "lua") .. " " .. body
+end
+
+local function format_generic_call(tool, input)
+  local raw = path_arg(input)
+  if raw then
+    return fg(FG_TITLE, tool or "tool") .. " " .. fg(FG_ACCENT, shorten_path(raw))
+  end
+  local header = fg(FG_TITLE, tool or "tool")
+  local encoded = type(psi) == "table"
+      and type(psi.json_encode) == "function"
+      and psi.json_encode(input or {})
+    or ""
+  if encoded ~= "" and encoded ~= "{}" then
+    return header .. "\n\n" .. muted_line(encoded)
+  end
+  return header
+end
+
+local function format_call(tool, input, frame, expanded)
+  if tool == "bash" then
+    return format_bash_call(input)
+  end
+  if tool == "read" then
+    return format_read_call(input)
+  end
+  if tool == "write" then
+    return format_write_call(input, expanded)
+  end
+  if tool == "edit" then
+    return format_edit_call(input, frame)
+  end
+  if tool == "grep" then
+    return format_grep_call(input)
+  end
+  if tool == "find" then
+    return format_find_call(input)
+  end
+  if tool == "ls" then
+    return format_ls_call(input)
+  end
+  if tool == "lua" then
+    return format_lua_call(input)
+  end
+  return format_generic_call(tool, input)
+end
+
+local function append_preview(lines, value, limit)
+  local rendered = preview_head(value, limit)
+  if rendered ~= "" then
+    lines[#lines + 1] = rendered
+  end
+end
+
+local function append_tail_preview(lines, value, limit)
+  local rendered = preview_tail(value, limit)
+  if rendered ~= "" then
+    lines[#lines + 1] = rendered
+  end
+end
+
+local function append_elapsed(lines, frame, is_partial)
+  if not frame or not frame.started_ms then
+    return
+  end
+  local now = type(psi) == "table" and type(psi.time_ms) == "function" and psi.time_ms() or nil
+  if type(now) ~= "number" or now < frame.started_ms then
+    return
+  end
+  local label = is_partial and "Elapsed" or "Took"
+  lines[#lines + 1] = dim_line(string.format("%s %.1fs", label, (now - frame.started_ms) / 1000))
+end
+
+local function format_bash_result(result, frame, expanded, is_partial)
+  local lines = {}
+  append_tail_preview(lines, result:get("output"), expanded and math.huge or PREVIEW_BASH)
+  for _, warning in ipairs(result_warning_lines(result)) do
+    lines[#lines + 1] = warning
+  end
+  append_elapsed(lines, frame, is_partial)
+  if not result.ok and #lines == 0 then
+    lines[#lines + 1] = fg(FG_ERROR, "bash failed: " .. tostring(result.error or "unknown error"))
+  end
+  return table.concat(lines, "\n")
+end
+
+local function format_read_result(result, expanded)
+  if not result.ok then
+    return fg(FG_ERROR, "read failed: " .. tostring(result.error or "unknown error"))
+  end
+  local lines = {}
+  append_preview(lines, result:get("text"), expanded and math.huge or PREVIEW_READ)
+  for _, warning in ipairs(result_warning_lines(result)) do
+    lines[#lines + 1] = warning
+  end
+  if #lines == 0 then
+    lines[#lines + 1] = dim_line("(empty)")
+  end
+  return table.concat(lines, "\n")
+end
+
+local function format_search_result(tool, result, expanded)
+  if not result.ok then
+    return fg(FG_ERROR, tool .. " failed: " .. tostring(result.error or "unknown error"))
+  end
+  local limit = expanded and math.huge or (tool == "grep" and PREVIEW_GREP or PREVIEW_LIST)
+  local lines = {}
+  append_preview(lines, result:get("output"), limit)
+  for _, warning in ipairs(result_warning_lines(result)) do
+    lines[#lines + 1] = warning
+  end
+  if #lines == 0 then
+    lines[#lines + 1] = dim_line("(no matches)")
+  end
+  return table.concat(lines, "\n")
+end
+
+local function format_write_result(result)
+  if not result.ok then
+    return fg(FG_ERROR, "write failed: " .. tostring(result.error or "unknown error"))
+  end
+  return ""
+end
+
+local function format_edit_result(result, frame)
+  if not result.ok then
+    if frame and frame.preview_error and result.error == frame.preview_error then
+      return ""
+    end
+    return fg(FG_ERROR, "edit failed: " .. tostring(result.error or "unknown error"))
+  end
+  local result_diff = result:get("diff")
+  if type(result_diff) == "string" and result_diff ~= "" then
+    if frame and frame.preview_diff == result_diff then
+      return ""
+    end
+    return diff_presentation.render_diff(result_diff)
+  end
+  local path = result:get("path") or (frame and frame.path)
+  local repls = tonumber(result:get("replacements")) or 0
+  return dim_line(
+    "edited "
+      .. shorten_path(path or "")
+      .. " ("
+      .. tostring(repls)
+      .. (repls == 1 and " replacement)" or " replacements)")
+  )
+end
+
+local function format_lua_result(result, expanded)
+  if not result.ok then
+    return fg(FG_ERROR, "lua failed: " .. tostring(result.error or "unknown error"))
+  end
+  local value = result:get("result")
+  if type(value) ~= "string" or value == "" then
+    return dim_line("(no result)")
+  end
+  return preview_head(value, expanded and math.huge or PREVIEW_GENERIC)
+end
+
+local function format_generic_result(tool, result, expanded)
+  if not result.ok then
+    return fg(
+      FG_ERROR,
+      (tool or "tool") .. " failed: " .. tostring(result.error or "unknown error")
+    )
+  end
+  local value = result:get("output")
+  if type(value) ~= "string" or value == "" then
+    return dim_line("(ok)")
+  end
+  return preview_head(value, expanded and math.huge or PREVIEW_GENERIC)
+end
+
+local function format_result(tool, result, frame, expanded, is_partial)
+  if tool == "bash" then
+    return format_bash_result(result, frame, expanded, is_partial)
+  end
+  if tool == "read" then
+    return format_read_result(result, expanded)
+  end
+  if tool == "grep" or tool == "find" or tool == "ls" then
+    return format_search_result(tool, result, expanded)
+  end
+  if tool == "write" then
+    return format_write_result(result)
+  end
+  if tool == "edit" then
+    return format_edit_result(result, frame)
+  end
+  if tool == "lua" then
+    return format_lua_result(result, expanded)
+  end
+  return format_generic_result(tool, result, expanded)
+end
+
+M.format_call = format_call
+M.format_result = format_result
+M.bg_line = bg_line
+
+-- Event rendering retains the legacy 80-column tool block. Components choose
+-- their own width and keep their caches independently.
+function M.render_call(tool, input, frame)
+  input = type(input) == "table" and input or {}
+  local value = format_call(tool or "tool", input, frame, false) or ""
+  if value == "" or value:match("^%s*$") then
+    return "\n"
+  end
+  local lines = { bg_line(M.BG_PENDING, string.rep(" ", 80)) }
+  value = value:gsub("\t", "   ")
+  for source in (value .. "\n"):gmatch("(.-)\n") do
+    local wrapped = source == "" and { "" } or text.wrap_ansi(source, 78)
+    for _, line in ipairs(wrapped) do
+      lines[#lines + 1] = bg_line(M.BG_PENDING, text.pad_line(" " .. text.pad_line(line, 78), 80))
+    end
+  end
+  lines[#lines + 1] = bg_line(M.BG_PENDING, string.rep(" ", 80))
+  return table.concat(lines, "\n") .. "\n"
+end
+
+function M.render_result(tool, result, frame)
+  local body = format_result(tool, result, frame, false, false)
+  local bg = result.ok and M.BG_SUCCESS or M.BG_ERROR
+  if body == nil or body == "" then
+    if not result.ok then
+      return ""
+    end
+    body = dim_line(tostring(tool or "tool") .. " completed")
+  end
+  return box_block(bg, body, { top = false, bottom = true })
+end
+
+function M.output_line_count(value)
+  return line_count(value)
+end
+
+return M
