@@ -5169,6 +5169,7 @@ local function apply_action(state, action, arg)
     if type(text) == "string" and text ~= "" then
       insert_text(state, chat.paste.compact(state, chat.normalize_pasted_text(text)), true)
     end
+    chat.flush_clipboard_keys(state)
     return
   end
   if action == "submit" then
@@ -5597,6 +5598,14 @@ local function handle_key_event(state, event)
     state.dirty = true
     return
   end
+  if state.clipboard_reading then
+    state.clipboard_keys = state.clipboard_keys or {}
+    state.clipboard_keys[#state.clipboard_keys + 1] = event
+    if event.key == "escape" or event.key == "ctrl-c" then
+      psi.abort_trigger()
+    end
+    return
+  end
   if event.key ~= "up" and event.key ~= "down" then
     state.editor_preferred_col = nil
     state.editor_snapped_col = nil
@@ -5739,6 +5748,21 @@ local function handle_key_event(state, event)
     return
   end
   apply_action(state, result.action, result.arg)
+end
+
+function chat.flush_clipboard_keys(state)
+  if state.clipboard_flushing then
+    return
+  end
+  state.clipboard_flushing = true
+  local keys = state.clipboard_keys or {}
+  state.clipboard_keys = keys
+  local i = 1
+  while keys[i] do
+    handle_key_event(state, keys[i])
+    i = i + 1
+  end
+  state.clipboard_keys, state.clipboard_flushing = nil, nil
 end
 
 local function tick(state)
