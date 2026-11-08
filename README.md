@@ -163,14 +163,17 @@ See [docs/portability.md](docs/portability.md).
 
 ## Providers
 
-Provider selection works through `--model <prefix>/<name>`, `PSI_PROVIDER`,
-`defaults.provider` in settings, or the Anthropic fallback. Built-in providers
-include:
+psi supports multiple model providers. Choose a provider and model with
+`--model <provider>/<name>`, set `PSI_PROVIDER`, or save `defaults.provider`
+and `defaults.model` in settings. Without an explicit choice, psi selects from
+available credentials. See [provider selection](docs/providers.md#selection)
+for the precedence and fallback rules. Built-in providers include:
 
 - Anthropic
 - Ollama
 - OpenRouter
 - OpenAI Codex
+- Moonshot (Kimi For Coding)
 
 Ask the running agent for live provider metadata:
 
