@@ -277,6 +277,8 @@ Rendering policy:
   output stays above the live region and terminal scrolling remains natural.
 - Complete output batches use synchronized-output markers. Frame lines stay one
   cell narrower than the terminal to avoid pending-wrap cursor drift.
+- Frame height follows the physical terminal, including one-row viewports.
+  Chat output flows into scrollback; only editor chrome is height-limited.
 - Lua owns the previous-frame cache and emits only changed logical rows.
 - Idle TUI and resume-picker loops sample terminal dimensions every 200 ms;
   active turns sample them at scheduler ticks. A size change invalidates the
