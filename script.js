@@ -107,3 +107,101 @@ document.querySelector('.recording-tabs')?.addEventListener('tabselect', () => {
     if (container.closest('[role="tabpanel"]').hidden) player.pause();
   });
 });
+
+// SVG and the accessible table are generated from the same CycloneDX records.
+const dependencySection = document.getElementById('dependencies');
+if (dependencySection) {
+  const graph = JSON.parse(document.getElementById('dependency-data').textContent);
+  const packages = new Map(graph.nodes.map(node => [node.id, node]));
+  let activeGraph = graph.views.both;
+  let selectedPackage = null;
+  const enabledScopes = new Set(['runtime', 'build']);
+  const reset = dependencySection.querySelector('.dependency-reset');
+  const relations = dependencySection.querySelector('.dependency-relations');
+  const selectPackage = id => {
+    const selected = packages.get(id);
+    if (!selected) return;
+    selectedPackage = id;
+    const outgoing = activeGraph.edges.filter(edge => edge.source === id).map(edge => edge.target);
+    const incoming = activeGraph.edges.filter(edge => edge.target === id).map(edge => edge.source);
+    const neighbors = new Set([id, ...outgoing, ...incoming]);
+    dependencySection.querySelectorAll('[data-package]').forEach(node => {
+      const active = node.dataset.package === id;
+      node.classList.toggle('is-selected', active);
+      node.classList.toggle('is-muted', !neighbors.has(node.dataset.package));
+      node.setAttribute('aria-pressed', String(active));
+    });
+    dependencySection.querySelectorAll('.edge').forEach(edge => {
+      const connected = edge.dataset.source === id || edge.dataset.target === id;
+      edge.classList.toggle('is-selected', connected);
+      edge.classList.toggle('is-muted', !connected);
+    });
+    dependencySection.querySelector('#dependency-detail-name').textContent = selected.name;
+    dependencySection.querySelector('.dependency-detail-version').textContent = selected.version + ' · ' + (selected.scope === 'runtime' ? 'Retained at runtime' : 'Build-time only');
+    dependencySection.querySelector('.dependency-detail-license').textContent = 'Package license metadata: ' + (selected.licenses.join(', ') || 'not recorded in the SBOM');
+    const renderList = (selector, ids) => {
+      const list = dependencySection.querySelector(selector);
+      list.replaceChildren();
+      ids.sort((a, b) => packages.get(a).name.localeCompare(packages.get(b).name)).forEach(target => {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = packages.get(target).name;
+        button.addEventListener('click', () => {
+          selectPackage(target);
+          dependencySection.querySelector('#dependency-detail-name').focus({preventScroll: true});
+        });
+        li.append(button); list.append(li);
+      });
+      if (!ids.length) {
+        const li = document.createElement('li');
+        li.textContent = 'None in this view'; list.append(li);
+      }
+    };
+    renderList('.dependency-outgoing', outgoing);
+    renderList('.dependency-incoming', incoming);
+    relations.hidden = false; reset.hidden = false;
+    dependencySection.querySelector('.dependency-status').textContent = `${selected.name} ${selected.version}: ${outgoing.length} shown dependencies, used by ${incoming.length} shown packages.`;
+  };
+  dependencySection.querySelector('#dependency-detail-name').tabIndex = -1;
+  dependencySection.querySelectorAll('[data-package]').forEach(node => {
+    node.addEventListener('click', () => selectPackage(node.dataset.package));
+    node.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); selectPackage(node.dataset.package);
+      }
+    });
+  });
+  const clearSelection = (focus = false) => {
+    selectedPackage = null;
+    dependencySection.querySelectorAll('.is-selected, .is-muted').forEach(node => node.classList.remove('is-selected', 'is-muted'));
+    dependencySection.querySelectorAll('[data-package]').forEach(node => node.setAttribute('aria-pressed', 'false'));
+    dependencySection.querySelector('#dependency-detail-name').textContent = 'Explore the graph';
+    dependencySection.querySelector('.dependency-detail-version').textContent = 'Select any package.';
+    dependencySection.querySelector('.dependency-detail-license').textContent = 'Select a node to see its version, package license metadata, and shown connections.';
+    relations.hidden = true; reset.hidden = true;
+    dependencySection.querySelector('.dependency-status').textContent = 'Showing all package connections.';
+    if (focus) dependencySection.querySelector('#dependency-detail-name').focus({preventScroll:true});
+  };
+  reset.addEventListener('click', () => clearSelection(true));
+  const scopeButtons = [...dependencySection.querySelectorAll('[data-scope]')];
+  scopeButtons.forEach(button => button.addEventListener('click', () => {
+    const scope = button.dataset.scope;
+    if (enabledScopes.has(scope)) {
+      if (enabledScopes.size === 1) return;
+      enabledScopes.delete(scope);
+    } else enabledScopes.add(scope);
+    const view = enabledScopes.size === 2 ? 'both' : [...enabledScopes][0];
+    activeGraph = graph.views[view];
+    dependencySection.querySelectorAll('[data-view]').forEach(element => { element.hidden = element.dataset.view !== view; });
+    scopeButtons.forEach(control => {
+      const active = enabledScopes.has(control.dataset.scope);
+      control.setAttribute('aria-pressed', String(active));
+      control.disabled = active && enabledScopes.size === 1;
+    });
+    dependencySection.querySelector('.dependency-count').textContent = `${activeGraph.nodes.length} packages / ${activeGraph.edges.length} connections`;
+    if (selectedPackage && activeGraph.nodes.some(node => node.id === selectedPackage)) selectPackage(selectedPackage);
+    else clearSelection();
+    dependencySection.querySelector('.dependency-status').textContent = `Showing ${view === 'both' ? 'runtime and build' : view} dependencies: ${activeGraph.nodes.length} packages.`;
+  }));
+}

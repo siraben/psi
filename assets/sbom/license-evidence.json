@@ -1,0 +1,126 @@
+{
+  "source_commit": "646098f607cd0df976ed1691adeca520a724209d",
+  "nixpkgs_revision": "4975466d324710c576dc11ad614684e6bd8cad8e",
+  "method": "nix eval --impure --json of the exact locked flake package values; no name-only licensing matches",
+  "matches": [
+    {
+      "bom_ref": "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv",
+      "name": "curl",
+      "version": "8.22.0",
+      "evaluated_drv_path": "/nix/store/8jf73gbb25wq1bis9gxrdbapl10p0iab-curl-8.22.0.drv",
+      "match": "exact drvPath equality",
+      "source_expression": "flake.packages.x86_64-linux.default.buildInputs: curl",
+      "licenses": [
+        {
+          "license": {
+            "id": "curl"
+          }
+        }
+      ],
+      "nix_license_metadata": {
+        "deprecated": false,
+        "free": true,
+        "fullName": "curl License",
+        "licenseType": "simple",
+        "redistributable": true,
+        "shortName": "curl",
+        "spdxId": "curl",
+        "url": "https://spdx.org/licenses/curl.html"
+      }
+    },
+    {
+      "bom_ref": "/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv",
+      "name": "lua",
+      "version": "5.5.0",
+      "evaluated_drv_path": "/nix/store/ya94hhqq3ycpvsblfawix7zsla24aw4d-lua-5.5.0.drv",
+      "match": "exact drvPath equality",
+      "source_expression": "flake.packages.x86_64-linux.default.buildInputs: lua",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "nix_license_metadata": {
+        "deprecated": false,
+        "free": true,
+        "fullName": "MIT License",
+        "licenseType": "simple",
+        "redistributable": true,
+        "shortName": "mit",
+        "spdxId": "MIT",
+        "url": "https://spdx.org/licenses/MIT.html"
+      }
+    },
+    {
+      "bom_ref": "/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv",
+      "name": "mbedtls",
+      "version": "3.6.7",
+      "evaluated_drv_path": "/nix/store/1iy37klm9bi9y1pa0rqmf8ay766v1gdn-mbedtls-3.6.7.drv",
+      "match": "exact drvPath equality",
+      "source_expression": "the exact default curl propagatedBuildInputs: mbedtls",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-or-later"
+          }
+        }
+      ],
+      "nix_license_metadata": [
+        {
+          "deprecated": false,
+          "free": true,
+          "fullName": "Apache License 2.0",
+          "licenseType": "simple",
+          "redistributable": true,
+          "shortName": "asl20",
+          "spdxId": "Apache-2.0",
+          "url": "https://spdx.org/licenses/Apache-2.0.html"
+        },
+        {
+          "deprecated": false,
+          "free": true,
+          "fullName": "GNU General Public License v2.0 or later",
+          "licenseType": "simple",
+          "redistributable": true,
+          "shortName": "gpl2Plus",
+          "spdxId": "GPL-2.0-or-later",
+          "url": "https://spdx.org/licenses/GPL-2.0-or-later.html"
+        }
+      ]
+    },
+    {
+      "bom_ref": "/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv",
+      "name": "xgcc",
+      "version": "15.3.0",
+      "evaluated_drv_path": "/nix/store/rvjqw1ir7ffkmhlan5wscz9xgghijsdx-xgcc-15.3.0.drv",
+      "match": "exact drvPath equality",
+      "source_expression": "(import flake.inputs.nixpkgs { system = \"x86_64-linux\"; }).glibc.stdenv.cc.cc",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-3.0-or-later"
+          }
+        }
+      ],
+      "nix_license_metadata": {
+        "deprecated": false,
+        "free": true,
+        "fullName": "GNU General Public License v3.0 or later",
+        "licenseType": "simple",
+        "redistributable": true,
+        "shortName": "gpl3Plus",
+        "spdxId": "GPL-3.0-or-later",
+        "url": "https://spdx.org/licenses/GPL-3.0-or-later.html"
+      }
+    }
+  ],
+  "scope_note": "These are package-level Nix meta.license values. The list is not an inferred SPDX AND/OR expression or a legal analysis of individual output files. xgcc here has an observed libgcc runtime output; no runtime exception was inferred.",
+  "snapshot_modified_by_this_evidence": false
+}
