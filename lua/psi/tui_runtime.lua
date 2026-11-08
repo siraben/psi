@@ -2,7 +2,6 @@ local agent = require("psi.agent_session")
 local agent_runtime = require("psi.agent_session_runtime")
 local ansi = require("psi.ansi")
 local commands = require("psi.slash_commands")
-local glyphs = require("psi.glyphs")
 local markdown = require("psi.markdown")
 local prelude = require("psi.prelude")
 local records = require("psi.records")
@@ -72,6 +71,7 @@ local chat = { FRAME = "frame", CHAT = "chat" }
 chat.paste = require("psi.tui_editor_paste")
 chat.startup = require("psi.tui_startup")
 chat.theme = require("psi.theme")
+chat.glyphs = require("psi.glyphs")
 chat.thinking = require("psi.thinking")
 
 function chat.editor_push_undo(state)
@@ -436,7 +436,7 @@ local function pending_queue_lines(width, max_rows)
     key_text = keybindings.display("tui.queue.restore")
   end
   local hint = ansi.dim(
-    fit_text(glyphs.arrow_return .. " " .. key_text .. " to edit all queued messages", width)
+    fit_text(chat.glyphs.arrow_return .. " " .. key_text .. " to edit all queued messages", width)
   )
 
   if max_rows == nil or max_rows >= (#message_lines + 2) then
@@ -592,7 +592,7 @@ local function detect_tui_capabilities()
 
   local raw_ansi_ok = ansi_ok and type(psi.tui_draw_raw_line) == "function"
   local unicode_ok = platform.unicode_supported()
-  glyphs.set_enabled(unicode_ok)
+  chat.glyphs.set_enabled(unicode_ok)
 
   return {
     ansi = ansi_ok,
@@ -965,7 +965,7 @@ local function entry_prefixes(entry)
     return EMPTY, EMPTY
   end
   if kind == "compaction" then
-    return glyphs.dash .. " ", EMPTY
+    return chat.glyphs.dash .. " ", EMPTY
   end
   return EMPTY, EMPTY
 end
@@ -2393,11 +2393,16 @@ function chat.current_thinking_level(state)
 end
 
 local function style_input_border(state, width, direction, hidden)
-  local border = string.rep(glyphs.hrule, math.max(0, width))
+  local border = string.rep(chat.glyphs.hrule, math.max(0, width))
   if (hidden or 0) > 0 then
-    local indicator = string.rep(glyphs.hrule, 3) .. " " .. direction .. " " .. hidden .. " more "
+    local indicator = string.rep(chat.glyphs.hrule, 3)
+      .. " "
+      .. direction
+      .. " "
+      .. hidden
+      .. " more "
     if display_width(indicator) <= width then
-      border = indicator .. string.rep(glyphs.hrule, width - display_width(indicator))
+      border = indicator .. string.rep(chat.glyphs.hrule, width - display_width(indicator))
     else
       local ellipsis = string.rep(".", math.min(3, width))
       border = tui_text.slice_by_columns(indicator, 0, width - #ellipsis) .. ellipsis
@@ -2510,7 +2515,7 @@ function chat.refresh_render_style(state)
     and state.style_ansi == ansi.enabled
     and state.style_color == ansi.color_enabled
     and state.style_expand_keys == expand_keys
-    and state.style_unicode == glyphs.enabled
+    and state.style_unicode == chat.glyphs.enabled
   then
     return
   end
@@ -2518,7 +2523,7 @@ function chat.refresh_render_style(state)
   state.style_ansi = ansi.enabled
   state.style_color = ansi.color_enabled
   state.style_expand_keys = expand_keys
-  state.style_unicode = glyphs.enabled
+  state.style_unicode = chat.glyphs.enabled
   for _, entry in ipairs(state.entries or {}) do
     entry.render_cache_width = nil
     entry.render_cache_lines = nil
@@ -2664,7 +2669,7 @@ local function redraw(state)
 
   local input_width = frame_width
   local input_component_lines = {
-    style_input_border(state, input_width, glyphs.arrow_up, rows.input_first_line - 1),
+    style_input_border(state, input_width, chat.glyphs.arrow_up, rows.input_first_line - 1),
   }
   for i = 0, rows.input_rows - 1 do
     local line_index = rows.input_first_line + i
@@ -2693,7 +2698,7 @@ local function redraw(state)
   input_component_lines[#input_component_lines + 1] = style_input_border(
     state,
     input_width,
-    glyphs.arrow_down,
+    chat.glyphs.arrow_down,
     #rows.input_lines - (rows.input_first_line + rows.input_rows - 1)
   )
   frame.input:set_lines(input_component_lines)
@@ -2807,7 +2812,7 @@ function chat.redraw(state)
       out[#out + 1] = "\27[0m\r\n"
     end
     if entry.kind == "tool_result" and (not next_entry or next_entry.kind ~= "tool_result") then
-      out[#out + 1] = ansi.yellow(glyphs.corner_up)
+      out[#out + 1] = ansi.yellow(chat.glyphs.corner_up)
       out[#out + 1] = "\27[0m\r\n"
     end
     state.chat_committed_entry_count = idx
@@ -2826,7 +2831,7 @@ function chat.redraw(state)
       live_lines[#live_lines + 1] = style_line(line)
     end
     if entry.kind == "tool_result" then
-      live_lines[#live_lines + 1] = ansi.yellow(glyphs.corner_up)
+      live_lines[#live_lines + 1] = ansi.yellow(chat.glyphs.corner_up)
     end
   end
 
@@ -2875,7 +2880,7 @@ function chat.redraw(state)
   local input_width = frame_width
   local input_box_top_idx = #live_lines + 1
   live_lines[#live_lines + 1] =
-    style_input_border(state, input_width, glyphs.arrow_up, input_first_line - 1)
+    style_input_border(state, input_width, chat.glyphs.arrow_up, input_first_line - 1)
   for i = 0, input_rows_n - 1 do
     local line_index = input_first_line + i
     local line = input_lines[line_index]
@@ -2903,7 +2908,7 @@ function chat.redraw(state)
   live_lines[#live_lines + 1] = style_input_border(
     state,
     input_width,
-    glyphs.arrow_down,
+    chat.glyphs.arrow_down,
     #input_lines - (input_first_line + input_rows_n - 1)
   )
   local completions = active_command_completions(state)
@@ -5905,11 +5910,11 @@ local function draw_resume_picker(infos, selected, offset, scope)
 
   local scope_label
   if scope == "all" then
-    scope_label = ansi.dim(glyphs.radio_off .. " Current Folder | ")
-      .. ansi.bold(ansi.cyan(glyphs.radio_on .. " All"))
+    scope_label = ansi.dim(chat.glyphs.radio_off .. " Current Folder | ")
+      .. ansi.bold(ansi.cyan(chat.glyphs.radio_on .. " All"))
   else
-    scope_label = ansi.bold(ansi.cyan(glyphs.radio_on .. " Current Folder"))
-      .. ansi.dim(" | " .. glyphs.radio_off .. " All")
+    scope_label = ansi.bold(ansi.cyan(chat.glyphs.radio_on .. " Current Folder"))
+      .. ansi.dim(" | " .. chat.glyphs.radio_off .. " All")
   end
 
   psi.tui_clear()
@@ -5942,7 +5947,7 @@ local function draw_resume_picker(infos, selected, offset, scope)
     end
     if split then
       text = text
-        .. ansi.dim(glyphs.quote_bar)
+        .. ansi.dim(chat.glyphs.quote_bar)
         .. resume_preview_line(selected_info, row, right_width)
     end
     psi.tui_draw_line(list_start + row, text)
