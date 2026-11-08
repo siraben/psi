@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ec">
+  <meta name="description" content="psi is a portable, extensible coding agent. A small C core, a Lua runtime, and your choice of models. Open source, from the terminal up.">
+  <meta property="og:title" content="psi — the portable coding agent">
+  <meta property="og:description" content="Small enough to understand. Portable enough to go anywhere. A coding agent built with C and Lua.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://psicode.ai/">
+  <title>psi — the portable coding agent</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="#" aria-label="psi home"><span class="psi-symbol" aria-hidden="true">ψ</span><span>psi</span></a>
+    <nav aria-label="Main navigation">
+      <a href="#portability">Portability</a><a href="#extend">Extensions</a><a href="https://github.com/siraben/psi/tree/master/docs">Docs <span aria-hidden="true">↗</span></a>
+    </nav>
+    <a class="github-link" href="https://github.com/siraben/psi">GitHub <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="main">
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> C at the core. Lua in your hands.</p>
+        <h1>Your terminal.<br>Your models.<br><em>Your agent.</em></h1>
+        <p class="hero-description">Meet psi, the portable coding agent. Small enough to understand. Open enough to make your own. Built to run wherever you do.</p>
+        <div class="hero-actions"><a class="button primary" href="#start">Get started <span aria-hidden="true">↓</span></a><a class="text-link" href="https://github.com/siraben/psi">Read the source <span aria-hidden="true">↗</span></a></div>
+        <p class="hero-footnote">Open source · MIT licensed · No telemetry</p>
+      </div>
+      <div class="hero-visual" aria-label="psi architecture: a C core and Lua runtime across operating systems">
+        <div class="diagram-top"><span>THE PORTABLE CODING AGENT</span><span>01 / ψ</span></div>
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <span class="diagram-label label-c">C89 CORE</span><span class="diagram-label label-lua">LUA RUNTIME</span>
+        <div class="core-symbol" aria-hidden="true">ψ</div>
+        <div class="diagram-bottom"><div><span class="tiny-dot"></span> One small binary.</div><span>A world of possibilities.</span></div>
+      </div>
+    </section>
+    <div class="platform-strip"><div class="wrap"><span class="strip-label">AT HOME ON</span><span>Linux</span><span>macOS</span><span>Windows</span><span>FreeBSD</span><span>OpenBSD</span><span>Haiku</span><span class="strip-more">and beyond ↗</span></div></div>
+    <section class="intro-section wrap" id="philosophy">
+      <p class="eyebrow">01 — A smaller foundation</p>
+      <h2>Less between you<br>and the work.</h2>
+      <div class="intro-body"><p>A coding agent should be a tool you can understand, carry with you, and change. psi starts with a small C core and puts the high-level behavior in Lua.</p><p>The agent loop, terminal interface, tools, and providers are all open to inspection. Keep the parts you need. Build the parts you’re missing.</p><a class="text-link" href="https://github.com/siraben/psi/blob/master/docs/architecture.md">Explore the architecture <span aria-hidden="true">↗</span></a></div>
+      <div class="principles"><article><span class="principle-number">01 /</span><h3>Choose your model.</h3><p>Anthropic, OpenAI Codex, OpenRouter, or local models with Ollama. Resume a session with a different provider.</p></article><article><span class="principle-number">02 /</span><h3>Keep your context.</h3><p>Branch a conversation, explore another approach, and return. Sessions are append-only JSONL with a full tree.</p></article><article><span class="principle-number">03 /</span><h3>Work your way.</h3><p>An interactive TUI, a simple REPL, one-shot prompts, and Lua evaluation. At your keyboard or in your scripts.</p></article></div>
+    </section>
+    <section class="portability-section" id="portability"><div class="wrap portability-inner">
+      <div><p class="eyebrow">02 — Take it with you</p><h2>Portable by design.<br><em>Not by accident.</em></h2><p>C89 and Lua are a deliberate choice. psi runs on familiar desktops and less-traveled systems, with a Cosmopolitan build that runs on Linux, macOS, and Windows.</p><a class="text-link" href="https://github.com/siraben/psi/blob/master/docs/portability.md">Read the portability notes <span aria-hidden="true">↗</span></a></div>
+      <div class="compatibility"><div class="compatibility-head"><span>TESTED OPERATING SYSTEMS</span><span>STATUS</span></div><ul><li><span>Linux</span><span class="supported">Tested <span aria-hidden="true">↗</span></span></li><li><span>macOS</span><span class="supported">Tested <span aria-hidden="true">↗</span></span></li><li><span>Windows</span><span class="supported">Tested <span aria-hidden="true">↗</span></span></li><li><span>FreeBSD / OpenBSD</span><span class="supported">Tested <span aria-hidden="true">↗</span></span></li><li><span>Haiku</span><span class="supported">Tested <span aria-hidden="true">↗</span></span></li></ul><p>Across i686, x86_64, aarch64, and riscv64 where available. See the porting notes for build details.</p></div>
+    </div></section>
+    <section class="extend-section wrap" id="extend"><div class="extend-copy"><p class="eyebrow">03 — Make it yours</p><h2>A little Lua.<br>A lot of possibility.</h2><p>Add a slash command. Register a tool. Subscribe to the agent lifecycle. Your extensions are ordinary Lua files, loaded straight from disk.</p><p>Even the agent loop and terminal rendering live in Lua. Customization goes all the way down.</p><a class="text-link" href="https://github.com/siraben/psi/blob/master/docs/extensions.md">Explore the extension API <span aria-hidden="true">↗</span></a></div><div class="code-window"><div class="code-heading"><span class="file-dot"></span><span>~/.config/psi/extensions/hello.lua</span><span>LUA</span></div><pre><code><span class="syntax-comment">-- A command, in a few lines.</span>
+<span class="syntax-keyword">return function</span>(psi)
+  psi.commands.register(<span class="syntax-string">"greet"</span>, <span class="syntax-keyword">function</span>(rest)
+    <span class="syntax-keyword">return</span> psi.records.new_command_action(
+      <span class="syntax-string">"print"</span>, <span class="syntax-string">"hi, "</span> .. (rest ~= <span class="syntax-string">""</span> <span class="syntax-keyword">and</span> rest <span class="syntax-keyword">or</span> <span class="syntax-string">"friend"</span>)
+    )
+  <span class="syntax-keyword">end</span>)
+<span class="syntax-keyword">end</span></code></pre><div class="code-footer"><span>psi&gt; /greet world</span><span>hi, world</span></div></div></section>
+    <section class="start-section" id="start"><div class="wrap start-inner"><div><p class="eyebrow">04 — Start here</p><h2>Small tool.<br><em>Big range.</em></h2><p>Bring a model provider and a project.<br>psi brings the rest.</p></div><div class="install-panel"><div class="install-tabs" role="tablist" aria-label="Installation method"><button id="tab-nix" type="button" role="tab" aria-selected="true" aria-controls="panel-nix" tabindex="0">Run with Nix</button><button id="tab-source" type="button" role="tab" aria-selected="false" aria-controls="panel-source" tabindex="-1">Build from source</button></div><div id="panel-nix" class="install-content" role="tabpanel" aria-labelledby="tab-nix"><div class="command-row"><code>nix run github:siraben/psi</code><button type="button" class="copy-button" data-copy="nix run github:siraben/psi" aria-label="Copy Nix command">Copy <span aria-hidden="true">⧉</span></button></div><p>Requires <a href="https://nixos.org/download/">Nix</a> with flakes enabled.</p></div><div id="panel-source" class="install-content" role="tabpanel" aria-labelledby="tab-source" hidden><div class="command-row"><pre><code>git clone https://github.com/siraben/psi.git
+cd psi
+nix develop
+make
+./build/psi</code></pre><button type="button" class="copy-button" data-copy="git clone https://github.com/siraben/psi.git&#10;cd psi&#10;nix develop&#10;make&#10;./build/psi" aria-label="Copy build commands">Copy <span aria-hidden="true">⧉</span></button></div><p>Nix supplies the build dependencies. See the <a href="https://github.com/siraben/psi#running-psi">README</a> for details.</p></div><div class="install-note">Configure your provider before the first agent turn. <a href="https://github.com/siraben/psi/blob/master/docs/providers.md">Provider setup ↗</a></div></div></div></section>
+    <section class="closing wrap"><p>Yours to run.<br>Yours to understand.<br><em>Yours to change.</em></p><a class="button primary" href="https://github.com/siraben/psi">Build with psi <span aria-hidden="true">↗</span></a></section>
+  </main>
+  <footer class="site-footer wrap"><a class="wordmark" href="#"><span class="psi-symbol" aria-hidden="true">ψ</span><span>psi</span></a><p>The portable coding agent.</p><div><a href="https://github.com/siraben/psi">Source</a><a href="https://github.com/siraben/psi/tree/master/docs">Documentation</a><a href="https://github.com/siraben/psi/blob/master/LICENSE">MIT license</a></div><span>Built with C &amp; Lua.</span></footer>
+  <div class="copy-status sr-only" role="status" aria-live="polite"></div>
+</body>
+</html>
