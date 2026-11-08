@@ -1,0 +1,14 @@
+Windows screenshot provenance
+Captured November 8, 2026.
+
+OS: Microsoft Windows 11 Pro, version 10.0.26300.9818.
+Terminal: Windows Terminal 1.24.12741.0, native cmd.exe backend. No WSL.
+psi source: b960ff4b384220c1984549b97f8ce264fe985de3.
+Build: clean-source Nix psi-cosmocc-fat package (Cosmopolitan portable APE binary), copied unchanged to Windows as psi.exe.
+Binary size: 6,409,016 bytes.
+SHA-256: 5fe02357f5f07c84fee9a0a3b218a8fb6e349e3f98cd55332952ad52d4ea7b0c.
+
+Actual provider/model: OpenRouter anthropic/claude-opus-5.5.
+The model read hello.cmd, added a default name of world, and ran the script successfully through native cmd.exe. The screenshot shows that same genuine successful session resumed in the TUI, with its real model footer.
+
+Captured from the actual Windows desktop over RDP. Only the RDP client's top toolbar was cropped to remove a private network address; no terminal text, output, or model label was edited. Temporary provider credentials and desktop launcher were removed after capture.

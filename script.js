@@ -46,6 +46,9 @@ document.querySelectorAll('[data-copy]').forEach(button => {
 });
 
 const recordingButton = document.querySelector('.recording-poster');
+document.querySelector('.hero-demo')?.addEventListener('click', () => {
+  document.getElementById('tab-haiku')?.click();
+});
 recordingButton?.addEventListener('click', () => {
   if (!window.AsciinemaPlayer) {
     document.querySelector('.copy-status').textContent = 'The player could not load. Use the download recording link below.';

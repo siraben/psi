@@ -3,6 +3,9 @@
 Static source for <https://psicode.ai/>, served by GitHub Pages from the root of
 the `gh-pages` branch in `siraben/psi`. No build step is required.
 
+The commands below refer to the development checkout, where these files live in
+`website/`. The deployment branch contains that directory's contents at its root.
+
 ## Preview
 
 From the repository root:
@@ -33,6 +36,7 @@ development branch alone. Requires Git, rsync, and existing GitHub SSH access.
 - Cloudflare DNS-only apex `AAAA` records: `2606:50c0:8000::153`,
   `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
 - DNS-only `www` CNAME: `siraben.github.io`.
+- HTTPS is enforced by GitHub Pages for the apex and `www` hostnames.
 - `.nojekyll` keeps this a plain static site.
 
 See [GitHub's custom-domain documentation](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)
@@ -45,3 +49,6 @@ for current DNS guidance.
 The recording is real output from a fresh psi workspace, using Claude Opus 5.5
 through OpenRouter (`openrouter/anthropic/claude-opus-5.5`). The MP4 is rendered
 from the same recording with idle pauses capped at two seconds.
+
+See [CAPTURES.md](CAPTURES.md) for the screenshots' source, guest versions, and
+recording provenance.
