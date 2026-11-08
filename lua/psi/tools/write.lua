@@ -33,7 +33,7 @@ local function impl(input)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "write",
     description = "Write content to a file. Creates the file if it does not exist, overwrites it if it does, and creates parent directories.",
     prompt_snippet = "Create or overwrite files",

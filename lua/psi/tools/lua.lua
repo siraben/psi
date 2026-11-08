@@ -38,7 +38,7 @@ local function impl(input)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "lua",
     description = "Inspect or evaluate expressions in psi's embedded Lua runtime. Use this to inspect loaded helpers, prompt state, tool specs, or runtime environment.",
     prompt_snippet = "Inspect or evaluate the embedded Lua runtime and helper environment",

@@ -1,4 +1,4 @@
--- psi.tools.ls: List a directory's entries with type and size.
+-- psi.tools.ls: List directory entries, marking directories with a trailing slash.
 
 local records = require("psi.records")
 local registry = require("psi.tool_registry")
@@ -81,7 +81,7 @@ local function impl(input)
 end
 
 return function()
-  helpers.register(registry, records, {
+  helpers.register({
     name = "ls",
     description = string.format(
       "List directory contents. Returns entries sorted alphabetically, with '/' suffix "

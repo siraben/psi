@@ -4,7 +4,7 @@
 -- tools are reachable via:
 --   M.register(tool)
 --   M.all() / M.find(name)
---   M.select_specs(user_text) -- alist list for the Anthropic adapter
+--   M.select_specs(user_text) -- provider tool schemas
 --   M.dispatch(name, input)   -- returns ToolResult record
 --   M.dispatch_alist(n, i)    -- returns alist (entry used by vm.c)
 --
@@ -47,12 +47,8 @@ function M.find(name)
   return nil
 end
 
--- Per-session active-tools allowlist. When nil, all registered tools
--- are offered to the model (default). When set to a set of names via
--- M.set_active({"read","grep"}), select_specs returns only those
--- tools, narrowing what the LLM can call. Lets extensions / skills
--- scope an agent to a safe subset without unregistering tools
--- globally. Reset with M.set_active(nil).
+-- nil allows all tools; an empty allowlist disables every tool without
+-- unregistering records. Names, prompt records, schemas and dispatch share it.
 local active_allowlist = nil
 
 function M.set_active(names)
@@ -72,51 +68,40 @@ function M.set_active(names)
   active_allowlist = set
 end
 
-function M.get_active()
-  if active_allowlist == nil then
-    local out = {}
-    for i, t in ipairs(registry) do
-      out[i] = t.name
-    end
-    return out
-  end
-  local out = {}
-  for _, t in ipairs(registry) do
-    if active_allowlist[t.name] then
-      out[#out + 1] = t.name
-    end
-  end
-  return out
+local function is_active(name)
+  return active_allowlist == nil or active_allowlist[name] == true
 end
 
--- Same filter as get_active but returns the full Tool records
--- (name / description / prompt_snippet / guidelines / impl). Used by
--- psi.prompt.system_prompt so the "Available tools:" section in the
--- system prompt reflects what the model can actually call — without
--- this, set_active hides tools from dispatch but the prompt still
--- advertises them, and the model wastes tokens calling tools that
--- get rejected.
-function M.active()
+local function active_records()
   if active_allowlist == nil then
     return registry
   end
   local out = {}
-  for _, t in ipairs(registry) do
-    if active_allowlist[t.name] then
-      out[#out + 1] = t
+  for _, tool in ipairs(registry) do
+    if is_active(tool.name) then
+      out[#out + 1] = tool
     end
   end
   return out
 end
 
--- Entry point for C-side schema serialization. user_text lets hosts
--- filter tools per-turn; honours M.set_active if a scope is active.
+function M.get_active()
+  local out = {}
+  for i, tool in ipairs(active_records()) do
+    out[i] = tool.name
+  end
+  return out
+end
+
+function M.active()
+  return active_records()
+end
+
+-- C-side schema serialization; user_text is retained for host compatibility.
 function M.select_specs(user_text)
   local out = {}
-  for _, t in ipairs(registry) do
-    if active_allowlist == nil or active_allowlist[t.name] then
-      out[#out + 1] = records.tool_to_alist(t)
-    end
+  for i, tool in ipairs(active_records()) do
+    out[i] = records.tool_to_alist(tool)
   end
   return out
 end
@@ -138,16 +123,11 @@ function M.clear_hooks()
   after_hooks = {}
 end
 
--- `meta` is an optional opts table carrying context the host wants
--- to pass through to the tool impl. Today the only field we use is
--- meta.tool_call_id, which lets tools that stream progress
--- (bash/grep/find/ls via psi.tool_shell) tag their on_tool_progress
--- events with the right id — essential when multiple tools run
--- concurrently (psi.sched.run_all). Older impls that only accept
--- `input` stay compatible since the extra arg is optional.
+-- Optional meta (tool_call_id, provider, model) passes through hooks and impl.
+-- Before-hook interception returns immediately, without running after hooks.
 function M.dispatch(name, input, meta)
   input = input or {}
-  if active_allowlist ~= nil and not active_allowlist[name] then
+  if not is_active(name) then
     return records.tool_failure(name, "Tool " .. tostring(name) .. " not found")
   end
   for _, hook in ipairs(before_hooks) do

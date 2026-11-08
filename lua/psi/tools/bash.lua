@@ -28,10 +28,6 @@ local function impl(input, meta)
     timeout = timeout,
   })
 
-  -- If tail-truncation kicked in (or the underlying C buffer dropped
-  -- bytes) we want a temp-file spillover hint for the model. The
-  -- streaming runner already wrote the temp file when total_bytes
-  -- exceeded the cap — surface its path here.
   local extras = {
     command = command,
     status = stream.status,
@@ -65,7 +61,6 @@ local function impl(input, meta)
 
   local ok = (stream.status == 0) and not stream.timed_out
   if not ok and not stream.timed_out and (stream.status ~= nil) then
-    -- Surface the exit code in the output so the model can react.
     if #output_text > 0 then
       output_text = output_text .. "\n\nCommand exited with code " .. tostring(stream.status)
     else
@@ -111,7 +106,7 @@ return function()
     guidelines = { "Use bash for commands such as ls, rg, find, git, and tests." }
   end
 
-  helpers.register(registry, records, {
+  helpers.register({
     name = "bash",
     description = description,
     prompt_snippet = prompt_snippet,

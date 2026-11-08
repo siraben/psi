@@ -8,18 +8,6 @@ local prelude = require("psi.prelude")
 
 local M = {}
 
--- ---------------------------------------------------------------------------
--- Streaming runner. Drives process_begin / process_poll / process_finish
--- from inside a coroutine and accumulates chunks in Lua so we can do
--- tail-truncation that matches pi-mono. When total bytes exceed the
--- in-memory threshold we additionally spill the full output to a temp
--- file (mirroring pi's fs.createWriteStream path), so the model can
--- read the rest with the `read` tool.
---
--- Returns: { output=<string>, status=<int>, truncated=<bool>,
---            temp_file_path=<string|nil>, total_bytes=<int>,
---            total_lines=<int>, mode="tail"|"head" }.
---
 -- `opts` may include:
 --   max_bytes      : soft cap for in-memory output (default 50 KiB)
 --   max_lines      : line cap (default 2000)
@@ -30,11 +18,6 @@ local M = {}
 --   truncate_final : apply the selected truncator before returning
 --   notice         : "tail" or "head"; append the corresponding notice
 --                    when truncate_final truncates output
---
--- Outside a coroutine (scripts, tests) we fall back to a blocking
--- psi.process_run / psi.process_run_argv. We then mimic the same
--- truncation logic on the returned text.
--- ---------------------------------------------------------------------------
 
 local function blocking_poll(handle, ms)
   -- Outside a coroutine we can't yield. Just call the C primitive
@@ -178,7 +161,6 @@ local function stream(handle, tool_call_id, opts, poll_fn)
       temp_path = nil
       return
     end
-    -- Pre-flush whatever we already have buffered.
     local existing = buffered_text()
     if #existing > 0 then
       if not spill_append(temp_path, existing) then
@@ -191,7 +173,6 @@ local function stream(handle, tool_call_id, opts, poll_fn)
   local aborted = false
   while true do
     if psi.is_aborted ~= nil and psi.is_aborted() then
-      -- Force-terminate the child. The next poll observes EOF and exits.
       if psi.process_terminate ~= nil then
         psi.process_terminate(handle)
       end
@@ -201,7 +182,6 @@ local function stream(handle, tool_call_id, opts, poll_fn)
     if chunk ~= nil and #chunk > 0 then
       total_bytes = total_bytes + #chunk
       append_buffer(chunk)
-      -- Spill once the in-memory limit is exceeded.
       if total_bytes > max_bytes then
         local already_spilling = temp_path ~= nil
         ensure_tempfile()
@@ -264,28 +244,15 @@ local function stream(handle, tool_call_id, opts, poll_fn)
   }
 end
 
--- Run a shell command. Returns a ProcessResult-shaped table.
--- This is the legacy entry point that callers used before the
--- streaming-with-truncation work; it remains backwards-compatible
--- (output is whatever process.c handed us, capped at 256 KiB).
-function M.process_result(command, tool_call_id)
-  local argv = platform.shell_argv(command)
+-- Legacy output remains capped by process.c at 256 KiB, unlike streaming.
+local function legacy_process_result(run, begin, input, tool_call_id, begin_error)
   if not sched.in_coroutine() then
-    if argv then
-      return records.process_result_from_alist(psi.process_run_argv(argv))
-    end
-    return records.process_result_from_alist(psi.process_run(command))
+    return records.process_result_from_alist(run(input))
   end
-
-  local handle, err
-  if argv then
-    handle, err = psi.process_begin_argv(argv)
-  else
-    handle, err = psi.process_begin(command)
-  end
+  local handle, err = begin(input)
   if handle == nil then
     return records.process_result_from_alist({
-      output = tostring(err or "process_begin failed"),
+      output = tostring(err or begin_error),
       status = -1,
       truncated = false,
     })
@@ -309,36 +276,34 @@ function M.process_result(command, tool_call_id)
   return records.process_result_from_alist(psi.process_finish(handle))
 end
 
+function M.process_result(command, tool_call_id)
+  local argv = platform.shell_argv(command)
+  if argv then
+    return legacy_process_result(
+      psi.process_run_argv,
+      psi.process_begin_argv,
+      argv,
+      tool_call_id,
+      "process_begin failed"
+    )
+  end
+  return legacy_process_result(
+    psi.process_run,
+    psi.process_begin,
+    command,
+    tool_call_id,
+    "process_begin failed"
+  )
+end
+
 function M.process_result_argv(argv, tool_call_id)
-  if not sched.in_coroutine() then
-    return records.process_result_from_alist(psi.process_run_argv(argv))
-  end
-
-  local handle, err = psi.process_begin_argv(argv)
-  if handle == nil then
-    return records.process_result_from_alist({
-      output = tostring(err or "process_begin_argv failed"),
-      status = -1,
-      truncated = false,
-    })
-  end
-
-  while true do
-    if psi.is_aborted ~= nil and psi.is_aborted() then
-      if psi.process_terminate ~= nil then
-        psi.process_terminate(handle)
-      end
-    end
-    local chunk, done = sched.proc_poll(handle, 50)
-    if chunk ~= nil and #chunk > 0 and psi.tool_progress ~= nil then
-      psi.tool_progress(tool_call_id, chunk)
-    end
-    if done then
-      break
-    end
-  end
-
-  return records.process_result_from_alist(psi.process_finish(handle))
+  return legacy_process_result(
+    psi.process_run_argv,
+    psi.process_begin_argv,
+    argv,
+    tool_call_id,
+    "process_begin_argv failed"
+  )
 end
 
 -- Streamed runner that returns the rolling-buffer output plus a
@@ -398,18 +363,14 @@ function M.run_streaming_argv(argv, tool_call_id, opts)
   return run_streaming_with(handle, err, tool_call_id, opts, "process_begin_argv")
 end
 
--- Run a shell command and wrap as a ToolResult.
--- `meta.tool_call_id`, if present, is threaded through so live
--- progress events carry the right id for multi-tool turns.
-function M.run_tool(tool_name, command, path, keep_output_on_error, meta)
-  local proc = M.process_result(command, meta and meta.tool_call_id or nil)
+local function tool_result(tool_name, proc, path, keep_output_on_error, input_key, input)
   local ok = proc:ok()
   local include_output = keep_output_on_error or ok or (proc.output and #proc.output > 0)
   local extras = {}
   if path then
     extras.path = path
   end
-  extras.command = command
+  extras[input_key] = input
   extras.status = proc.status
   extras.truncated = proc.truncated
   if include_output then
@@ -418,21 +379,14 @@ function M.run_tool(tool_name, command, path, keep_output_on_error, meta)
   return records.new_tool_result(ok, tool_name, nil, extras)
 end
 
+function M.run_tool(tool_name, command, path, keep_output_on_error, meta)
+  local proc = M.process_result(command, meta and meta.tool_call_id or nil)
+  return tool_result(tool_name, proc, path, keep_output_on_error, "command", command)
+end
+
 function M.run_tool_argv(tool_name, argv, path, keep_output_on_error, meta)
   local proc = M.process_result_argv(argv, meta and meta.tool_call_id or nil)
-  local ok = proc:ok()
-  local include_output = keep_output_on_error or ok or (proc.output and #proc.output > 0)
-  local extras = {}
-  if path then
-    extras.path = path
-  end
-  extras.argv = argv
-  extras.status = proc.status
-  extras.truncated = proc.truncated
-  if include_output then
-    extras.output = proc.output or ""
-  end
-  return records.new_tool_result(ok, tool_name, nil, extras)
+  return tool_result(tool_name, proc, path, keep_output_on_error, "argv", argv)
 end
 
 return M
