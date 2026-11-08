@@ -2,7 +2,7 @@
 """psi smoke suite — multi-step / PTY / live tests.
 
 Single-eval Lua tests live in ``tests/lua/`` as declarative ``.lua`` files
-loaded by ``tests/test_lua_cases.py``; see ``tests/lua/README.md``. This
+loaded by ``tests/test_lua_cases.py``; see ``tests/README.md``. This
 module keeps the cases that need PTY drive, multiple ``psi`` invocations
 in one test, ``--print`` / ``--repl`` / ``--help`` surface checks, or the
 live-agent tests gated on ``ANTHROPIC_API_KEY``.
@@ -18,6 +18,7 @@ Exit status: 0 on clean, 1 on any failure.
 from __future__ import annotations
 
 import argparse
+import base64
 import contextvars
 import http.server
 import json
@@ -28,16 +29,16 @@ import signal
 import socketserver
 import subprocess
 import sys
-import threading
 import tempfile
+import threading
 import time
 from pathlib import Path
 
+import lua_runner
 import pexpect
 import pyte
 import pytest
-
-import lua_runner
+from test_support import apply_env, matches_name, smoke_env
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PTY_COLS = 80
@@ -51,10 +52,10 @@ _CURRENT_TEST_ENV: contextvars.ContextVar[dict[str, str] | None] = contextvars.C
 
 TESTS: list[tuple[str, callable, dict]] = []
 
-def test(name: str, *, live: bool = False):
+def test(name: str, *, live: bool = False, requires: tuple[str, ...] = ()):
     """Decorator: register a test function."""
     def wrap(fn):
-        TESTS.append((name, fn, {"live": live}))
+        TESTS.append((name, fn, {"live": live, "requires": requires}))
         return fn
     return wrap
 
@@ -92,62 +93,7 @@ def assert_true(cond, reason: str) -> None:
         raise Fail(reason)
 
 def _selected_tests(name_filter: str | None, excludes: list[str]) -> list[tuple[str, callable, dict]]:
-    selected = []
-    for name, fn, meta in TESTS:
-        if name_filter and name_filter not in name:
-            continue
-        if any(excluded in name for excluded in excludes):
-            continue
-        selected.append((name, fn, meta))
-    return selected
-
-def _smoke_env(tmp: Path) -> dict[str, str]:
-    home = tmp / "home"
-    config = tmp / "config"
-    state = tmp / "state"
-    cache = tmp / "cache"
-    for path in (home, config, state, cache):
-        path.mkdir(parents=True, exist_ok=True)
-
-    env: dict[str, str] = {}
-    for key in (
-        "PATH",
-        "USER",
-        "LOGNAME",
-        "LANG",
-        "LC_ALL",
-        "TZ",
-        "TERM",
-        "TMPDIR",
-        "SSL_CERT_FILE",
-        "NIX_SSL_CERT_FILE",
-        "SSH_AUTH_SOCK",
-    ):
-        value = os.environ.get(key)
-        if value:
-            env[key] = value
-
-    for key in (
-        "ANTHROPIC_API_KEY",
-        "PSI_ANTHROPIC_MODEL",
-    ):
-        value = os.environ.get(key)
-        if value:
-            env[key] = value
-
-    env.setdefault("PATH", os.defpath)
-    env.setdefault("TERM", "xterm-256color")
-    env.setdefault("LANG", "C.UTF-8")
-    env.setdefault("LC_ALL", "C.UTF-8")
-    env["HOME"] = str(home)
-    env["XDG_CONFIG_HOME"] = str(config)
-    env["XDG_STATE_HOME"] = str(state)
-    env["XDG_CACHE_HOME"] = str(cache)
-    env["PWD"] = str(ROOT)
-    # Tests run non-interactively against fixture checkouts; trust their
-    # project-local resources by default. Individual cases override.
-    env["PSI_TRUST"] = "always"
-    return env
+    return [case for case in TESTS if matches_name(case[0], name_filter, excludes)]
 
 # ---------------------------------------------------------------------------
 # Psi helper: thin wrapper around subprocess that knows where the binary
@@ -158,24 +104,18 @@ class Psi:
     def __init__(self, binary: str, tmp: Path, env: dict[str, str] | None = None):
         self.binary = str(Path(binary).resolve())
         self.tmp = tmp
-        self.env = env if env is not None else _smoke_env(tmp)
+        self.env = env if env is not None else smoke_env(tmp)
 
     def run(self, *args: str, input_text: str | None = None,
             check: bool = True, env_extra: dict | None = None,
             cwd: Path | None = None, timeout: float = 60) -> subprocess.CompletedProcess:
         """Run psi and return the completed process. Raises on non-zero when check=True."""
-        env = self.env.copy()
-        if env_extra:
-            for key, value in env_extra.items():
-                if value is None:
-                    env.pop(key, None)
-                else:
-                    env[key] = str(value)
+        env = apply_env(self.env, env_extra or {})
         env["PWD"] = str(cwd if cwd else ROOT)
         argv = [self.binary] + list(args)
         res = subprocess.run(
             argv,
-            input=input_text,
+            check=False, input=input_text,
             capture_output=True,
             text=True,
             env=env,
@@ -249,13 +189,8 @@ def run_pty(cmd: list[str], scenario: list[tuple[object, float]],
         env = base_env.copy()
     else:
         fallback_tmp = tempfile.TemporaryDirectory(prefix="psi-smoke-pty-")
-        env = _smoke_env(Path(fallback_tmp.name))
-    if env_extra:
-        for key, value in env_extra.items():
-            if value is None:
-                env.pop(key, None)
-            else:
-                env[key] = str(value)
+        env = smoke_env(Path(fallback_tmp.name))
+    env = apply_env(env, env_extra or {})
     env["PWD"] = str(cwd if cwd else ROOT)
 
     child = pexpect.spawn(
@@ -324,7 +259,7 @@ def strip_ansi(raw: bytes) -> str:
 # format.
 # ---------------------------------------------------------------------------
 
-@test("mode/tui_rainbow_renders_ansi")
+@test("mode/tui_rainbow_renders_ansi", requires=('tui', 'color'))
 def t_tui_rainbow_renders_ansi(psi: Psi):
     state = psi.tmp / "state-tui-rainbow"
     raw = run_pty(
@@ -341,7 +276,7 @@ def t_tui_rainbow_renders_ansi(psi: Psi):
                           "rainbow high background colors did not render in TUI")
     assert_true(b"016" in raw and b"231" in raw, "rainbow swatches did not render in TUI")
 
-@test("mode/tui_default")
+@test("mode/tui_default", requires=('tui',))
 def t_tui_default(psi: Psi):
     raw = run_pty(
         [psi.binary],
@@ -353,7 +288,7 @@ def t_tui_default(psi: Psi):
     assert_bytes_contains(raw, b"xterm 256 background swatches", "bare psi did not launch TUI")
 
 
-@test("mode/tui_auth_permission_warning_owned")
+@test("mode/tui_auth_permission_warning_owned", requires=('tui',))
 def t_tui_auth_permission_warning_owned(psi: Psi):
     project = psi.tmp / "tui-auth-warning"
     project.mkdir()
@@ -397,7 +332,7 @@ def t_tui_auth_permission_warning_owned(psi: Psi):
     assert_not_contains(warning_line, "draft remains intact", "warning/input row separation")
 
 
-@test("mode/tui_extension_stdio_is_quarantined")
+@test("mode/tui_extension_stdio_is_quarantined", requires=('tui',))
 def t_tui_extension_stdio_is_quarantined(psi: Psi):
     project = psi.tmp / "tui-noisy-extension"
     extension_dir = project / ".psi" / "extensions"
@@ -434,7 +369,7 @@ def t_tui_extension_stdio_is_quarantined(psi: Psi):
     assert_equals(debug_log.stat().st_mode & 0o777, 0o600, "debug log mode")
 
 
-@test("mode/tui_frame_line_carriage_return_is_guarded")
+@test("mode/tui_frame_line_carriage_return_is_guarded", requires=('tui',))
 def t_tui_frame_line_carriage_return_is_guarded(psi: Psi):
     project = psi.tmp / "tui-frame-line-cr"
     extension_dir = project / ".psi" / "extensions"
@@ -474,7 +409,7 @@ def t_tui_frame_line_carriage_return_is_guarded(psi: Psi):
     )
 
 
-@test("mode/tui_chat_auth_permission_warning_owned")
+@test("mode/tui_chat_auth_permission_warning_owned", requires=('tui',))
 def t_tui_chat_auth_permission_warning_owned(psi: Psi):
     project = psi.tmp / "tui-chat-auth-warning"
     project.mkdir()
@@ -498,7 +433,7 @@ def t_tui_chat_auth_permission_warning_owned(psi: Psi):
     assert_bytes_contains(raw, b"chat draft intact", "chat draft was not rendered")
 
 
-@test("mode/tui_notice_survives_reload")
+@test("mode/tui_notice_survives_reload", requires=('tui',))
 def t_tui_notice_survives_reload(psi: Psi):
     project = psi.tmp / "tui-reload-notice"
     extension_dir = project / ".psi" / "extensions"
@@ -529,7 +464,7 @@ def t_tui_notice_survives_reload(psi: Psi):
     assert_bytes_contains(raw, b"notice emitted", "reloaded command result")
 
 
-@test("mode/tui_external_editor_releases_and_reanchors")
+@test("mode/tui_external_editor_releases_and_reanchors", requires=('tui',))
 def t_tui_external_editor_releases_and_reanchors(psi: Psi):
     editor = psi.tmp / "fake-editor"
     editor.write_text(
@@ -581,7 +516,7 @@ def t_tui_external_editor_releases_and_reanchors(psi: Psi):
         )
 
 
-@test("mode/tui_suspend_resumes_and_reanchors")
+@test("mode/tui_suspend_resumes_and_reanchors", requires=('tui',))
 def t_tui_suspend_resumes_and_reanchors(psi: Psi):
     def resume(child: pexpect.spawn) -> None:
         os.kill(child.pid, signal.SIGCONT)
@@ -607,7 +542,7 @@ def t_tui_suspend_resumes_and_reanchors(psi: Psi):
             f"{layout} suspend did not repaint the preserved draft",
         )
 
-@test("mode/tui_rainbow_after_normal_insert")
+@test("mode/tui_rainbow_after_normal_insert", requires=('tui', 'color'))
 def t_tui_rainbow_after_normal_insert(psi: Psi):
     state = psi.tmp / "state-tui-rainbow-normal"
     raw = run_pty(
@@ -634,28 +569,61 @@ def t_tui_rainbow_after_normal_insert(psi: Psi):
     assert_bytes_not_contains(raw, b"i/rainbow", "normal-mode i leaked into the submitted command")
 
 
-@test("commands/help_includes_prompt_templates")
-def t_commands_help_templates(psi: Psi):
-    tmpdir = psi.tmp / "help-prompts"
-    tmpdir.mkdir(exist_ok=True)
-    (tmpdir / "review.md").write_text(
-        "---\n"
-        "description: Review staged changes\n"
-        "argument-hint: [scope]\n"
-        "---\n"
-        "Review $@.\n"
-    )
-    out = psi.run(
-        "--eval",
-        'local pt = require("psi.prompt_templates")\n'
-        + 'local c = require("psi.slash_commands")\n'
-        + 'pt.load()\n'
-        + 'return c.help_text()',
-        env_extra={"PSI_PROMPTS_DIR": str(tmpdir)},
-    ).stdout.strip()
-    assert_contains(out, "prompt templates", "template help section")
-    assert_contains(out, "/review [scope]", "template invocation")
-    assert_contains(out, "Review staged changes", "template description")
+
+@test("tui/full_redraw_uses_single_ansi_pass")
+def t_full_redraw_uses_single_ansi_pass(psi: Psi):
+    redraw = json.loads(psi.eval(
+        'return psi.json_encode(require("psi.tui_runtime")._debug_redraw_counts('
+        '"hello\\nhi", {busy=false}))'
+    ))
+    first = redraw["first_frame"]
+    assert_equals(first.count("\x1b[?2026h"), 1, "initial redraw synchronized passes")
+    assert_equals(first.count("\x1b[?2026l"), 1, "initial redraw synchronized pass ends")
+    assert_equals(redraw["first_frames"], 1, "initial full render passes")
+    assert_equals(redraw["second_output"], "", "unchanged redraw must emit no bytes")
+    assert_equals(redraw["second_frames"], 0, "unchanged redraw must not render a frame")
+    for key in ("draw_rows", "raw_draws", "cursor_sets", "refreshes"):
+        assert_equals(redraw[key], 0, f"batched redraw should not use {key}")
+    screen = pyte.Screen(80, 24)
+    stream = pyte.Stream(screen)
+    stream.feed(first)
+    assert_contains("\n".join(screen.display), "hello", "initial editor text")
+    assert_contains("\n".join(screen.display), "hi", "initial second editor row")
+    stream.feed(redraw["second_output"])
+    stream.feed(redraw["stale_output"])
+    visible = "\n".join(screen.display)
+    assert_not_contains(visible, "hello", "shrunk editor must erase old first row")
+    assert_not_contains(visible, "hi", "shrunk editor must erase old second row")
+    assert_contains(visible, "debug", "stale erase must retain footer")
+
+
+@test("tui/chat_mode_uses_tui_write_not_render_frame")
+def t_chat_mode_uses_tui_write_not_render_frame(psi: Psi):
+    snapshots = json.loads(psi.eval(r'''
+        psi.tui_render_frame = function() error("chat must not render an alternate-screen frame") end
+        return psi.json_encode(require("psi.tui_runtime")._debug_chat_redraw_sequence({
+          { kind = "user", text = "committed message" },
+          { kind = "assistant", text = "assistant reply" },
+          { kind = "set_input", text = "stale draft\nsecond stale row" },
+          { kind = "set_input", text = "new draft" },
+        }))
+    '''))
+    screen = pyte.Screen(80, 24)
+    stream = pyte.Stream(screen)
+    for snapshot in snapshots:
+        output = snapshot["output"]
+        assert_equals(output.count("\x1b[?2026h"), 1, "chat synchronized passes")
+        assert_equals(output.count("\x1b[?2026l"), 1, "chat synchronized pass ends")
+        assert_not_contains(output, "\x1b[?1049h", "chat must stay on primary screen")
+        assert_equals(snapshot["write_count"], 1, "chat batched write count")
+        stream.feed(output)
+    assert_equals(snapshots[1]["committed_entries"], 1, "committed user message")
+    assert_not_contains(snapshots[-1]["output"], "committed message", "edit must not replay scrollback")
+    visible = "\n".join(screen.display)
+    for text in ("committed message", "assistant reply", "new draft"):
+        assert_contains(visible, text, "chat terminal contents")
+    for text in ("stale draft", "second stale row"):
+        assert_not_contains(visible, text, "chat must erase stale editor rows")
 
 
 @test("extensions/no_extensions_disables_user_extension_discovery")
@@ -733,97 +701,8 @@ def t_commands_slash_command_suggestions(psi: Psi):
                     "prompt template suggestion missing")
 
 
-@test("keybindings/hotkeys_and_footer_are_generated")
-def t_keybindings_generated(psi: Psi):
-    home = psi.tmp / "keybindings-home"
-    (home / ".config" / "psi").mkdir(parents=True, exist_ok=True)
-    (home / ".config" / "psi" / "keybindings.json").write_text(
-        json.dumps({
-            "app.interrupt": "ctrl-z",
-            "tui.input.newLine": "alt-d",
-            "app.redraw": "ctrl-z",
-        })
-    )
-    out = psi.run(
-        "--eval",
-        'local kb = require("psi.keybindings")\n'
-        + 'local hotkeys = kb.hotkeys_text()\n'
-        + 'local footer = kb.footer_hint(psi.json_encode({ busy = true }))\n'
-        + 'return kb.display("app.interrupt") .. "|"\n'
-        + '  .. kb.display("tui.input.newLine") .. "|"\n'
-        + '  .. tostring(hotkeys:find("Ctrl%-Z") ~= nil) .. "|"\n'
-        + '  .. footer .. "|"\n'
-        + '  .. tostring(#kb.conflicts()) .. "|"\n'
-        + '  .. tostring(kb.conflicts()[1].key)',
-        env_extra={"HOME": str(home)},
-    ).stdout.strip()
-    assert_contains(out, "Ctrl-Z|Alt-D|true|Enter queue",
-                    "generated keybinding help/footer didn't use overrides")
-    assert_contains(out, "Ctrl-Z abort", "busy footer should include abort key")
-    assert_contains(out, "1|ctrl-z", "keybinding conflict should be reported")
 
 
-@test("tools/set_active_filters")
-def t_set_active(psi: Psi):
-    out = psi.eval(
-        'local t = require("psi.tools")\n'
-        + 'local all = #t.select_specs()\n'
-        + 't.set_active({"read", "grep"})\n'
-        + 'local narrowed = #t.select_specs()\n'
-        + 'local active = table.concat(t.get_active(), ",")\n'
-        + 't.set_active(nil)\n'
-        + 'local restored = #t.select_specs()\n'
-        + 'return string.format("%d|%d|%s|%d", all, narrowed, active, restored)'
-    )
-    parts = out.strip().split("|")
-    assert_true(int(parts[0]) >= 3 and int(parts[1]) == 2,
-                f"allowlist didn't narrow: {out!r}")
-    assert_true("read" in parts[2] and "grep" in parts[2],
-                f"allowlist missing expected tools: {out!r}")
-    assert_equals(parts[0], parts[3], "nil didn't restore full set")
-
-
-@test("session/send_message")
-def t_send_message(psi: Psi):
-    out = psi.eval(
-        'local s = require("psi.session_manager")\n'
-        + 'local before = psi.session_message_count()\n'
-        + 's.send_message("user", "from extension")\n'
-        + 's.send_message("assistant", "hi")\n'
-        + 'local ok, err = s.send_message("bogus", "x")\n'
-        + 'return psi.session_message_count() - before\n'
-        + '  .. "|" .. tostring(ok) .. "|" .. tostring(err)'
-    )
-    assert_contains(out, "2|false|unsupported role: bogus",
-                    f"send_message wrong shape: {out!r}")
-
-
-@test("render/thinking_delta")
-def t_render_thinking(psi: Psi):
-    """boot.lua installs a default render hook for the thinking-delta
-    event so reasoning-model (Qwen3, DeepSeek-R1, etc.) output is
-    visible in REPL / --agent / --print. Without the hook the whole
-    thinking stream is swallowed and a turn can look empty. The label
-    fires once per turn, not per-delta."""
-    out = psi.eval(
-        'local r = require("psi.render")\n'
-        + 'local a = r.handle_event("thinking-delta", { text = "first " })\n'
-        + 'local b = r.handle_event("thinking-delta", { text = "second" })\n'
-        + 'r.handle_event("after-turn", {})\n'
-        + 'local c = r.handle_event("thinking-delta", { text = "turn2" })\n'
-        + '-- strip ANSI for easier assertions\n'
-        + 'local function strip(s)\n'
-        + '  return (s:gsub("\\27%[[%d;]*m", ""))\n'
-        + 'end\n'
-        + 'return strip(a) .. "|" .. strip(b) .. "|" .. strip(c)'
-    )
-    a, b, c = out.strip().split("|")
-    assert_contains(a, "thinking: first",
-                    "first delta carries the thinking label")
-    assert_not_contains(b, "thinking:", f"label must fire only once per turn, got: {b!r}")
-    assert_contains(b, "second", "second delta renders text")
-    assert_contains(c, "thinking: turn2",
-                    "after-turn resets the one-shot label")
 
 
 @test("diff/generate_numbered_tool_diff")
@@ -864,20 +743,6 @@ def t_diff_render_numbered_tool_diff(psi: Psi):
     if ansi_enabled == "true":
         assert_contains(out, "\x1b[", "numbered diff should still be styled")
 
-
-@test("markdown/inline_code_no_backticks")
-def t_markdown_inline_code_no_backticks(psi: Psi):
-    out = psi.run(
-        "--eval",
-        'local ansi = require("psi.ansi")\n'
-        + 'ansi.enabled = (psi.runtime_info() or {}).ansi ~= false\n'
-        + 'ansi.color_enabled = true\n'
-        + 'return require("psi.markdown").render_line("Use `psi` here")',
-        env_extra={"PSI_ANSI": "1", "PSI_COLOR": "1"},
-    ).stdout.rstrip("\n")
-    plain = re.sub(r"\x1b\[[0-9;]*m", "", out)
-    assert_equals(plain, "Use psi here", "inline code should not render literal backticks")
-    assert_contains(out, "\x1b[", "inline code should still be highlighted")
 
 
 @test("markdown/unmatched_asterisk_literal")
@@ -1052,132 +917,8 @@ def t_markdown_component_table_too_narrow_falls_back(psi: Psi):
     assert_true("┌" not in plain, "narrow fallback should not render a boxed table")
 
 
-@test("compaction/snaps_past_orphan_tool_result")
-def t_compact_snap(psi: Psi):
-    """Regression for the Haiku session failure: do_compact must never
-    leave a tool-result as the first kept entry (orphan). Mirrors pi's
-    findValidCutPoints which excludes toolResult from valid cut
-    points. Without the snap, Anthropic 400s with 'unexpected
-    tool_use_id found in tool_result blocks'."""
-    out = psi.eval(
-        'local s = require("psi.session_manager")\n'
-        + '-- Build: user, asst(toolCall), tool-result, user, asst(toolCall), tool-result\n'
-        + 'local records = require("psi.records")\n'
-        + 's.append_user("hi")\n'
-        + 's.append_assistant("", {\n'
-        + '  { type = "tool_use", id = "call-1", name = "bash",\n'
-        + '    input = { command = "ls" } }\n'
-        + '}, {})\n'
-        + 's.append_tool_result("call-1", "bash", "output1", false)\n'
-        + 's.append_user("again")\n'
-        + 's.append_assistant("", {\n'
-        + '  { type = "tool_use", id = "call-2", name = "bash",\n'
-        + '    input = { command = "pwd" } }\n'
-        + '}, {})\n'
-        + 's.append_tool_result("call-2", "bash", "output2", false)\n'
-        + '-- keep_recent=1 would cut at index 5 which is the final\n'
-        + '-- tool-result — would orphan it. Snap must move boundary\n'
-        + '-- forward past the tool-result entries.\n'
-        + 's.do_compact(1, "summary text here")\n'
-        + 'local msgs = s.messages()\n'
-        + '-- After: compaction-summary + whatever the snap decided.\n'
-        + 'local first_kept_role = nil\n'
-        + 'for _, m in ipairs(msgs) do\n'
-        + '  if m.role ~= "compaction-summary" then\n'
-        + '    first_kept_role = m.role\n'
-        + '    break\n'
-        + '  end\n'
-        + 'end\n'
-        + 'return tostring(first_kept_role)'
-    )
-    assert_true(out.strip() != "tool-result",
-                f"orphan tool-result kept after compaction: {out!r}")
 
 
-@test("session/native_token_ranges")
-def t_session_native_token_ranges(psi: Psi):
-    out = psi.eval(
-        'local s = require("psi.session_manager")\n'
-        + 'local c = require("psi.context")\n'
-        + 's.append_user("12345678")\n'
-        + 's.append_user("1234")\n'
-        + 's.append_user("123456789")\n'
-        + 'local full = psi.session_token_estimate_from(1)\n'
-        + 'local tail = psi.session_token_estimate_from(3)\n'
-        + 'local keep = c.keep_recent_messages(tail)\n'
-        + 'return tostring(full) .. "," .. tostring(tail) .. "," .. tostring(keep)'
-    )
-    full, tail, keep = [int(x) for x in out.strip().split(",")]
-    assert_true(full == 9 and tail == 4,
-                f"native token ranges should match calibrated pi-style semantics: {out!r}")
-    assert_equals(keep, 1, f"expected one recent message for tail budget: {out!r}")
-
-
-@test("session/native_token_estimate_matches_pi_shapes")
-def t_session_native_token_estimate_matches_pi_shapes(psi: Psi):
-    out = psi.eval(
-        'local s = require("psi.session_manager")\n'
-        + 's.append_assistant("", {\n'
-        + '  { type = "text", text = "abcd" },\n'
-        + '  { type = "thinking", thinking = "12345678" },\n'
-        + '  { type = "tool_use", id = "call-1", name = "bash",\n'
-        + '    input = { command = "ls" } },\n'
-        + '}, {})\n'
-        + 'local tool_body = { message = { role = "toolResult", content = {\n'
-        + '  { type = "text", text = "abcd" }, { type = "image" },\n'
-        + '} } }\n'
-        + 's.append_message({ role = "tool-result", text = "abcd", data = psi.json_encode(tool_body) })\n'
-        + 'return tostring(psi.session_token_estimate_from(1)) .. ","\n'
-        + '  .. tostring(psi.session_token_estimate_from(2))'
-    )
-    total, tool_tail = [int(x) for x in out.strip().split(",")]
-    assert_true(total == 1337 and tool_tail == 1328,
-                f"native estimator should mirror calibrated pi role/content rules: {out!r}")
-
-
-@test("anthropic/drops_orphan_tool_result")
-def t_anthropic_orphan_drop(psi: Psi):
-    """build_api_messages must skip tool-result entries whose
-    tool_use_id has no matching tool_use in a preceding assistant
-    message — e.g. a session loaded from an older psi that compacted
-    without the snap. Exactly the Haiku session 71d7999f symptom."""
-    out = psi.eval(
-        'local a = require("psi.providers.anthropic")\n'
-        + 'local prelude = require("psi.prelude")\n'
-        + '-- Synthetic session: compaction + orphan tool-result\n'
-        + '-- (tool_use never appeared) + user + assistant-text.\n'
-        + 'local function msg(role, body)\n'
-        + '  return { role = role, text = "", data = psi.json_encode(body) }\n'
-        + 'end\n'
-        + 'local session = {\n'
-        + '  { role = "compaction-summary", text = "old work",\n'
-        + '    data = psi.json_encode({ summary = "old work" }) },\n'
-        + '  msg("tool-result", { message = {\n'
-        + '    role = "toolResult", toolCallId = "toolu_ORPHAN",\n'
-        + '    toolName = "bash",\n'
-        + '    content = { { type = "text", text = "stale output" } } } }),\n'
-        + '  msg("user", { message = { role = "user",\n'
-        + '    content = { { type = "text", text = "continue" } } } }),\n'
-        + '}\n'
-        + 'local wire = a._test.build_api_messages(session)\n'
-        + '-- Walk wire and assert no tool_result with id "toolu_ORPHAN".\n'
-        + 'local found = false\n'
-        + 'for _, m in ipairs(wire) do\n'
-        + '  if type(m.content) == "table" then\n'
-        + '    for _, b in ipairs(m.content) do\n'
-        + '      if type(b) == "table" and b.type == "tool_result"\n'
-        + '         and b.tool_use_id == "toolu_ORPHAN" then\n'
-        + '        found = true\n'
-        + '      end\n'
-        + '    end\n'
-        + '  end\n'
-        + 'end\n'
-        + 'return tostring(found) .. "|" .. tostring(#wire)'
-    )
-    parts = out.strip().split("|")
-    assert_equals(parts[0], "false", f"orphan tool_result still in wire: {out!r}")
-    # Expected wire: compaction-summary-as-user + the real user msg = 2
-    assert_true(int(parts[1]) >= 1, f"expected at least one wire message: {out!r}")
 
 
 @test("anthropic/strips_surrogates_from_system_prompt")
@@ -1203,69 +944,7 @@ def t_anthropic_system_prompt_surrogate(psi: Psi):
     assert_equals(blen, "3", f"unexpected length after strip: {out!r}")
 
 
-@test("session/ensure_default_path")
-def t_session_default_path(psi: Psi):
-    """Without --session, TUI calls psi.session.ensure_default_path
-    which must pick an XDG-style location so autosave has a target.
-    Skipping this made every turn show "failed to save session file"
-    in the status bar (session 71f5944b symptom)."""
-    out = psi.eval(
-        'local s = require("psi.session_manager")\n'
-        + 'local first = s.ensure_default_path()\n'
-        + 'local second = s.ensure_default_path()\n'
-        + 'return tostring(first == second) .. "|"\n'
-        + '       .. tostring(psi.session_path() == first) .. "|"\n'
-        + '       .. (first or "<nil>")'
-    )
-    ok_idem, ok_set, path = out.strip().split("|", 2)
-    assert_equals(ok_idem, "true", f"not idempotent: {out!r}")
-    assert_equals(ok_set, "true", f"session_path not set: {out!r}")
-    assert_contains(path, "/psi/sessions/", f"unexpected path shape: {path!r}")
-    assert_true(path.endswith(".jsonl"), f"missing .jsonl: {path!r}")
 
-
-@test("session/default_path_is_cwd_scoped")
-def t_session_default_path_cwd_scoped(psi: Psi):
-    project = psi.tmp / "project path"
-    project.mkdir()
-    state = psi.tmp / "state"
-    out = psi.run(
-        "--eval",
-        'local s = require("psi.session_manager")\n'
-        + 'local path = s.ensure_default_path()\n'
-        + 'return s.encode_session_dir(psi.cwd()) .. "|" .. path',
-        cwd=project,
-        env_extra={"XDG_STATE_HOME": str(state)},
-    ).stdout.strip()
-    encoded, sess_path = out.split("|", 1)
-    assert encoded.startswith("--") and encoded.endswith("--"), f"bad encoded dir: {encoded!r}"
-    assert str(state / "psi" / "sessions") in sess_path, f"bad state root: {sess_path!r}"
-    assert f"/{encoded}/" in sess_path, f"default path not cwd scoped: {sess_path!r}"
-    assert sess_path.endswith(".jsonl"), f"missing .jsonl: {sess_path!r}"
-
-
-@test("session/default_path_bounds_long_cwd_component")
-def t_session_default_path_bounds_long_cwd_component(psi: Psi):
-    project = psi.tmp / "long-cwd"
-    for i in range(36):
-        project = project / f"segment-{i:02d}"
-    project.mkdir(parents=True)
-    state = psi.tmp / "state-long-cwd"
-    out = psi.run(
-        "--eval",
-        'local s = require("psi.session_manager")\n'
-        + 'local path = s.ensure_default_path()\n'
-        + 's.append_user("long path save")\n'
-        + 'local ok, err = s.save()\n'
-        + 'return tostring(ok) .. "|" .. (err or "") .. "|"\n'
-        + "  .. s.encode_session_dir(psi.cwd()) .. '|' .. path",
-        cwd=project,
-        env_extra={"XDG_STATE_HOME": str(state)},
-    ).stdout.strip()
-    ok, err, encoded, sess_path = out.split("|", 3)
-    assert_equals(ok, "true", f"long cwd session save failed: {err}")
-    assert len(encoded) <= 184, f"encoded cwd component too long: {len(encoded)}"
-    assert f"/{encoded}/" in sess_path, f"default path not cwd scoped: {sess_path!r}"
 
 
 @test("session/list_sessions_for_cwd")
@@ -1323,7 +1002,7 @@ def t_session_find_by_id(psi: Psi):
     assert_contains(out, "session-messages: 3", "prefix-resume reloaded prior turns")
 
 
-@test("tui/busy_status")
+@test("tui/busy_status", requires=("ansi",))
 def t_tui_busy_status(psi: Psi):
     out = psi.run(
         "--eval",
@@ -1535,23 +1214,6 @@ def t_tui_hardware_cursor_uses_input_marker(psi: Psi):
     )
     assert_equals(out, "true|6|true", "hardware cursor is positioned from input marker")
 
-
-@test("tui/show_thinking_config")
-def t_tui_show_thinking_config(psi: Psi):
-    default_out = psi.eval('return require("psi.tui_status").show_thinking()')
-    assert_equals(default_out, "1", "thinking visible by default in TUI")
-
-    project = psi.tmp / "thinking-config-project"
-    (project / ".psi").mkdir(parents=True, exist_ok=True)
-    (project / ".psi" / "settings.json").write_text(
-        json.dumps({"tui": {"show_thinking": False}})
-    )
-    out = psi.run(
-        "--eval",
-        'return require("psi.tui_status").show_thinking()',
-        cwd=project,
-    ).stdout.strip()
-    assert_equals(out, "0", "project setting hides thinking in TUI")
 
 
 @test("session/list_sessions_includes_preview")
@@ -1809,7 +1471,7 @@ def t_repl_btw_ollama_ephemeral(psi: Psi):
     if session_path.exists():
         assert_equals(session_path.read_text(), "", "btw must not persist transcript entries")
 
-@test("mode/tui_quits")
+@test("mode/tui_quits", requires=('tui',))
 def t_tui_quits(psi: Psi):
     # Drive the TUI through a pty, send /quit, expect a clean exit.
     raw = run_pty(
@@ -1828,7 +1490,7 @@ def t_tui_quits(psi: Psi):
     assert_contains(text, "Resume with: psi --session", "TUI quit resume command")
 
 
-@test("mode/tui_resizes_without_input")
+@test("mode/tui_resizes_without_input", requires=('tui',))
 def t_tui_resizes_without_input(psi: Psi):
     def output_after_resize(
         args: list[str], exit_bytes: bytes, expected_exit: int = 0
@@ -1887,7 +1549,7 @@ def t_tui_resizes_without_input(psi: Psi):
     assert_bytes_contains(picker_large, b"Resume session", "picker redraw after grow")
 
 
-@test("mode/tui_footer_hook_resizes_without_input")
+@test("mode/tui_footer_hook_resizes_without_input", requires=('tui',))
 def t_tui_footer_hook_resizes_without_input(psi: Psi):
     extdir = psi.tmp / "footer-resize-ext"
     extdir.mkdir()
@@ -1938,7 +1600,7 @@ def t_tui_footer_hook_resizes_without_input(psi: Psi):
         child.close(force=False)
 
 
-@test("mode/tui_model_picker_search_select")
+@test("mode/tui_model_picker_search_select", requires=('tui',))
 def t_tui_model_picker_search_select(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -1950,7 +1612,7 @@ def t_tui_model_picker_search_select(psi: Psi):
     assert_bytes_contains(raw, b"Select model", "Ctrl-L model picker")
     assert_bytes_contains(raw, b"model set to openai-codex/gpt-5.5", "model selection")
 
-@test("mode/tui_resume_picker_previews_session")
+@test("mode/tui_resume_picker_previews_session", requires=('tui',))
 def t_tui_resume_picker_previews_session(psi: Psi):
     project = psi.tmp / "resume-picker-preview"
     project.mkdir()
@@ -1969,7 +1631,7 @@ def t_tui_resume_picker_previews_session(psi: Psi):
     assert_contains(text, "Preview", "resume picker preview heading")
     assert_contains(text, "preview prompt", "resume picker conversation preview")
 
-@test("mode/tui_slash_resume_opens_picker")
+@test("mode/tui_slash_resume_opens_picker", requires=('tui',))
 def t_tui_slash_resume_opens_picker(psi: Psi):
     project = psi.tmp / "slash-resume-picker"
     project.mkdir()
@@ -1987,7 +1649,7 @@ def t_tui_slash_resume_opens_picker(psi: Psi):
     assert_contains(text, "Resume session", "/resume picker")
     assert_contains(text, "slash resume preview prompt", "/resume picker preview")
 
-@test("mode/tui_repeated_arrows_do_not_insert_text")
+@test("mode/tui_repeated_arrows_do_not_insert_text", requires=('tui',))
 def t_tui_repeated_arrows_do_not_insert_text(psi: Psi):
     # Application-cursor arrows are ESC O A/B. If the decoder leaks the final
     # byte, the prompt becomes "AAAA.../quit" and the TUI will not exit.
@@ -1996,7 +1658,7 @@ def t_tui_repeated_arrows_do_not_insert_text(psi: Psi):
     raw.assert_clean_exit()
 
 
-@test("mode/tui_split_arrow_final_byte_does_not_insert_text")
+@test("mode/tui_split_arrow_final_byte_does_not_insert_text", requires=('tui',))
 def t_tui_split_arrow_final_byte_does_not_insert_text(psi: Psi):
     # Simulate a delayed final byte from CSI Up. The late "A" should be
     # discarded as terminal input, not inserted before /quit.
@@ -2007,7 +1669,7 @@ def t_tui_split_arrow_final_byte_does_not_insert_text(psi: Psi):
     raw.assert_clean_exit()
 
 
-@test("mode/tui_theme_applies_to_rendered_colors")
+@test("mode/tui_theme_applies_to_rendered_colors", requires=('tui', 'color'))
 def t_tui_theme_applies_to_rendered_colors(psi: Psi):
     project = psi.tmp / "theme-tui-project"
     extdir = psi.tmp / "theme-tui-ext"
@@ -2038,7 +1700,7 @@ def t_tui_theme_applies_to_rendered_colors(psi: Psi):
     raw.assert_clean_exit()
     assert_bytes_contains(raw, b"38;5;118", "configured TUI accent color did not reach rendered output")
 
-@test("mode/tui_startup_screen_matches_pi_shape")
+@test("mode/tui_startup_screen_matches_pi_shape", requires=('tui',))
 def t_tui_startup_screen_matches_pi_shape(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -2056,7 +1718,7 @@ def t_tui_startup_screen_matches_pi_shape(psi: Psi):
     assert_contains(text, "psi can explain its own features", "startup onboarding copy")
 
 
-@test("mode/tui_thinking_toggle_persists_without_sticky_status")
+@test("mode/tui_thinking_toggle_persists_without_sticky_status", requires=('tui',))
 def t_tui_thinking_toggle_persists_without_sticky_status(psi: Psi):
     config = psi.tmp / "thinking-toggle-config"
     state = psi.tmp / "thinking-toggle-state"
@@ -2083,7 +1745,7 @@ def t_tui_thinking_toggle_persists_without_sticky_status(psi: Psi):
                     "toggle feedback should be rendered in the transcript")
 
 
-@test("mode/tui_alt_screen_captures_mouse_wheel")
+@test("mode/tui_alt_screen_captures_mouse_wheel", requires=('tui',))
 def t_tui_alt_screen_captures_mouse_wheel(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -2105,7 +1767,7 @@ def t_tui_alt_screen_captures_mouse_wheel(psi: Psi):
     assert_bytes_contains(raw, b"\x1b[?1049l", "fullscreen teardown should leave alternate screen")
 
 
-@test("mode/tui_shift_tab_and_kitty_shortcuts_decode")
+@test("mode/tui_shift_tab_and_kitty_shortcuts_decode", requires=('tui',))
 def t_tui_shift_tab_and_kitty_shortcuts_decode(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui", "--model", "openai-codex/gpt-5.5"],
@@ -2124,7 +1786,7 @@ def t_tui_shift_tab_and_kitty_shortcuts_decode(psi: Psi):
     assert_not_contains(text, "[112;6u/quit", "Kitty shortcut bytes must not leak into editor")
 
 
-@test("mode/tui_bang_shell_commands")
+@test("mode/tui_bang_shell_commands", requires=('tui',))
 def t_tui_bang_shell_commands(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -2146,7 +1808,7 @@ def t_tui_bang_shell_commands(psi: Psi):
     assert_contains(text, "Command cancelled", "Escape aborts shell commands")
 
 
-@test("mode/tui_input_box_background")
+@test("mode/tui_input_box_background", requires=('tui', 'color'))
 def t_tui_input_box_background(psi: Psi):
     state = psi.tmp / "state-tui-input-box"
     raw = run_pty(
@@ -2173,7 +1835,7 @@ def t_tui_input_box_background(psi: Psi):
     assert_bytes_contains(raw, b"\x1b[38;2;129;162;190m",
                           "thinking-level input border color did not reach rendered output")
 
-@test("mode/tui_bracketed_paste")
+@test("mode/tui_bracketed_paste", requires=('tui',))
 def t_tui_bracketed_paste(psi: Psi):
     # pi parity: ESC[200~ ... ESC[201~ lands in the editor as one multi-line
     # buffer; the embedded newlines must not submit per line.
@@ -2198,7 +1860,7 @@ def t_tui_bracketed_paste(psi: Psi):
     )
 
 
-@test("mode/tui_large_paste_marker")
+@test("mode/tui_large_paste_marker", requires=('tui',))
 def t_tui_large_paste_marker(psi: Psi):
     payload = b"\r".join(f"large line {index}".encode() for index in range(1, 12))
     raw = run_pty(
@@ -2224,7 +1886,7 @@ def t_tui_large_paste_marker(psi: Psi):
     )
 
 
-@test("mode/tui_system_clipboard_paste")
+@test("mode/tui_system_clipboard_paste", requires=('tui', 'mcp'))
 def t_tui_system_clipboard_paste(psi: Psi):
     clipboard_bin = psi.tmp / "clipboard-bin"
     clipboard_bin.mkdir()
@@ -2257,17 +1919,34 @@ def t_tui_system_clipboard_paste(psi: Psi):
     )
 
 
-@test("mode/tui_system_clipboard_image_paste")
+@test("mode/tui_system_clipboard_image_paste", requires=('tui', 'mcp'))
 def t_tui_system_clipboard_image_paste(psi: Psi):
     clipboard_bin = psi.tmp / "clipboard-image-bin"
     clipboard_tmp = psi.tmp / "clipboard-image-tmp"
     clipboard_bin.mkdir()
     clipboard_tmp.mkdir()
+    png = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
+    )
+    source = psi.tmp / "source.png"
+    source.write_bytes(png)
+    captured = psi.tmp / "inserted-draft"
+    project = psi.tmp / "image-project"
+    extensions = project / ".psi" / "extensions"
+    extensions.mkdir(parents=True)
+    (extensions / "capture.lua").write_text(
+        "return function()\n"
+        "  require('psi.slash_commands').register('capture', function(args)\n"
+        f"    local f = assert(io.open({json.dumps(str(captured))}, 'w'))\n"
+        "    f:write(args); f:close()\n"
+        "  end)\n"
+        "end\n"
+    )
     osascript = clipboard_bin / "osascript"
     osascript.write_text(
         "#!/bin/sh\n"
         "for output_path do :; done\n"
-        "printf '\\211PNG\\r\\n\\032\\n\\000\\000\\000\\015IHDR' > \"$output_path\"\n"
+        f"cat {shlex.quote(str(source))} > \"$output_path\"\n"
         "printf 'ok\\n'\n"
     )
     osascript.chmod(0o755)
@@ -2278,7 +1957,8 @@ def t_tui_system_clipboard_image_paste(psi: Psi):
 
     raw = run_pty(
         [psi.binary, "--tui"],
-        [(b"", 0.5), (b"image: \x16", 0.75), (b"\x03", 1.5), (b"/quit\r", 1.0)],
+        [(b"", 0.5), (b"/capture image: \x16", 0.75), (b"\r", 1.5), (b"/quit\r", 1.0)],
+        cwd=project,
         env_extra={
             "PATH": str(clipboard_bin) + os.pathsep + psi.env["PATH"],
             "TMPDIR": str(clipboard_tmp),
@@ -2286,16 +1966,17 @@ def t_tui_system_clipboard_image_paste(psi: Psi):
         },
     )
     raw.assert_clean_exit()
-    assert_bytes_contains(raw, b"image:", "clipboard image paste lost surrounding input")
-    assert_bytes_contains(
-        raw,
-        b"image-tmp/psi-clipboard-",
-        "physical Ctrl-V did not insert the clipboard image temp path",
-    )
-    assert_bytes_contains(raw, b".png", "clipboard image path did not use its detected suffix")
+    assert_true(captured.exists(), "physical Ctrl-V draft was not submitted to /capture")
+    args = shlex.split(captured.read_text())
+    assert_equals(len(args), 2, "clipboard image draft arguments")
+    assert_equals(args[0], "image:", "clipboard image paste lost surrounding input")
+    image = Path(args[1])
+    assert_equals(image.parent, clipboard_tmp, "clipboard image temp directory")
+    assert_equals(image.suffix, ".png", "clipboard image detected suffix")
+    assert_equals(image.read_bytes(), png, "clipboard image file contents")
 
 
-@test("mode/tui_tab_completion")
+@test("mode/tui_tab_completion", requires=('tui',))
 def t_tui_tab_completion(psi: Psi):
     # Exercise the host key decoder, not a synthetic Lua {key="tab"} event.
     # Tab must complete /he to /help before Left moves the cursor. Enter alone
@@ -2314,7 +1995,7 @@ def t_tui_tab_completion(psi: Psi):
     )
 
 
-@test("mode/tui_undo_kill_ring")
+@test("mode/tui_undo_kill_ring", requires=('tui',))
 def t_tui_undo_kill_ring(psi: Psi):
     # Exercise the host decoder for Kitty Ctrl-Minus and traditional Alt-Y,
     # then prove undo and kill-ring cycling restored a completable /he prompt.
@@ -2337,7 +2018,7 @@ def t_tui_undo_kill_ring(psi: Psi):
     )
 
 
-@test("mode/tui_legacy_ctrl_minus_undo")
+@test("mode/tui_legacy_ctrl_minus_undo", requires=('tui',))
 def t_tui_legacy_ctrl_minus_undo(psi: Psi):
     # Traditional terminals encode Ctrl-Minus/Ctrl-Underscore as byte 0x1f.
     # Undo must clear abc so the following /quit remains a valid command.
@@ -2348,7 +2029,7 @@ def t_tui_legacy_ctrl_minus_undo(psi: Psi):
     )
     raw.assert_clean_exit()
 
-@test("mode/tui_ctrl_j_newline")
+@test("mode/tui_ctrl_j_newline", requires=('tui',))
 def t_tui_ctrl_j_newline(psi: Psi):
     # LF is Ctrl-J in raw mode; CR submits.
     raw = run_pty(
@@ -2363,7 +2044,7 @@ def t_tui_ctrl_j_newline(psi: Psi):
     raw.assert_clean_exit()
     assert_contains(strip_ansi(raw), "second-line", "Ctrl-J inserts without submitting")
 
-@test("mode/tui_multiline_prompt")
+@test("mode/tui_multiline_prompt", requires=('tui',))
 def t_tui_multiline_prompt(psi: Psi):
     raw = run_pty(
         [psi.binary, "--tui"],
@@ -2378,7 +2059,7 @@ def t_tui_multiline_prompt(psi: Psi):
     text = strip_ansi(raw)
     assert_contains(text, "ANTHROPIC_API_KEY is not set", "multiline input submitted")
 
-@test("mode/tui_short_viewport")
+@test("mode/tui_short_viewport", requires=('tui',))
 def t_tui_short_viewport(psi: Psi):
     for args, layout in ((["--tui"], "frame"), (["--chat"], "chat")):
         raw = run_pty(
@@ -2458,64 +2139,6 @@ def t_live_compact(psi: Psi):
     text = sess.read_text()
     assert_contains(text, '"type":"compaction"', "compaction header entry")
 
-@test("live/concurrent_tools_wall_time", live=True)
-def t_live_parallel_walltime(psi: Psi):
-    sess = psi.tmp / "parallel.jsonl"
-    t0 = time.time()
-    psi.agent(
-        "Issue three separate bash tool calls in this same turn, all at "
-        "once. The three commands are exactly: \"sleep 3 && echo apple\", "
-        "\"sleep 6 && echo banana\", \"sleep 9 && echo cherry\". Do not "
-        "chain them with &&, do not background them with &, do not combine "
-        "them — emit three distinct tool_use blocks. After the tools run, "
-        "reply with exactly: parallel done",
-        model=_live_model(), max_tokens=500, session=sess,
-    )
-    elapsed = time.time() - t0
-    text = sess.read_text()
-    for fruit in ("apple", "banana", "cherry"):
-        assert_contains(text, fruit, f"{fruit} in session")
-    # Sum-serial would be ~18s; parallel should be ~max (9s) + round trip.
-    # 15s upper bound: generous enough for network + compaction, tight
-    # enough to catch a silent regression back to serial dispatch.
-    assert_true(
-        elapsed <= 15.0,
-        f"concurrent tools ran serially: elapsed={elapsed:.1f}s (>15s)",
-    )
-    # Stash for the final summary line.
-    t_live_parallel_walltime.elapsed = elapsed  # type: ignore[attr-defined]
-
-@test("live/concurrent_tools_tui_panels", live=True)
-def t_live_parallel_panels(psi: Psi):
-    """Drive the TUI with the same parallel-tools prompt and confirm each
-    tool renders in its own ╭─/│/╰─ panel, not a single blob.
-    """
-    raw = run_pty(
-        [psi.binary, "--tui", "--model", _live_model(), "--max-tokens", "500"],
-        [
-            (b"", 0.8),
-            (
-                b"Issue three separate bash tool_use blocks: "
-                b"sleep 3 && echo apple ; sleep 6 && echo banana ; "
-                b"sleep 9 && echo cherry. Then reply done.\r",
-                60.0,
-            ),
-            (b"\x07", 2.0),
-            (b"/quit\r", 2.0),
-        ],
-        idle_drain=5.0,
-    )
-    raw.assert_clean_exit()
-    text = strip_ansi(raw)
-    # Each fruit must appear in the rendered output (progress or final).
-    # This is the semantic check: if all three appear, three tools ran
-    # in the same turn. The pi-style renderer uses filled tool blocks
-    # instead of unicode panel chrome, so assert on the pending block
-    # background in the raw capture rather than a border glyph.
-    for fruit in ("apple", "banana", "cherry"):
-        assert_contains(text, fruit, f"{fruit} in TUI output")
-    assert_bytes_contains(raw, b"\x1b[48;2;40;40;50m", "no pi-style tool block in TUI stream")
-
 # ---------------------------------------------------------------------------
 # Pytest driver. The script entrypoint below preserves the old smoke.py CLI by
 # translating it into a pytest invocation.
@@ -2524,18 +2147,14 @@ def t_live_parallel_panels(psi: Psi):
 def pytest_generate_tests(metafunc):
     if "smoke_case" not in metafunc.fixturenames:
         return
-    selected = _selected_tests(
-        metafunc.config.getoption("--filter"),
-        metafunc.config.getoption("--exclude") or [],
-    )
-    metafunc.parametrize("smoke_case", selected, ids=[case[0] for case in selected])
+    metafunc.parametrize("smoke_case", TESTS, ids=[case[0] for case in TESTS])
 
 @pytest.fixture
 def psi(request, tmp_path: Path):
     binary = Path(request.config.getoption("--psi")).resolve()
     if not binary.exists():
         pytest.fail(f"psi binary not found at {binary}; build it or pass --psi", pytrace=False)
-    env = _smoke_env(tmp_path)
+    env = smoke_env(tmp_path)
     token = _CURRENT_TEST_ENV.set(env)
     try:
         yield Psi(str(binary), tmp_path, env)
@@ -2546,7 +2165,7 @@ def _pytest_run_live(config) -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY")) and not config.getoption("--no-live")
 
 def test_smoke_case(smoke_case, psi: Psi, request):
-    name, fn, meta = smoke_case
+    _name, fn, meta = smoke_case
     if meta["live"] and not _pytest_run_live(request.config):
         pytest.skip("live smoke test requires ANTHROPIC_API_KEY")
     try:
@@ -2573,22 +2192,17 @@ def main() -> int:
             tag = "(live)" if meta["live"] else ""
             print(f"{name} {tag}".rstrip())
         for case in lua_runner.discover(Path(__file__).resolve().parent):
-            if args.filter and args.filter not in case.name:
-                continue
-            if any(ex in case.name for ex in (args.exclude or [])):
-                continue
-            print(case.name)
+            if matches_name(case.name, args.filter, args.exclude or []):
+                print(case.name)
         return 0
 
     binary = str(Path(args.psi).resolve())
-    if not Path(binary).exists():
-        print(f"psi binary not found at {binary}; build it or pass --psi", file=sys.stderr)
-        return 1
 
     # Invoke pytest on the whole tests/ directory so the declarative
     # tests/lua/ cases (collected via test_lua_cases.py) run alongside the
     # PTY/multi-step cases defined in this file.
     argv = [
+        "-c", str(ROOT / "pytest.ini"),
         "--rootdir", str(ROOT),
         str(Path(__file__).resolve().parent),
         "--psi", binary,

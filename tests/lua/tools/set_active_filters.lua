@@ -1,6 +1,4 @@
 --[==[psi-test
-# Original asserts: parts[0] >= 3, parts[1] == 2, "read" in parts[2], "grep" in parts[2], parts[0] == parts[3].
-# Refactored to fold all checks into the Lua return so a single equals comparison passes.
 expect = "true|true|true|true|true|true"
 ]==]
 local t = require("psi.tools")

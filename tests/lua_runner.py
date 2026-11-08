@@ -7,68 +7,26 @@ expression handed to ``psi --eval``.
 
 Format::
 
-    --[[psi-test
+    --[==[psi-test
     name = "eval/arithmetic"
     expect = "6"
-    ]]
+    ]==]
     return 1 + 2 + 3
 
-Available metadata keys are documented in ``tests/lua/README.md``.
+Metadata supports name, expect, contains, not_contains, regex, cwd, env, files,
+split, requires (compiled capabilities), and exit_only (intentional crash checks).
 """
 
 from __future__ import annotations
 
 import json
-import os
 import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
-ROOT = Path(__file__).resolve().parent.parent
-
-
-def smoke_env(tmp: Path) -> dict[str, str]:
-    """Build the per-test environment psi runs under.
-
-    Mirrors the helper in ``smoke.py`` so the declarative runner and the
-    legacy custom-decorator runner produce identical environments.
-    """
-    home = tmp / "home"
-    config = tmp / "config"
-    state = tmp / "state"
-    cache = tmp / "cache"
-    for path in (home, config, state, cache):
-        path.mkdir(parents=True, exist_ok=True)
-
-    env: dict[str, str] = {}
-    for key in (
-        "PATH", "USER", "LOGNAME", "LANG", "LC_ALL", "TZ", "TERM", "TMPDIR",
-        "SSL_CERT_FILE", "NIX_SSL_CERT_FILE", "SSH_AUTH_SOCK",
-    ):
-        value = os.environ.get(key)
-        if value:
-            env[key] = value
-
-    for key in ("ANTHROPIC_API_KEY", "PSI_ANTHROPIC_MODEL"):
-        value = os.environ.get(key)
-        if value:
-            env[key] = value
-
-    env.setdefault("PATH", os.defpath)
-    env.setdefault("TERM", "xterm-256color")
-    env.setdefault("LANG", "C.UTF-8")
-    env.setdefault("LC_ALL", "C.UTF-8")
-    env["HOME"] = str(home)
-    env["XDG_CONFIG_HOME"] = str(config)
-    env["XDG_STATE_HOME"] = str(state)
-    env["XDG_CACHE_HOME"] = str(cache)
-    env["PWD"] = str(ROOT)
-    # Tests run non-interactively against fixture checkouts; trust their
-    # project-local resources by default. Individual cases override.
-    env["PSI_TRUST"] = "always"
-    return env
+from test_support import CAPABILITIES
 
 LUA_DIR_NAME = "lua"
 # Use a level-2 long-bracket comment ``--[==[psi-test ... ]==]`` so the
@@ -118,6 +76,8 @@ class LuaCase:
     env: dict[str, str] = field(default_factory=dict)
     files: list[FileSpec] = field(default_factory=list)
     split: SplitCheck | None = None
+    requires: list[str] = field(default_factory=list)
+    exit_only: bool = False
 
 
 def discover(root: Path) -> list[LuaCase]:
@@ -136,6 +96,7 @@ def parse_file(path: Path, base: Path) -> LuaCase:
     text = path.read_text()
     meta_text, body = _split_meta(text)
     meta = tomllib.loads(meta_text) if meta_text else {}
+    _validate_metadata(meta, path)
 
     default_name = path.relative_to(base).with_suffix("").as_posix()
     name = meta.get("name", default_name)
@@ -169,7 +130,91 @@ def parse_file(path: Path, base: Path) -> LuaCase:
         env={k: str(v) for k, v in meta.get("env", {}).items()},
         files=files,
         split=split,
+        requires=meta.get("requires", []),
+        exit_only=meta.get("exit_only", False),
     )
+
+
+def _validate_metadata(meta: dict[str, Any], path: Path) -> None:
+    def reject(message: str) -> None:
+        raise ValueError(f"{path}: {message}")
+
+    allowed = {
+        "name", "expect", "contains", "not_contains", "regex", "cwd", "env",
+        "files", "split", "requires", "exit_only",
+    }
+    unknown = set(meta) - allowed
+    if unknown:
+        reject(f"unknown metadata keys: {', '.join(sorted(unknown))}")
+    for key in ("name", "expect", "regex", "cwd"):
+        if key in meta and not isinstance(meta[key], str):
+            reject(f"{key} must be a string")
+    for key in ("contains", "not_contains"):
+        value = meta.get(key, [])
+        if not isinstance(value, str) and not (
+            isinstance(value, list) and all(isinstance(v, str) for v in value)
+        ):
+            reject(f"{key} must be a string or list of strings")
+        if any(not v for v in _as_list(value)):
+            reject(f"{key} must not contain empty assertions")
+    requires = meta.get("requires", [])
+    if not isinstance(requires, list) or any(
+        not isinstance(v, str) or v not in CAPABILITIES for v in requires
+    ):
+        reject("requires must list known compiled capabilities")
+    if not isinstance(meta.get("exit_only", False), bool):
+        reject("exit_only must be a boolean")
+    env = meta.get("env", {})
+    if not isinstance(env, dict) or any(not isinstance(v, str) for v in env.values()):
+        reject("env must map names to strings")
+    files = meta.get("files", [])
+    if not isinstance(files, list):
+        reject("files must be a list")
+    for spec in files:
+        if not isinstance(spec, dict) or not isinstance(spec.get("path"), str):
+            reject("each file needs a string path")
+        if set(spec) - {"path", "text", "json", "mkdir"}:
+            reject("unknown file fixture keys")
+        if "text" in spec and not isinstance(spec["text"], str):
+            reject("file text must be a string")
+        if "mkdir" in spec and spec["mkdir"] is not True:
+            reject("file mkdir must be true")
+        if sum(key in spec for key in ("text", "json", "mkdir")) != 1:
+            reject("file fixture must choose exactly one of text, json, or mkdir=true")
+    split = meta.get("split")
+    if split is not None:
+        if not isinstance(split, dict) or set(split) - {"sep", "checks"}:
+            reject("split must contain only sep and checks")
+        if not isinstance(split.get("sep", "|"), str) or not split.get("sep", "|"):
+            reject("split separator must be a nonempty string")
+        checks = split.get("checks")
+        if not isinstance(checks, list) or not checks:
+            reject("split requires nonempty checks")
+        for check in checks:
+            if not isinstance(check, dict) or set(check) - {"index", "equals", "contains", "regex"}:
+                reject("unknown split check keys")
+            index = check.get("index")
+            if type(index) is not int or index < 0:
+                reject("split check index must be a nonnegative integer")
+            predicates = set(check) - {"index"}
+            if not predicates or any(not isinstance(check[k], str) for k in predicates):
+                reject("split check needs string assertions")
+            if any(check.get(k) == "" for k in ("contains", "regex")):
+                reject("split check assertions must not be empty")
+            if "regex" in check:
+                re.compile(check["regex"])
+    if "regex" in meta:
+        if not meta["regex"]:
+            reject("regex must not be empty")
+        re.compile(meta["regex"])
+    asserted = (
+        "expect" in meta or bool(meta.get("contains")) or bool(meta.get("not_contains"))
+        or "regex" in meta or split is not None
+    )
+    if not asserted and not meta.get("exit_only"):
+        reject("case needs an output assertion or explicit exit_only=true")
+    if asserted and meta.get("exit_only"):
+        reject("exit_only cannot be combined with output assertions")
 
 
 def prepare(case: LuaCase, tmp: Path, repo_root: Path) -> tuple[Path, dict[str, str], str]:

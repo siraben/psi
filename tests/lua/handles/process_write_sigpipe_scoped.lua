@@ -1,4 +1,5 @@
 --[==[psi-test
+requires = ["mcp"]
 expect = "sigpipe-default"
 ]==]
 local marker = TMP .. "/sigpipe-survived"

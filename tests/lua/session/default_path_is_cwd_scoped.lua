@@ -1,6 +1,4 @@
 --[==[psi-test
-# Original split asserts: encoded surrounded by "--", state path contains
-# psi/sessions, encoded segment in path, ends in .jsonl. Folded.
 expect = "true|true|true|true"
 cwd = "project path"
 env = { XDG_STATE_HOME = "{TMP}/state" }

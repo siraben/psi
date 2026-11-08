@@ -11,9 +11,9 @@ import shlex
 import subprocess
 from pathlib import Path
 
-import pytest
-
 import lua_runner
+import pytest
+from test_support import apply_env, smoke_env
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -28,18 +28,15 @@ def test_lua_case(lua_case: lua_runner.LuaCase, tmp_path: Path, request):
 
     cwd, env_extra, body = lua_runner.prepare(lua_case, tmp_path, ROOT)
 
-    env = lua_runner.smoke_env(tmp_path)
+    env = smoke_env(tmp_path)
     env["PWD"] = str(cwd)
-    for key, value in env_extra.items():
-        if value == "":
-            env.pop(key, None)
-        else:
-            env[key] = value
+    env = apply_env(env, {key: value or None for key, value in env_extra.items()})
 
     argv = [str(binary), "--eval", body]
     result = subprocess.run(
         argv,
         capture_output=True,
+        check=False,
         text=True,
         env=env,
         cwd=str(cwd),

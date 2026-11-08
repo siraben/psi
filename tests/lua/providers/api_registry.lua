@@ -1,14 +1,23 @@
 --[==[psi-test
-expect = "psi.providers.anthropic|anthropic-messages|true|function|5"
+expect = "ok"
 ]==]
-local p = require("psi.api_registry")
-local api = p.api("anthropic-messages")
-local desc = p.resolve_descriptor("anthropic/claude-opus-4-8")
-local mod = p.load_api("anthropic-messages")
-return table.concat({
-  tostring(api.module),
-  tostring(desc.api),
-  tostring(desc.compat.supports_tool_use),
-  tostring(type(mod.run_turn)),
-  tostring(#p.all_apis()),
-}, "|")
+local registry = require("psi.api_registry")
+local apis = {}
+for _, api in ipairs(registry.all_apis()) do
+  assert(not apis[api.name], "duplicate API")
+  apis[api.name] = api
+end
+for _, name in ipairs({ "anthropic-messages", "ollama-chat", "openrouter-chat-completions",
+  "openai-codex-responses", "moonshot-messages" }) do
+  assert(apis[name], "missing supported wire API: " .. name)
+end
+for _, provider in ipairs(registry.all_providers()) do
+  assert(apis[provider.api], "provider must route to a registered API")
+  local id = provider.name .. "/" .. provider.default_model
+  local route = registry.resolve_route(id)
+  local descriptor = registry.resolve_descriptor(id)
+  assert(route.name == provider.name)
+  assert(descriptor.provider == provider.name and descriptor.api == provider.api)
+  assert(descriptor.id == provider.default_model)
+end
+return "ok"
