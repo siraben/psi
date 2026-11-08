@@ -20,6 +20,7 @@
 -- packages/coding-agent/src/core/prompt-templates.ts.
 
 local prelude = require("psi.prelude")
+local config_paths = require("psi.config_paths")
 
 local M = {}
 
@@ -203,14 +204,9 @@ function M.load()
       load_from_dir(dir)
     end
   end
-  local xdg = os.getenv("XDG_CONFIG_HOME")
-  if xdg and xdg ~= "" then
-    load_from_dir(prelude.path_join(xdg, "psi/prompts"))
-  else
-    local home = os.getenv("HOME")
-    if home and home ~= "" then
-      load_from_dir(prelude.path_join(home, ".config/psi/prompts"))
-    end
+  local cfg = config_paths.config_dir()
+  if cfg then
+    load_from_dir(prelude.path_join(cfg, "prompts"))
   end
   if psi.project_trusted then
     load_from_dir("./.psi/prompts")
