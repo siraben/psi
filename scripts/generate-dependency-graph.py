@@ -82,7 +82,7 @@ def include_build_inputs(runtime, build):
 def render_svg(graph, dot, orientation):
     # Graphviz handles shared transitive dependencies and cycles without inventing edges.
     lines = ['digraph dependencies {',
-             f'graph [rankdir=LR, bgcolor="transparent", pad="0.25", nodesep="0.32", ranksep="0.65", splines=polyline];',
+             f'graph [rankdir=LR, bgcolor="transparent", pad="0.25", nodesep="0.32", ranksep="0.65", splines=spline];',
              'node [shape=box, style="rounded,filled", margin="0.17,0.13", fontname="DM Sans", fontsize=13, color="#bcc3b2", fillcolor="#f5f3ec", fontcolor="#232820", penwidth=1.2];',
              'edge [color="#b6bfae", arrowsize=0.55, penwidth=1.2];']
     for node in graph['nodes']:
