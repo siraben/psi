@@ -65,3 +65,11 @@ The edit replay fixes `mean([])` and runs three passing Python tests. The theme 
 These four final replays use direct Anthropic `claude-opus-5-5` with adaptive thinking at the lowest supported effort, `low`, verified in all 17 serialized requests. An explicit disabled-thinking probe was rejected with HTTP 400; Anthropic documents that this model always uses adaptive thinking, and omission defaults to medium effort. The earlier Haiku artwork remains its separate high-effort capture. Original TUI footers are preserved; no model or thinking overlays were added.
 
 Posters and videos are faithful renderings of each actual ANSI stream with asciinema-agg 1.9.0 and FFmpeg. Long idle gaps are capped at 1.5 seconds for video playback; raw recording timestamps remain intact. Posters select the genuine final result before native Ctrl-D exit. No output was fabricated or relabeled. Temporary copied credentials and owned recording/namespace processes were removed after verification.
+
+## Web delivery variants
+
+The displayed screenshot/poster images also have lossless WebP variants in
+`assets/optimized/`. Full-size decoded pixels were verified identical to their
+PNG sources; resized variants are Lanczos downscales encoded losslessly.
+The manifest records source/output SHA-256 hashes, dimensions, and byte sizes.
+Original PNGs, recordings, and the social-preview PNG are retained unchanged.

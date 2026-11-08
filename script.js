@@ -51,22 +51,55 @@ document.querySelector('.hero-demo')?.addEventListener('click', () => {
 });
 
 const demoPlayers = new Map();
+let playerAssets;
+function loadPlayer() {
+  if (window.AsciinemaPlayer) return Promise.resolve();
+  if (playerAssets) return playerAssets;
+  playerAssets = Promise.all([
+    new Promise((resolve, reject) => {
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.href = 'assets/player/asciinema-player.css';
+      style.onload = resolve;
+      style.onerror = () => { style.remove(); reject(new Error('Player stylesheet failed to load')); };
+      document.head.append(style);
+    }),
+    new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'assets/player/asciinema-player.min.js';
+      script.onload = resolve;
+      script.onerror = () => { script.remove(); reject(new Error('Player script failed to load')); };
+      document.head.append(script);
+    }),
+  ]).catch(error => { playerAssets = undefined; throw error; });
+  return playerAssets;
+}
 document.querySelectorAll('.terminal-demo[data-recording]').forEach(container => {
-  container.querySelector('.recording-poster')?.addEventListener('click', () => {
-    if (!window.AsciinemaPlayer) {
-      document.querySelector('.copy-status').textContent = 'The player could not load. Use the download recording link below.';
-      return;
+  const button = container.querySelector('.recording-poster');
+  button?.addEventListener('click', async () => {
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    const label = button.querySelector('.play-recording');
+    const originalLabel = label.innerHTML;
+    label.textContent = 'Loading demo…';
+    try {
+      await loadPlayer();
+      container.replaceChildren();
+      const player = window.AsciinemaPlayer.create(container.dataset.recording, container, {
+        autoplay: !container.closest('[role="tabpanel"]').hidden,
+        preload: true,
+        fit: 'width',
+        theme: 'asciinema',
+        idleTimeLimit: 2,
+        terminalFontFamily: "'IBM Plex Mono', monospace",
+      });
+      demoPlayers.set(container, player);
+    } catch {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      label.innerHTML = originalLabel;
+      document.querySelector('.copy-status').textContent = 'The player could not load. Try again or download the recording below.';
     }
-    container.replaceChildren();
-    const player = window.AsciinemaPlayer.create(container.dataset.recording, container, {
-      autoplay: true,
-      preload: true,
-      fit: 'width',
-      theme: 'asciinema',
-      idleTimeLimit: 2,
-      terminalFontFamily: "'IBM Plex Mono', monospace",
-    });
-    demoPlayers.set(container, player);
   });
 });
 document.querySelector('.recording-tabs')?.addEventListener('tabselect', () => {

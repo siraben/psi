@@ -57,3 +57,24 @@ those used OpenRouter. See the capture provenance for precise recording details.
 
 See [CAPTURES.md](CAPTURES.md) for the screenshots' source, guest versions, and
 recording provenance.
+
+## Asset optimization
+
+Displayed screenshots use content-hashed, lossless WebP files with responsive
+`srcset`/`sizes`, explicit dimensions, and lazy loading below the hero. The hero
+is eager/high priority. Original PNG downloads and the social PNG stay intact.
+Full-size WebPs decode pixel-for-pixel identically to the originals. Resized
+variants use Lanczos; variants heavier than larger alternatives are omitted
+from delivery. Fonts are self-hosted WOFF2 subsets with their license notices.
+The replay library and its stylesheet load on the first Play click.
+
+After changing a source screenshot, run from the repository:
+
+```sh
+python3 scripts/optimize-website-images.py
+python3 scripts/prepare-website-assets.py
+```
+
+The second command also updates CSS/JS cache versions after those files change.
+GitHub Pages controls HTTP cache lifetimes; content hashes avoid stale images
+without claiming custom immutable-cache headers.
