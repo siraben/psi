@@ -1,0 +1,1112 @@
+{
+  "note": "Only request settings and timestamps are recorded; no credentials, messages, response text or thinking content.",
+  "request_count": 79,
+  "requests": [
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:51:20Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:51:31Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:51:35Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:54:55Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:55:09Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:05Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:15Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:31Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:39Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:45Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:53Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:56:59Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:57:05Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:57:08Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:57:33Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:58:39Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:58:42Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T15:59:13Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:00:55Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:01:07Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:01:15Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:01:19Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:02:45Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:02:49Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:04:09Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:04:14Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:16Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:28Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:43Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:45Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:52Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:06:54Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:07:04Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:07:16Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:07:30Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:07:34Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:08:06Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:08:10Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:08:26Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:08:30Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:09:11Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:10:39Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:10:53Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:10:58Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:11:04Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:11:26Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:12:04Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:12:16Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:12:22Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:15:07Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:15:13Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:15:22Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:16:56Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:17:09Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:19:34Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:21:37Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:21:50Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:22:10Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:25:02Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:25:30Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:29:44Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:33:28Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:34:22Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:34:40Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:38:00Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:38:49Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:38:56Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:39:19Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:41:34Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:41:59Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:42:10Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:44:25Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:47:45Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:53:19Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:53:28Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:53:55Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:54:13Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:54:22Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    },
+    {
+      "output_config": {
+        "effort": "high"
+      },
+      "timestamp": "2026-11-08T16:54:36Z",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "max_tokens": 32768,
+      "audit_stage": "serialized_http_stream_begin"
+    }
+  ]
+}
