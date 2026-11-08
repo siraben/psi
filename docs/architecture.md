@@ -99,6 +99,7 @@ Lua owns the runtime model:
   `lua/psi/providers/openai_codex.lua`, and `lua/psi/providers/ollama.lua`
 - cooperative scheduling in `lua/psi/sched.lua`
 - tool registry and built-in tool implementations
+- shared XDG configuration-root policy in `lua/psi/config_paths.lua`
 - prompt assembly, context shaping, render hooks, and event hooks
 - TUI state, rendering, and key policy
 
@@ -237,6 +238,9 @@ C owns only the terminal boundary:
   terminal-relative cursor accounting, and full/differential frame rendering
 - `lua/psi/notice.lua` owns structured operational diagnostics and the explicit
   active-frontend sink
+- `lua/psi/tool_presentation.lua` and `lua/psi/diff_presentation.lua` own shared
+  stateless formatting used by both stdout hooks and the TUI; they do not depend
+  on the component hierarchy
 - `lua/psi/tui_component.lua` and `lua/psi/tui_components/*` own composable
   layout/rendering surfaces such as transcript markdown and chrome
 - `lua/psi/tui_status.lua` exposes TUI hook/status/key APIs, while
@@ -366,7 +370,9 @@ ANSI styling is also capability-driven.
 
 Render helpers should go through `lua/psi/ansi.lua` instead of hard-coding
 escape sequences. That gives dumb terminals, no-color environments, CI logs,
-and small ports the same rendering policy.
+and small ports the same rendering policy. Styled caches own their dependencies
+on ANSI generation/enabled/color, glyph selection, and keybinding revision where
+applicable; callers must not have to remember to clear lower-level caches.
 
 ## Portability and feature gates
 
