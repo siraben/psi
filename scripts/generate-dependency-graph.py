@@ -133,6 +133,33 @@ def render_svg(graph, dot, orientation):
     return ET.tostring(svg, encoding='unicode')
 
 
+def render_tree(graph):
+    """Accessible mobile disclosures, following only recorded outgoing edges."""
+    esc = html.escape
+    nodes = {node['id']: node for node in graph['nodes']}
+    outgoing = {identity: [] for identity in nodes}
+    for edge in graph['edges']:
+        outgoing[edge['source']].append(edge['target'])
+    def branch(identity, ancestors):
+        node = nodes[identity]
+        children = sorted(outgoing[identity], key=lambda key:(nodes[key]['name'],nodes[key]['version'],key))
+        cycle = identity in ancestors
+        label = '<span class="dependency-tree-name">'+esc(node['name'])+'</span><span class="dependency-tree-version">'+esc(node['version'])+'</span>'
+        license_text = esc(', '.join(node['licenses']) or 'Not recorded in the SBOM')
+        nested = '' if cycle or not children else '<ul>'+''.join(branch(child, ancestors | {identity}) for child in children)+'</ul>'
+        note = '<p class="dependency-tree-note">Already on this path; see the earlier entry.</p>' if cycle else ''
+        count = '<span class="dependency-tree-count">'+str(len(children))+' dependencies</span>' if children and not cycle else ''
+        return '<li class="dependency-tree-item dependency-tree-'+node['scope']+'"><details><summary>'+label+'</summary><div class="dependency-tree-content"><p class="dependency-tree-license">Package license metadata: '+license_text+'</p>'+count+note+nested+'</div></details></li>'
+    root = nodes[graph['root']]
+    sections = []
+    for scope, title in [('runtime','Runtime'),('build','Build-only inputs')]:
+        children = [child for child in outgoing[graph['root']] if nodes[child]['scope'] == scope]
+        if children:
+            content = '<ul>'+''.join(branch(child,{graph['root']}) for child in sorted(children,key=lambda key:(nodes[key]['name'],nodes[key]['version'],key)))+'</ul>'
+            sections.append('<details class="dependency-tree-group"'+(' open' if scope == 'runtime' else '')+'><summary>'+title+'<span>'+str(len(children))+' direct</span></summary>'+content+'</details>')
+    return '<div class="dependency-mobile-tree"><div class="dependency-tree-root"><strong>'+esc(root['name'])+'</strong><span>'+esc(root['version'])+'</span></div>'+''.join(sections)+'</div>'
+
+
 def build_section(graph, provenance, source_path, dot):
     esc = html.escape
     by_id = {n['id']: n for n in graph['nodes']}
@@ -148,7 +175,7 @@ def build_section(graph, provenance, source_path, dot):
         views[scope] = {'root':graph['root'], 'nodes':nodes, 'edges':edges}
     views['both'] = {k:graph[k] for k in ['root','nodes','edges']}
     graph['views'] = views
-    diagrams = ''.join('<div class="dependency-view" data-view="'+name+'"'+(' hidden' if name != 'both' else '')+'>'+render_svg(view,dot,name)+'</div>' for name,view in views.items())
+    diagrams = ''.join('<div class="dependency-view" data-view="'+name+'"'+(' hidden' if name != 'both' else '')+'>'+render_svg(view,dot,name)+render_tree(view)+'</div>' for name,view in views.items())
     payload = json.dumps(graph, separators=(',', ':')).replace('<','\\u003c')
     commit = provenance['source_commit']
     if not re.fullmatch('[a-f0-9]{40}', commit):
@@ -158,7 +185,7 @@ def build_section(graph, provenance, source_path, dot):
       <div class="dependency-card">
         <div class="dependency-toolbar"><div class="dependency-controls" role="group" aria-label="Dependency types"><button type="button" data-scope="runtime" aria-pressed="true">Runtime</button><button type="button" data-scope="build" aria-pressed="true">Build</button></div><div class="dependency-toolbar-title"><span class="dependency-dot" aria-hidden="true"></span><strong>Dependency map</strong><span class="dependency-platform">Linux · x86_64</span></div><span class="dependency-count">{len(graph['nodes'])} packages / {len(graph['edges'])} connections</span></div>
         <div class="dependency-layout">
-          <div class="dependency-canvas"><p class="dependency-hint">Select a package to follow its connections.</p>{diagrams}<p class="dependency-key"><span class="dependency-legend-solid">Retained at runtime</span><span class="dependency-legend-dashed">Build-time only</span><span>A → B: A depends on B</span><button type="button" class="dependency-reset" hidden>Show all connections</button></p></div>
+          <div class="dependency-canvas"><p class="dependency-hint"><span class="dependency-desktop-hint">Select a package to follow its connections.</span><span class="dependency-mobile-hint">Expand a package for its license and dependencies.</span></p>{diagrams}<p class="dependency-key"><span class="dependency-legend-solid">Retained at runtime</span><span class="dependency-legend-dashed">Build-time only</span><span>A → B: A depends on B</span><button type="button" class="dependency-reset" hidden>Show all connections</button></p></div>
           <aside class="dependency-details" aria-labelledby="dependency-detail-name"><p class="eyebrow">Package details</p><h3 id="dependency-detail-name">Explore the graph</h3><p class="dependency-detail-version">Select any package.</p><p class="dependency-detail-license">Select a node to see its version, package license metadata, and shown connections.</p><div class="dependency-relations" hidden><h4>Shown dependencies</h4><ul class="dependency-outgoing"></ul><h4>Shown dependents</h4><ul class="dependency-incoming"></ul></div><p class="dependency-status sr-only" aria-live="polite"></p></aside>
         </div>
         <div class="dependency-footnote"><p>Nix runtime closure + direct build inputs for <code>.#default</code> at <a href="https://github.com/siraben/psi/commit/{commit}">{commit[:7]}</a>. Other platforms and static builds differ. The full build closure contains {graph.get("build_count",len(graph["nodes"]))} packages; the diagram shows runtime relationships and direct build-input relationships.</p><a href="{esc(source_path,quote=True)}" download>Runtime SBOM <svg class="arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4v16m-7-7 7 7 7-7"/></svg></a><a href="assets/sbom/psi-buildtime.cdx.json" download>Full build SBOM <svg class="arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4v16m-7-7 7 7 7-7"/></svg></a></div>

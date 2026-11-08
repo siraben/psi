@@ -19,7 +19,10 @@ requests. JavaScript adds selection and package details. The HTML dependency
 table and downloadable SBOMs remain available without JavaScript. Runtime and Build toggles select either group or both, with at least one
 required. Each combination has its own precomputed layout. Build means the
 additional build-only direct inputs; inputs already retained remain in Runtime.
-Mobile uses a scrollable graph to keep package labels readable.
+Mobile uses native expandable lists, with solid runtime branches and dashed
+build-only branches. Each package reveals its license metadata and recorded
+outgoing dependencies inline. Shared dependencies appear under each parent;
+cycle references terminate instead of recursing indefinitely.
 
 To refresh, use the repository's pinned sbomnix against the desired Linux build,
 once normally and once with `--buildtime`, with `--exclude-cpe-matching` to

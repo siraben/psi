@@ -26,6 +26,23 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(sum(e['scope']=='build' for e in mixed['edges']),1)
         self.assertEqual(mixed['build_count'],5)
 
+    def test_mobile_tree_stops_cycles(self):
+        model = graph.read_graph(self.snapshot())
+        for node in model['nodes']: node['scope'] = 'runtime'
+        rendered = graph.render_tree(model)
+        self.assertIn('Already on this path', rendered)
+        self.assertLess(len(rendered),10000)
+        self.assertIn('library',rendered)
+
+    def test_mobile_tree_escapes_package_metadata(self):
+        document = self.snapshot()
+        document['components'][0]['name'] = '<script>alert(1)</script>'
+        model = graph.read_graph(document)
+        for node in model['nodes']: node['scope'] = 'runtime'
+        rendered = graph.render_tree(model)
+        self.assertNotIn('<script>',rendered)
+        self.assertIn('&lt;script&gt;',rendered)
+
     def test_unknown_reference_rejected(self):
         document = self.snapshot(); document['dependencies'][0]['dependsOn'].append('missing')
         with self.assertRaisesRegex(ValueError,'Unknown dependency target'): graph.read_graph(document)
