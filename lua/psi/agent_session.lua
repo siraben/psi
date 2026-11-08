@@ -19,14 +19,10 @@ local M = {}
 
 -- ---------- Provider routing ----------
 --
--- Selection rules, in priority:
---   1. Explicit model prefix: "ollama/<name>", "anthropic/<name>",
---      or "openrouter/<provider>/<name>" strips the first path
---      segment and routes accordingly. For openrouter we keep the
---      rest of the path — OpenRouter model slugs are
---      "<vendor>/<model>" (e.g. google/gemini-3-flash-preview).
---   2. $PSI_PROVIDER env ("ollama" | "anthropic" | "openrouter").
---   3. Default: anthropic.
+-- Provider/model selection is centralized in api_registry.resolve_descriptor:
+-- explicit model prefix, PSI_PROVIDER, configured defaults, then authenticated
+-- fallback. Keep the precedence and no-credentials fallback in that registry;
+-- the orchestrator works with whichever provider the descriptor resolves.
 local function pick_provider(model)
   local resolved = providers.resolve_descriptor(model)
   return providers.load_provider(providers.provider(resolved.provider)), resolved
