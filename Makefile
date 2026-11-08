@@ -104,8 +104,8 @@ else
 PKG_CONFIG_FLAGS =
 endif
 
-pkg_cflags = $(if $(PSI_CFLAGS_$(1)),$(PSI_CFLAGS_$(1)),$(shell $(PKG_CONFIG) $(PKG_CONFIG_FLAGS) --cflags $(2) 2>/dev/null))
-pkg_libs   = $(if $(PSI_LIBS_$(1)),$(PSI_LIBS_$(1)),$(shell $(PKG_CONFIG) $(PKG_CONFIG_FLAGS) --libs $(2) 2>/dev/null))
+pkg_cflags = $(if $(filter undefined,$(origin PSI_CFLAGS_$(1))),$(shell $(PKG_CONFIG) $(PKG_CONFIG_FLAGS) --cflags $(2) 2>/dev/null),$(PSI_CFLAGS_$(1)))
+pkg_libs   = $(if $(filter undefined,$(origin PSI_LIBS_$(1))),$(shell $(PKG_CONFIG) $(PKG_CONFIG_FLAGS) --libs $(2) 2>/dev/null),$(PSI_LIBS_$(1)))
 
 # Each PKG_DEPS entry is "<override-prefix>:<pkg-config-name>".
 dep_cflags = $(call pkg_cflags,$(firstword $(subst :, ,$(1))),$(lastword $(subst :, ,$(1))))
@@ -132,8 +132,8 @@ LOCAL_CPPFLAGS += $(call pkg_cflags,ARGTABLE,argtable3)
 
 LOCAL_LDFLAGS := $(foreach d,$(PKG_DEPS),$(call dep_libs,$(d)))
 # argtable3 isn't always packaged with pkg-config; fall back to -largtable3.
-LOCAL_LDFLAGS += $(if $(PSI_LIBS_ARGTABLE),$(PSI_LIBS_ARGTABLE),$(or $(call pkg_libs,ARGTABLE,argtable3),-largtable3))
-LOCAL_LDFLAGS += $(if $(PSI_LIBS_PTHREAD),$(PSI_LIBS_PTHREAD),-lpthread)
+LOCAL_LDFLAGS += $(if $(filter undefined,$(origin PSI_LIBS_ARGTABLE)),$(or $(call pkg_libs,ARGTABLE,argtable3),-largtable3),$(PSI_LIBS_ARGTABLE))
+LOCAL_LDFLAGS += $(if $(filter undefined,$(origin PSI_LIBS_PTHREAD)),-lpthread,$(PSI_LIBS_PTHREAD))
 
 comma := ,
 LOCAL_RPATH_LDFLAGS := $(patsubst -L%,-Wl$(comma)-rpath$(comma)%,$(filter -L%,$(LOCAL_LDFLAGS)))
@@ -165,13 +165,47 @@ HOST_LIBS_ZLIB   ?= $(shell $(HOST_PKG_CONFIG) --libs zlib)
 .DEFAULT_GOAL := all
 all: $(TARGET)
 
+# Content comparison preserves timestamps on unchanged invocations. Separate
+# manifests also detect removed inputs, which timestamp prerequisites cannot.
+COMPILE_CONFIG = $(BUILD_DIR)/.compile-config
+LINK_CONFIG = $(BUILD_DIR)/.link-config
+HOST_CONFIG = $(BUILD_DIR)/.host-config
+LUA_CONFIG = $(BUILD_DIR)/.lua-config
+DOCS_CONFIG = $(BUILD_DIR)/.docs-config
+CA_CONFIG = $(BUILD_DIR)/.ca-config
+
+shell_quote = '$(subst ','"'"',$(1))'
+define update_config
+	@mkdir -p "$(@D)"
+	@set -e; printf '%s\n' $(call shell_quote,$(1)) > "$@.tmp"; \
+	if test -r "$@" && cmp -s "$@.tmp" "$@"; then \
+		rm -f "$@.tmp"; \
+	else mv -f "$@.tmp" "$@"; fi
+endef
+
+.PHONY: FORCE
+FORCE:
+
+$(COMPILE_CONFIG): FORCE
+	$(call update_config,$(CC) $(CPPFLAGS) $(LOCAL_CPPFLAGS) $(BASE_CFLAGS) $(CFLAGS) $(DEPFLAGS))
+$(LINK_CONFIG): FORCE
+	$(call update_config,$(CC) $(LDFLAGS) $(RPATH_LDFLAGS) $(OBJECTS) $(GEN_OBJECTS) $(LOCAL_LDFLAGS))
+$(HOST_CONFIG): FORCE
+	$(call update_config,$(HOST_CC) -O2 $(HOST_CFLAGS_ZLIB) $(HOST_LIBS_ZLIB))
+$(LUA_CONFIG): FORCE
+	$(call update_config,$(LUA_SOURCES))
+$(DOCS_CONFIG): FORCE
+	$(call update_config,--table=psi_embedded_docs_table --raw-keys $(DOC_SOURCES))
+$(CA_CONFIG): FORCE
+	$(call update_config,--table=psi_embedded_ca_table --key=$(EMBED_CA_KEY) $(EMBED_CA_FILE))
+
 # ---- Pattern rules ----
-$(OBJECTS): $(BUILD_DIR)/%.o: %.c
+$(OBJECTS): $(BUILD_DIR)/%.o: %.c $(COMPILE_CONFIG)
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) $(LOCAL_CPPFLAGS) $(BASE_CFLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
 # Generated blobs only need psi/embedded_data.h.
-$(GEN_OBJECTS): $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
+$(GEN_OBJECTS): $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(COMPILE_CONFIG)
 	@mkdir -p $(@D)
 	$(CC) $(CPPFLAGS) -Iinclude $(BASE_CFLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
@@ -181,16 +215,16 @@ $(GEN_OBJECTS): $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(EMBED_TOOL): scripts/embed.c | $(BUILD_DIR)
+$(EMBED_TOOL): scripts/embed.c $(HOST_CONFIG) | $(BUILD_DIR)
 	$(HOST_CC) -O2 $(HOST_CFLAGS_ZLIB) -o $@ $< $(HOST_LIBS_ZLIB)
 
-$(EMBED_LUA): $(EMBED_TOOL) $(LUA_SOURCES)
+$(EMBED_LUA): $(EMBED_TOOL) $(LUA_SOURCES) $(LUA_CONFIG)
 	$(EMBED_TOOL) $(LUA_SOURCES) > $@
 
-$(EMBED_DOCS): $(EMBED_TOOL) $(DOC_SOURCES)
+$(EMBED_DOCS): $(EMBED_TOOL) $(DOC_SOURCES) $(DOCS_CONFIG)
 	$(EMBED_TOOL) --table=psi_embedded_docs_table --raw-keys $(DOC_SOURCES) > $@
 
-$(EMBED_CA): $(EMBED_TOOL) $(EMBED_CA_FILE)
+$(EMBED_CA): $(EMBED_TOOL) $(EMBED_CA_FILE) $(CA_CONFIG)
 	$(EMBED_TOOL) --table=psi_embedded_ca_table --key=$(EMBED_CA_KEY) $(EMBED_CA_FILE) > $@
 
 # ---- Link ----
@@ -203,7 +237,7 @@ check-curl-ca:
 	fi
 
 # Order-only so check-curl-ca's phony status doesn't relink every build.
-$(TARGET): $(OBJECTS) $(GEN_OBJECTS) | check-curl-ca $(BUILD_DIR)
+$(TARGET): $(OBJECTS) $(GEN_OBJECTS) $(LINK_CONFIG) | check-curl-ca $(BUILD_DIR)
 	$(CC) $(LDFLAGS) $(RPATH_LDFLAGS) -o $@ $(OBJECTS) $(GEN_OBJECTS) $(LOCAL_LDFLAGS)
 
 # ---- Install / clean ----
@@ -241,18 +275,23 @@ analyze-cppcheck:
 		--error-exitcode=1 \
 		-I include --quiet src/
 
+GCC_ANALYZE_DIR ?= $(BUILD_DIR)-analyze-gcc
+SCAN_BUILD_DIR ?= $(BUILD_DIR)-analyze-scan
+SCAN_BUILD_RESULTS_DIR ?= $(SCAN_BUILD_DIR)-results
+
 analyze-gcc:
-	$(MAKE) clean
-	$(MAKE) CFLAGS="-O2 -fanalyzer"
+	$(MAKE) BUILD_DIR="$(GCC_ANALYZE_DIR)" clean
+	$(MAKE) BUILD_DIR="$(GCC_ANALYZE_DIR)" CFLAGS="-O2 -fanalyzer"
 
 analyze-scan-build:
-	rm -rf $(BUILD_DIR) $(BUILD_DIR)-scan-build
+	$(MAKE) BUILD_DIR="$(SCAN_BUILD_DIR)" clean
+	rm -rf "$(SCAN_BUILD_RESULTS_DIR)"
 	$(SCAN_BUILD) --status-bugs \
 		--intercept-first \
 		--use-cc=$(SCAN_BUILD_CC) \
 		--use-analyzer=$(SCAN_BUILD_ANALYZER) \
-		--output=$(BUILD_DIR)-scan-build \
-		$(MAKE) CC=$(SCAN_BUILD_CC) HOST_CC=$(SCAN_BUILD_CC)
+		--output="$(SCAN_BUILD_RESULTS_DIR)" \
+		$(MAKE) BUILD_DIR="$(SCAN_BUILD_DIR)" CC=$(SCAN_BUILD_CC) HOST_CC=$(SCAN_BUILD_CC)
 
 analyze-infer: $(OBJECTS)
 

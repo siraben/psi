@@ -44,7 +44,6 @@ jobs:
     name: Style and static analysis
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [format]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -61,7 +60,6 @@ jobs:
     name: SBOM audit
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [valgrind]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -82,7 +80,6 @@ jobs:
     name: Infer static analysis
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [style]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -101,7 +98,6 @@ jobs:
     name: Clang static analyzer
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [infer]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -119,29 +115,24 @@ jobs:
     name: Build and smoke (${{ matrix.name }})
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [scan-build]
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: default
             make_flags: ""
-            smoke_excludes: ""
           - name: no-tui
             make_flags: "TUI=0"
-            smoke_excludes: "events/tui,render/tui,tui/,mode/tui"
           - name: no-ansi
             make_flags: "ANSI=0"
-            smoke_excludes: "events/tui,render/tui,tui/,mode/tui,commands/rainbow,markdown/inline_code_no_backticks,theme/compound_ansi_mapping,theme/composite_ansi_remap,ansi/windows_console_force_ansi,ansi/windows_console_plain_by_default,ansi/windows_msys_allows_ansi,ansi/windows_xterm_allows_ansi,ansi/piped_stdout_force_ansi"
           - name: no-color
             make_flags: "COLOR=0"
-            smoke_excludes: "commands/rainbow,mode/tui_rainbow,tui/raw_ansi_available_with_ansi,tui/windows_console_allows_raw_ansi,mode/tui_theme_applies_to_rendered_colors,mode/tui_input_box_background,theme/compound_ansi_mapping,theme/composite_ansi_remap,ansi/windows_console_force_ansi,ansi/windows_console_plain_by_default,ansi/windows_msys_allows_ansi,ansi/windows_xterm_allows_ansi,ansi/piped_stdout_force_ansi"
           - name: no-repl-editline
             make_flags: "REPL_EDITLINE=0"
-            smoke_excludes: ""
+          - name: no-mcp
+            make_flags: "MCP=0"
           - name: minimal
             make_flags: "TUI=0 ANSI=0 COLOR=0 REPL_EDITLINE=0"
-            smoke_excludes: "events/tui,render/tui,tui/,mode/tui,commands/rainbow,markdown/inline_code_no_backticks,theme/compound_ansi_mapping,theme/composite_ansi_remap,ansi/windows_console_force_ansi,ansi/windows_console_plain_by_default,ansi/windows_msys_allows_ansi,ansi/windows_xterm_allows_ansi,ansi/piped_stdout_force_ansi"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -153,7 +144,6 @@ jobs:
       - name: Build and run smoke tests
         env:
           MAKE_FLAGS: ${{ matrix.make_flags }}
-          SMOKE_EXCLUDES: ${{ matrix.smoke_excludes }}
         run: |
           bash scripts/ci/build-and-smoke.sh
 
@@ -161,25 +151,28 @@ jobs:
     name: Libc package and smoke (${{ matrix.name }})
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [feature-matrix]
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: glibc
             package: psi-gcc
+            expect_psi: "true"
             nix_build_flags: ""
             smoke_excludes: ""
           - name: musl-static
             package: psi-static
+            expect_psi: "true"
             nix_build_flags: ""
             smoke_excludes: ""
           - name: cosmo
             package: psi-cosmocc
+            expect_psi: "true"
             nix_build_flags: ""
             smoke_excludes: ""
           - name: c-ward
             package: c-ward
+            expect_psi: "false"
             nix_build_flags: ""
             smoke_excludes: ""
     steps:
@@ -193,6 +186,7 @@ jobs:
       - name: Build package and run smoke tests when applicable
         env:
           PACKAGE_ATTR: ${{ matrix.package }}
+          EXPECT_PSI: ${{ matrix.expect_psi }}
           NIX_BUILD_FLAGS: ${{ matrix.nix_build_flags }}
           SMOKE_EXCLUDES: ${{ matrix.smoke_excludes }}
         run: |
@@ -202,25 +196,29 @@ jobs:
     name: Compiler package and smoke (${{ matrix.name }})
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [libc-matrix]
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: gcc
             package: psi-gcc
+            expect_psi: "true"
             smoke_excludes: ""
           - name: gcc46
             package: psi-gcc46
+            expect_psi: "true"
             smoke_excludes: ""
           - name: clang
             package: psi-clang
+            expect_psi: "true"
             smoke_excludes: ""
           - name: tcc
             package: psi-tcc
+            expect_psi: "true"
             smoke_excludes: ""
           - name: compcert
             package: psi-compcert
+            expect_psi: "true"
             smoke_excludes: ""
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -233,6 +231,7 @@ jobs:
       - name: Build package and run smoke tests
         env:
           PACKAGE_ATTR: ${{ matrix.package }}
+          EXPECT_PSI: ${{ matrix.expect_psi }}
           SMOKE_EXCLUDES: ${{ matrix.smoke_excludes }}
         run: |
           bash scripts/ci/package-smoke.sh
@@ -241,7 +240,6 @@ jobs:
     name: Valgrind
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    needs: [compiler-matrix]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

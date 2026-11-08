@@ -5,6 +5,10 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 for tui in 0 1; do
   for ansi in 0 1; do
+    # ANSI=0 normalizes TUI=1 to TUI=0 at compile time.
+    if [ "$tui" = 1 ] && [ "$ansi" = 0 ]; then
+      continue
+    fi
     for color in 0 1; do
       for editline in 0 1; do
         build_dir="build-configs/tui${tui}-ansi${ansi}-color${color}-editline${editline}"
@@ -33,3 +37,13 @@ for tui in 0 1; do
     done
   done
 done
+
+# Exercise the requested-but-normalized value without another effective build.
+normalized_dir="build-configs/tui0-ansi0-color1-editline1"
+"${MAKE:-make}" -C "$root" BUILD_DIR="$normalized_dir" \
+  TUI=1 ANSI=0 COLOR=1 REPL_EDITLINE=1
+actual=$("$root/$normalized_dir/psi" --eval 'local i=psi.runtime_info(); return tostring(i.tui).."|"..tostring(i.ansi).."|"..tostring(i.color)')
+if [ "$actual" != "false|false|false" ]; then
+  echo "ANSI=0 must normalize TUI=1: got $actual" >&2
+  exit 1
+fi
