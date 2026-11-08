@@ -785,18 +785,6 @@ end
 
 -- Exported for tests/bench.py only. Safe to drop if internal.
 M._test = {
-  new_sse_parser = stream_parser.sse_parser,
-  sse_push = function(parser, chunk, on_event)
-    stream_parser.push_sse(parser, chunk, {
-      multi_data = true,
-      on_event = function(event_type, data)
-        local parsed = safe_decode(data)
-        if parsed then
-          on_event(event_type, parsed)
-        end
-      end,
-    })
-  end,
   new_state = new_state,
   dispatch_sse = dispatch_sse,
   finalize_blocks = finalize_blocks,

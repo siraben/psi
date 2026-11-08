@@ -20,11 +20,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shlex
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -293,9 +291,7 @@ BENCHES: list[tuple[str, str]] = [
         -- Realistic adversarial workload: several large SSE events,
         -- each fragmented into tiny TCP chunks. Exercises the
         -- stateful sse parser (no cross-chunk leftover concat).
-        local anthro = require('psi.providers.anthropic')
-        local new_sse_parser = anthro._test.new_sse_parser
-        local sse_push = anthro._test.sse_push
+        local stream_parser = require('psi.stream_parser')
         local CHUNKS_PER_EVENT = 200
         local EVENTS = 50
         local piece = 'abcdefghijklmnop'  -- 16 bytes
@@ -314,12 +310,20 @@ BENCHES: list[tuple[str, str]] = [
         local events_seen = 0
         local start = os.clock()
         for _ = 1, N do
-          local parser = new_sse_parser()
+          local parser = stream_parser.sse_parser()
+          local opts = {
+            multi_data = true,
+            on_event = function(_, data)
+              local ok, parsed = pcall(psi.json_decode, data)
+              if ok and parsed then events_seen = events_seen + 1 end
+            end,
+          }
           for _, chunk in ipairs(body_chunks) do
-            sse_push(parser, chunk, function() events_seen = events_seen + 1 end)
+            stream_parser.push_sse(parser, chunk, opts)
           end
         end
         local dt = (os.clock() - start) * 1000
+        assert(events_seen == N * EVENTS)
         io.write(string.format('ms: %.1f  iterations: %d  chunks: %d  events: %d\n',
                                dt, N, #body_chunks, events_seen))
         """,
@@ -440,12 +444,12 @@ def run_bench(psi_cmd: list[str], name: str, lua: str, ssh_prefix: list[str] | N
         cmdline = " ".join(shlex.quote(a) for a in psi_cmd + ["--eval", lua])
         res = subprocess.run(
             ssh_prefix + [cmdline],
-            capture_output=True, text=True, timeout=timeout,
+            check=False, capture_output=True, text=True, timeout=timeout,
         )
     else:
         res = subprocess.run(
             psi_cmd + ["--eval", lua],
-            capture_output=True, text=True, timeout=timeout,
+            check=False, capture_output=True, text=True, timeout=timeout,
         )
     if res.returncode != 0:
         return f"FAIL: exit {res.returncode}\n{res.stderr[:400]}"
