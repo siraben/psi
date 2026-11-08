@@ -332,11 +332,8 @@ static const long PSI_VM_READ_FILE_MAX_BYTES = 262144l;
  * the C stack. */
 #define PSI_VM_JSON_DEPTH_MAX 1000
 
-/* Host context is stored in the Lua state's extraspace so FFI primitives
- * can recover it from their lua_State* rather than a file-static. Keeps
- * the door open for multiple VMs and makes cross-thread reasoning easier:
- * each Lua state owns exactly one host, and the worker thread is the
- * only one calling Lua while that host is active. */
+/* Each Lua state owns one host context, recovered by FFI primitives
+ * through extraspace. Only the main thread calls Lua. */
 #define PSI_VM_HOST(L) (*(struct psi_host_context **)lua_getextraspace(L))
 
 #define PSI_VM_NOREF (-2)
@@ -4029,9 +4026,7 @@ static int lfn_abort_reset(lua_State *L) {
 /* psi.set_usage(input, output, cache_read, cache_write, total, context_window)
  *
  * Publishes the most recent API-reported usage into the shared
- * host-context mirror so the TUI main thread can render rich status
- * without calling into Lua (which is unsafe while the worker thread
- * is mid-lua_pcall on the same state — see commit 3548caa).
+ * host-context mirror read by the TUI status line on the same thread.
  *
  * Each field is a Lua integer, coerced to long. `psi.context.
  * record_usage` is the normal caller; `reset_usage` passes zeros. */
