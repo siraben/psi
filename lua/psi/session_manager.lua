@@ -1043,11 +1043,11 @@ local function to_disk_entry(m)
   return disk_entry_from_body(m.role, m.text, body)
 end
 
-local function write_session_file(path, header, messages, count)
+local function write_full_file(path, header, entries, count, convert)
   if not psi.mkdir_parent(path) then
     return false, "failed to create parent directory"
   end
-  local n = count or #messages
+  local n = count or #entries
 
   -- Keep transcript files private from first write.
   if psi.file_write_atomic then
@@ -1055,7 +1055,7 @@ local function write_session_file(path, header, messages, count)
     parts[#parts + 1] = psi.json_encode(header)
     parts[#parts + 1] = "\n"
     for i = 1, n do
-      parts[#parts + 1] = psi.json_encode(to_disk_entry(messages[i]))
+      parts[#parts + 1] = psi.json_encode(convert and convert(entries[i]) or entries[i])
       parts[#parts + 1] = "\n"
     end
     local ok = psi.file_write_atomic(path, table.concat(parts), PRIVATE_FILE_MODE)
@@ -1069,12 +1069,11 @@ local function write_session_file(path, header, messages, count)
   if not f then
     return false, err
   end
-  -- pcall so a mid-write failure (disk full, ENOSPC, killed process)
-  -- still closes the descriptor rather than leaking it until GC.
+  -- Convert thrown write errors into the save failure contract.
   local ok, werr = pcall(function()
     write_line(f, header)
     for i = 1, n do
-      write_line(f, to_disk_entry(messages[i]))
+      write_line(f, convert and convert(entries[i]) or entries[i])
     end
   end)
   if not ok then
@@ -1083,39 +1082,8 @@ local function write_session_file(path, header, messages, count)
   return true
 end
 
-local function write_entry_file(path, header, entries, count)
-  if not psi.mkdir_parent(path) then
-    return false, "failed to create parent directory"
-  end
-  local n = count or #entries
-  if psi.file_write_atomic then
-    local parts = prelude.array(n * 2 + 2)
-    parts[#parts + 1] = psi.json_encode(header)
-    parts[#parts + 1] = "\n"
-    for i = 1, n do
-      parts[#parts + 1] = psi.json_encode(entries[i])
-      parts[#parts + 1] = "\n"
-    end
-    local ok = psi.file_write_atomic(path, table.concat(parts), PRIVATE_FILE_MODE)
-    if ok then
-      return true
-    end
-    return false, "Failed to create session " .. tostring(path)
-  end
-  local f <close>, err = io.open(path, "w")
-  if not f then
-    return false, err
-  end
-  local ok, werr = pcall(function()
-    write_line(f, header)
-    for i = 1, n do
-      write_line(f, entries[i])
-    end
-  end)
-  if not ok then
-    return false, werr
-  end
-  return true
+local function write_session_file(path, header, messages, count)
+  return write_full_file(path, header, messages, count, to_disk_entry)
 end
 
 local function append_entry_file(path, entries, from_idx)
@@ -1210,9 +1178,7 @@ end
 --                                    true write so extensions that
 --                                    track flushes (e.g. autosave)
 --                                    can tell a no-op apart from a
---                                    real save. Historically this
---                                    returned `true` silently and
---                                    hid the misconfiguration.
+--                                    real save.
 --   false, err                     — disk / permission / I/O error.
 --
 -- Append-only fast path: after the first successful save, later
@@ -1241,7 +1207,7 @@ function M.save(path)
     or (not psi.file_exists(path))
 
   if force_full then
-    local ok, err = write_entry_file(path, session_header(), file_entries, count)
+    local ok, err = write_full_file(path, session_header(), file_entries, count)
     if ok then
       last_saved_path = path
       last_saved_count = count
@@ -1857,12 +1823,12 @@ function M.fork(at_count, out_path)
     header.parentSession = parent
   end
   if at_count == #messages then
-    return write_entry_file(out_path, header, active_entries_for_leaf(leaf_id))
+    return write_full_file(out_path, header, active_entries_for_leaf(leaf_id))
   end
   local selected = messages[at_count]
   local body = selected and prelude.safe_json_decode(selected.data, {}, true)
   if body and body.id then
-    return write_entry_file(out_path, header, active_entries_for_leaf(body.id))
+    return write_full_file(out_path, header, active_entries_for_leaf(body.id))
   end
   return write_session_file(out_path, header, messages, at_count)
 end
