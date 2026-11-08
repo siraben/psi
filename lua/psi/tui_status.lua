@@ -6,6 +6,7 @@
 
 local ansi = require("psi.ansi")
 local context = require("psi.context")
+local glyphs = require("psi.glyphs")
 local keybindings = require("psi.keybindings")
 local notice = require("psi.notice")
 local prelude = require("psi.prelude")
@@ -18,18 +19,7 @@ local BAR_SPLIT = string.char(31)
 local enabled_setting
 local usage_cache
 
-local BUSY_FRAMES = {
-  "⠋",
-  "⠙",
-  "⠹",
-  "⠸",
-  "⠼",
-  "⠴",
-  "⠦",
-  "⠧",
-  "⠇",
-  "⠏",
-}
+local BUSY_FRAMES = glyphs.spinner
 
 local function action(name, arg)
   return { action = name, arg = arg }
@@ -538,7 +528,7 @@ local function accent(text)
 end
 
 local function sep()
-  return label("  •  ")
+  return label("  " .. glyphs.dot .. "  ")
 end
 
 local function pair(key, val, use_accent)
@@ -689,7 +679,7 @@ local function workspace_model(cwd)
   local ok, session = pcall(require, "psi.session_manager")
   local name = ok and session.display_name and session.display_name() or nil
   if type(name) == "string" and name ~= "" then
-    path = path .. " • " .. name
+    path = path .. " " .. glyphs.dot .. " " .. name
   end
   return {
     kind = "cwd",
@@ -823,7 +813,7 @@ function M.status_line(arg_json)
     end
   end
   if busy then
-    parts[#parts + 1] = "busy…"
+    parts[#parts + 1] = "busy" .. glyphs.ellipsis
   end
   for _, hook in ipairs(status_hooks) do
     local ok_hook, extra = pcall(hook.fn, arg)
@@ -903,10 +893,10 @@ function M.status_bar(arg_json)
   end
   local left_parts = {}
   if totals.input > 0 then
-    left_parts[#left_parts + 1] = ansi.dim("↑" .. format_tokens(totals.input))
+    left_parts[#left_parts + 1] = ansi.dim(glyphs.arrow_up .. format_tokens(totals.input))
   end
   if totals.output > 0 then
-    left_parts[#left_parts + 1] = ansi.dim("↓" .. format_tokens(totals.output))
+    left_parts[#left_parts + 1] = ansi.dim(glyphs.arrow_down .. format_tokens(totals.output))
   end
   if totals.cache_read > 0 then
     left_parts[#left_parts + 1] = ansi.dim("R" .. format_tokens(totals.cache_read))
@@ -948,7 +938,11 @@ function M.status_bar(arg_json)
       level = agent.thinking_level_for(resolved)
     end
     level = level or "off"
-    right = right .. (level == "off" and " • thinking off" or (" • " .. tostring(level)))
+    right = right
+      .. " "
+      .. glyphs.dot
+      .. " "
+      .. (level == "off" and "thinking off" or tostring(level))
   end
   return table.concat(left_parts, " ") .. BAR_SPLIT .. ansi.dim(right)
 end
@@ -962,7 +956,7 @@ function M.footer_hint(arg_json)
       or "working"
     local dots = string.rep(".", math.max(1, tonumber(arg.busy_phase) or 1))
     return string.format(
-      "%s (%s  • %s to interrupt) %s",
+      "%s (%s  " .. glyphs.dot .. " %s to interrupt) %s",
       busy_label,
       format_elapsed(arg.elapsed_seconds),
       keybindings.display("app.interrupt"),

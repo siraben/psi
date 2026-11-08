@@ -277,6 +277,8 @@ Rendering policy:
   output stays above the live region and terminal scrolling remains natural.
 - Complete output batches use synchronized-output markers. Frame lines stay one
   cell narrower than the terminal to avoid pending-wrap cursor drift.
+- Frame height follows the physical terminal, including one-row viewports.
+  Chat output flows into scrollback; only editor chrome is height-limited.
 - Lua owns the previous-frame cache and emits only changed logical rows.
 - Idle TUI and resume-picker loops sample terminal dimensions every 200 ms;
   active turns sample them at scheduler ticks. A size change invalidates the
@@ -313,6 +315,8 @@ Runtime overrides:
   viewport height policy.
 - `PSI_HARDWARE_CURSOR=0` falls back to the Lua-drawn prompt cursor.
 - `NO_COLOR=1` disables color rendering.
+- `PSI_UNICODE=0|1` selects ASCII or Unicode UI symbols independently of ANSI
+  and color. Automatic selection follows `LC_ALL`, `LC_CTYPE`, then `LANG`.
 
 ### TUI availability
 

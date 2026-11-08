@@ -36,7 +36,7 @@ local PI_STYLE = {
 local DEFAULT_WIDTH = 80
 local DEFAULT_HEIGHT = 24
 local MIN_SIZE = 1
-local MIN_HEIGHT = 12
+local MIN_HEIGHT = 1
 local PROMPT_RESERVED_ROWS = 6
 local FRAME_WIDTH_MARGIN = 1
 
@@ -73,6 +73,7 @@ chat.clipboard = require("psi.clipboard")
 chat.clipboard.image = require("psi.clipboard_image")
 chat.startup = require("psi.tui_startup")
 chat.theme = require("psi.theme")
+chat.glyphs = require("psi.glyphs")
 chat.thinking = require("psi.thinking")
 
 function chat.editor_push_undo(state)
@@ -436,7 +437,9 @@ local function pending_queue_lines(width, max_rows)
   if ok and keybindings and type(keybindings.display) == "function" then
     key_text = keybindings.display("tui.queue.restore")
   end
-  local hint = ansi.dim(fit_text("↳ " .. key_text .. " to edit all queued messages", width))
+  local hint = ansi.dim(
+    fit_text(chat.glyphs.arrow_return .. " " .. key_text .. " to edit all queued messages", width)
+  )
 
   if max_rows == nil or max_rows >= (#message_lines + 2) then
     local out = { "" }
@@ -590,11 +593,14 @@ local function detect_tui_capabilities()
   end
 
   local raw_ansi_ok = ansi_ok and type(psi.tui_draw_raw_line) == "function"
+  local unicode_ok = platform.unicode_supported()
+  chat.glyphs.set_enabled(unicode_ok)
 
   return {
     ansi = ansi_ok,
     color = color_ok,
     raw_ansi = raw_ansi_ok,
+    unicode = unicode_ok,
     term = term,
   }
 end
@@ -614,14 +620,14 @@ end
 local function refresh_input_layout(state)
   local arg = {
     width = state.width,
-    height = state.height,
+    height = state.terminal_height or state.height,
     busy = state.busy,
     scroll = state.scroll_offset,
     max_rows = settings.get(TUI_CONST.setting_prompt_max_rows, nil),
   }
   local layout = tui_layout.input_layout_table and tui_layout.input_layout_table(arg)
     or safe_decode(tui_layout.input_layout(psi.json_encode(arg)), {})
-  local fallback = default_input_layout(state.height)
+  local fallback = default_input_layout(state.terminal_height or state.height)
   state.input_layout = {
     max_rows = tonumber(layout.max_rows) or fallback.max_rows,
     prefix_first = type(layout.prefix_first) == "string" and layout.prefix_first
@@ -961,7 +967,7 @@ local function entry_prefixes(entry)
     return EMPTY, EMPTY
   end
   if kind == "compaction" then
-    return "— ", EMPTY
+    return chat.glyphs.dash .. " ", EMPTY
   end
   return EMPTY, EMPTY
 end
@@ -1052,7 +1058,7 @@ local function new_state(opts, runtime)
     terminal_height = height,
     ui = tui_app.new(),
     renderer = tui_renderer.new(),
-    input_layout = default_input_layout(viewport_height),
+    input_layout = default_input_layout(height),
     tui_caps = caps,
     streaming_assistant_index = nil,
     streaming_thinking_index = nil,
@@ -2389,11 +2395,16 @@ function chat.current_thinking_level(state)
 end
 
 local function style_input_border(state, width, direction, hidden)
-  local border = string.rep("─", math.max(0, width))
+  local border = string.rep(chat.glyphs.hrule, math.max(0, width))
   if (hidden or 0) > 0 then
-    local indicator = "─── " .. direction .. " " .. hidden .. " more "
+    local indicator = string.rep(chat.glyphs.hrule, 3)
+      .. " "
+      .. direction
+      .. " "
+      .. hidden
+      .. " more "
     if display_width(indicator) <= width then
-      border = indicator .. string.rep("─", width - display_width(indicator))
+      border = indicator .. string.rep(chat.glyphs.hrule, width - display_width(indicator))
     else
       local ellipsis = string.rep(".", math.min(3, width))
       border = tui_text.slice_by_columns(indicator, 0, width - #ellipsis) .. ellipsis
@@ -2499,6 +2510,19 @@ function chat.footer_extra_lines(state, status_arg)
   return rows
 end
 
+function chat.fit_frame_to_viewport(lines, cursor_row, height)
+  height = math.max(1, math.floor(tonumber(height) or DEFAULT_HEIGHT))
+  if #lines <= height then
+    return lines, cursor_row
+  end
+  local first = clamp(cursor_row - math.min(1, height - 1), 1, #lines - height + 1)
+  local visible = {}
+  for i = first, first + height - 1 do
+    visible[#visible + 1] = lines[i]
+  end
+  return visible, cursor_row - first + 1
+end
+
 function chat.refresh_render_style(state)
   local expand_keys = require("psi.keybindings").keys("app.tools.expand")
   if
@@ -2506,6 +2530,7 @@ function chat.refresh_render_style(state)
     and state.style_ansi == ansi.enabled
     and state.style_color == ansi.color_enabled
     and state.style_expand_keys == expand_keys
+    and state.style_unicode == chat.glyphs.enabled
   then
     return
   end
@@ -2513,6 +2538,7 @@ function chat.refresh_render_style(state)
   state.style_ansi = ansi.enabled
   state.style_color = ansi.color_enabled
   state.style_expand_keys = expand_keys
+  state.style_unicode = chat.glyphs.enabled
   for _, entry in ipairs(state.entries or {}) do
     entry.render_cache_width = nil
     entry.render_cache_lines = nil
@@ -2658,7 +2684,7 @@ local function redraw(state)
 
   local input_width = frame_width
   local input_component_lines = {
-    style_input_border(state, input_width, "↑", rows.input_first_line - 1),
+    style_input_border(state, input_width, chat.glyphs.arrow_up, rows.input_first_line - 1),
   }
   for i = 0, rows.input_rows - 1 do
     local line_index = rows.input_first_line + i
@@ -2687,7 +2713,7 @@ local function redraw(state)
   input_component_lines[#input_component_lines + 1] = style_input_border(
     state,
     input_width,
-    "↓",
+    chat.glyphs.arrow_down,
     #rows.input_lines - (rows.input_first_line + rows.input_rows - 1)
   )
   frame.input:set_lines(input_component_lines)
@@ -2706,6 +2732,12 @@ local function redraw(state)
   cursor_col = clamp(cursor_col, 1, math.max(1, state.width))
 
   local frame_lines = state.ui:render(frame_width, math.max(1, state.height or 1))
+  local marker_cursor
+  frame_lines, marker_cursor = tui_renderer.extract_cursor(frame_lines)
+  if marker_cursor then
+    cursor_row, cursor_col = marker_cursor.row, marker_cursor.col
+  end
+  frame_lines, cursor_row = chat.fit_frame_to_viewport(frame_lines, cursor_row, state.height)
   local frame_height = #frame_lines
   local force_full = state.force_full_redraw or state.reanchor_renderer
   if state.ui and type(state.ui.consume_force_full) == "function" then
@@ -2748,6 +2780,7 @@ end
 function chat.redraw(state)
   chat.refresh_render_style(state)
   state.width, state.height = current_size()
+  state.terminal_height = state.height
   state.scroll_offset = 0
   refresh_input_layout(state)
 
@@ -2801,7 +2834,7 @@ function chat.redraw(state)
       out[#out + 1] = "\27[0m\r\n"
     end
     if entry.kind == "tool_result" and (not next_entry or next_entry.kind ~= "tool_result") then
-      out[#out + 1] = ansi.yellow("╰─")
+      out[#out + 1] = ansi.yellow(chat.glyphs.corner_up)
       out[#out + 1] = "\27[0m\r\n"
     end
     state.chat_committed_entry_count = idx
@@ -2820,7 +2853,7 @@ function chat.redraw(state)
       live_lines[#live_lines + 1] = style_line(line)
     end
     if entry.kind == "tool_result" then
-      live_lines[#live_lines + 1] = ansi.yellow("╰─")
+      live_lines[#live_lines + 1] = ansi.yellow(chat.glyphs.corner_up)
     end
   end
 
@@ -2843,6 +2876,7 @@ function chat.redraw(state)
     show_queue_in_status = false,
   }
   local footer_extra = chat.footer_extra_lines(state, status_arg)
+  local chrome_start = #live_lines + 1
   local status_text = nil
   if state.status_text ~= nil then
     status_text = state.status_is_error and ansi.bold(ansi.red(state.status_text))
@@ -2868,7 +2902,8 @@ function chat.redraw(state)
   local input_rows_n, input_first_line = chat.input_viewport(state, #input_lines, cursor_line)
   local input_width = frame_width
   local input_box_top_idx = #live_lines + 1
-  live_lines[#live_lines + 1] = style_input_border(state, input_width, "↑", input_first_line - 1)
+  live_lines[#live_lines + 1] =
+    style_input_border(state, input_width, chat.glyphs.arrow_up, input_first_line - 1)
   for i = 0, input_rows_n - 1 do
     local line_index = input_first_line + i
     local line = input_lines[line_index]
@@ -2896,7 +2931,7 @@ function chat.redraw(state)
   live_lines[#live_lines + 1] = style_input_border(
     state,
     input_width,
-    "↓",
+    chat.glyphs.arrow_down,
     #input_lines - (input_first_line + input_rows_n - 1)
   )
   local completions = active_command_completions(state)
@@ -2922,7 +2957,24 @@ function chat.redraw(state)
     live_lines[#live_lines + 1] = row
   end
 
-  -- 4. Emit live region inside synchronized output, then position cursor.
+  local visible_cursor_line = cursor_line - input_first_line + 1
+  local cursor_target_idx = input_box_top_idx + visible_cursor_line
+  local chrome = {}
+  for i = chrome_start, #live_lines do
+    chrome[#chrome + 1] = live_lines[i]
+  end
+  local relative_cursor
+  chrome, relative_cursor =
+    chat.fit_frame_to_viewport(chrome, cursor_target_idx - chrome_start + 1, state.height)
+  for i = #live_lines, chrome_start, -1 do
+    live_lines[i] = nil
+  end
+  for _, line in ipairs(chrome) do
+    live_lines[#live_lines + 1] = line
+  end
+  cursor_target_idx = chrome_start - 1 + relative_cursor
+
+  -- Keep transcript output intact; only editor chrome is height-limited.
   out[#out + 1] = "\27[?2026h\27[?25l"
   for i, line in ipairs(live_lines) do
     -- Chat positions the cursor explicitly below; internal frame markers
@@ -2939,8 +2991,6 @@ function chat.redraw(state)
     end
   end
 
-  local visible_cursor_line = cursor_line - input_first_line + 1
-  local cursor_target_idx = input_box_top_idx + visible_cursor_line
   local rows_up = #live_lines - cursor_target_idx
   local cursor_prefix = cursor_line == 1 and state.input_layout.prefix_first
     or state.input_layout.prefix_rest
@@ -2955,7 +3005,8 @@ function chat.redraw(state)
   out[#out + 1] = (state.show_hardware_cursor and "\27[?25h" or "\27[?25l") .. "\27[?2026l"
 
   state.chat_live_rows = #live_lines
-  state.chat_cursor_offset = math.max(0, cursor_target_idx - 1)
+  state.chat_cursor_offset =
+    math.min(math.max(0, cursor_target_idx - 1), math.max(0, state.height - rows_up - 1))
   if type(psi.tui_write) == "function" then
     psi.tui_write(table.concat(out))
   end
@@ -5997,9 +6048,11 @@ local function draw_resume_picker(infos, selected, offset, scope)
 
   local scope_label
   if scope == "all" then
-    scope_label = ansi.dim("○ Current Folder | ") .. ansi.bold(ansi.cyan("◉ All"))
+    scope_label = ansi.dim(chat.glyphs.radio_off .. " Current Folder | ")
+      .. ansi.bold(ansi.cyan(chat.glyphs.radio_on .. " All"))
   else
-    scope_label = ansi.bold(ansi.cyan("◉ Current Folder")) .. ansi.dim(" | ○ All")
+    scope_label = ansi.bold(ansi.cyan(chat.glyphs.radio_on .. " Current Folder"))
+      .. ansi.dim(" | " .. chat.glyphs.radio_off .. " All")
   end
 
   psi.tui_clear()
@@ -6031,7 +6084,9 @@ local function draw_resume_picker(infos, selected, offset, scope)
       end
     end
     if split then
-      text = text .. ansi.dim("│ ") .. resume_preview_line(selected_info, row, right_width)
+      text = text
+        .. ansi.dim(chat.glyphs.quote_bar)
+        .. resume_preview_line(selected_info, row, right_width)
     end
     psi.tui_draw_line(list_start + row, text)
   end
@@ -6506,14 +6561,16 @@ function M._debug_busy_animation_frames(times)
   return result
 end
 
-function M._debug_resolve_input_layout(width, height, busy, scroll)
+function M._debug_resolve_input_layout(width, height, busy, scroll, viewport_height)
   local state = {
     width = tonumber(width) or 80,
-    height = tonumber(height) or 24,
+    height = tonumber(viewport_height) or tonumber(height) or 24,
+    terminal_height = tonumber(height) or 24,
     busy = not not busy,
     scroll_offset = tonumber(scroll) or 0,
   }
   refresh_input_layout(state)
+  state.input_layout.effective_max_rows = input_max_rows(state)
   return state.input_layout
 end
 
@@ -7026,6 +7083,8 @@ function M._debug_redraw_counts(input, debug_options)
       first_line_width = tui_text.visible_width(state.renderer.previous_lines[1] or "")
     end
     local first_visible = state.renderer and state.renderer.previous_cursor_visible or false
+    local first_height = state.renderer and #(state.renderer.previous_lines or {}) or 0
+    local first_row = state.renderer and state.renderer.previous_cursor_row or nil
     local first_col = state.renderer and state.renderer.previous_cursor_col or nil
     reset_calls()
     state.busy_tick = 1
@@ -7072,6 +7131,10 @@ function M._debug_redraw_counts(input, debug_options)
       first_line_width = first_line_width,
       first_visible = first_visible,
       first_col = first_col,
+      first_height = first_height,
+      first_row = first_row,
+      first_input_rows = rows.input_rows,
+      viewport_height = state.height,
       second_frames = second_frames,
       second_writes = #calls.writes,
       second_input_draws = second_input_draws,
@@ -7159,6 +7222,7 @@ function M._debug_chat_redraw_sequence(steps, options)
         live_rows = state.chat_live_rows,
         cursor_offset = state.chat_cursor_offset,
         input_first_line = state.input_first_line,
+        input_max_rows = input_max_rows(state),
         input = state.input,
         cursor = state.cursor,
         entries = #state.entries,
