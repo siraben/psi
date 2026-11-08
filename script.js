@@ -9,6 +9,7 @@ document.querySelectorAll('[role="tablist"]').forEach(group => {
       item.tabIndex = selected ? 0 : -1;
       document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
     });
+    group.dispatchEvent(new CustomEvent('tabselect', { bubbles: true }));
   }
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => selectTab(tab));
@@ -45,23 +46,31 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   });
 });
 
-const recordingButton = document.querySelector('.recording-poster');
 document.querySelector('.hero-demo')?.addEventListener('click', () => {
   document.getElementById('tab-haiku')?.click();
 });
-recordingButton?.addEventListener('click', () => {
-  if (!window.AsciinemaPlayer) {
-    document.querySelector('.copy-status').textContent = 'The player could not load. Use the download recording link below.';
-    return;
-  }
-  const container = document.getElementById('terminal-demo');
-  container.replaceChildren();
-  window.AsciinemaPlayer.create('assets/psi-terminal.cast', container, {
-    autoplay: true,
-    preload: true,
-    fit: 'width',
-    theme: 'asciinema',
-    idleTimeLimit: 2,
-    terminalFontFamily: "'IBM Plex Mono', monospace",
+
+const demoPlayers = new Map();
+document.querySelectorAll('.terminal-demo[data-recording]').forEach(container => {
+  container.querySelector('.recording-poster')?.addEventListener('click', () => {
+    if (!window.AsciinemaPlayer) {
+      document.querySelector('.copy-status').textContent = 'The player could not load. Use the download recording link below.';
+      return;
+    }
+    container.replaceChildren();
+    const player = window.AsciinemaPlayer.create(container.dataset.recording, container, {
+      autoplay: true,
+      preload: true,
+      fit: 'width',
+      theme: 'asciinema',
+      idleTimeLimit: 2,
+      terminalFontFamily: "'IBM Plex Mono', monospace",
+    });
+    demoPlayers.set(container, player);
+  });
+});
+document.querySelector('.recording-tabs')?.addEventListener('tabselect', () => {
+  demoPlayers.forEach((player, container) => {
+    if (container.closest('[role="tabpanel"]').hidden) player.pause();
   });
 });

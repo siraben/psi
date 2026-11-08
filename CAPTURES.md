@@ -53,3 +53,15 @@ Screenshots are evidence of these particular runs and configurations. They are n
 ## Published binary size
 
 The subtitle’s 6.4 MB is the rounded decimal size of the uncompressed `psi-cosmocc-fat` executable built on November 8, 2026 with `nix build .#psi-cosmocc-fat` on the Linux build host: **6,409,016 bytes** (about 6.11 MiB). The build completed successfully and the resulting executable returned `0.1.0` for `--version`. This is the portable Cosmopolitan fat build, not a compressed download or the size of every native platform build.
+
+## Local interactive replay demos
+
+The four additional replays in `assets/demos/` were recorded locally for preview; no publication was performed for this update. Each has an untouched asciicast v2 recording, a PNG poster, and an MP4: `edit-code`, `live-theme`, `add-command`, and `explore-psi`.
+
+These are fresh real psi sessions inside a rootless user/mount/PID namespace and an actual chroot with a clean `/home/demo`. Only selected read-only Nix dependency closures were mounted; the host home was unavailable. Asciinema itself ran inside the chroot, so its original header contains clean `/bin/run-demo` commands and `/bin/sh`, without metadata cleanup. All raw recording headers and events passed checks for host paths, Nix store paths, and credential values.
+
+The edit replay fixes `mean([])` and runs three passing Python tests. The theme replay writes a Lua palette, then shows the actual typed `/reload` and `/theme`, confirming `active theme: amber` and the live amber color change. The command replay writes the real [greet extension](assets/demos/greet.lua), reloads it, and invokes both `/greet` and `/greet Sakura`. The exploration replay traces psi's actual TUI-to-Lua command dispatch. [The generated palette](assets/demos/amber.lua) is also included unchanged.
+
+These four final replays use direct Anthropic `claude-opus-5-5` with adaptive thinking at the lowest supported effort, `low`, verified in all 17 serialized requests. An explicit disabled-thinking probe was rejected with HTTP 400; Anthropic documents that this model always uses adaptive thinking, and omission defaults to medium effort. The earlier Haiku artwork remains its separate high-effort capture. Original TUI footers are preserved; no model or thinking overlays were added.
+
+Posters and videos are faithful renderings of each actual ANSI stream with asciinema-agg 1.9.0 and FFmpeg. Long idle gaps are capped at 1.5 seconds for video playback; raw recording timestamps remain intact. Posters select the genuine final result before native Ctrl-D exit. No output was fabricated or relabeled. Temporary copied credentials and owned recording/namespace processes were removed after verification.

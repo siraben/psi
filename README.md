@@ -15,7 +15,7 @@ python3 -m http.server 8765 --directory website
 ```
 
 Open <http://localhost:8765/>. The site includes responsive layouts, keyboard
-operable installation tabs, copyable commands, and a self-hosted terminal player.
+operable demo and installation tabs, copyable commands, and self-hosted terminal players.
 
 ## Publish
 
@@ -46,9 +46,14 @@ for current DNS guidance.
 
 `assets/player/` vendors the standalone JS/CSS from `asciinema-player` 3.18.0
 (npm), with its license. No player CDN or asciinema account is required.
-The recording is real output from a fresh psi workspace, using Claude Opus 5.5
-through OpenRouter (`openrouter/anthropic/claude-opus-5.5`). The MP4 is rendered
-from the same recording with idle pauses capped at two seconds.
+The four replay tabs cover editing code, changing the live theme, adding a Lua
+command, and exploring psi’s own codebase. Each has a recording, poster, caption,
+and download links under `assets/demos/`. Switching tabs pauses hidden players
+and preserves their playback position. Recordings load only when played.
+
+These demos run inside a clean chroot with direct Anthropic Claude Opus 5.5.
+The older `psi-terminal.*` assets remain available for existing download links;
+those used OpenRouter. See the capture provenance for precise recording details.
 
 See [CAPTURES.md](CAPTURES.md) for the screenshots' source, guest versions, and
 recording provenance.
