@@ -315,6 +315,8 @@ Runtime overrides:
   viewport height policy.
 - `PSI_HARDWARE_CURSOR=0` falls back to the Lua-drawn prompt cursor.
 - `NO_COLOR=1` disables color rendering.
+- `PSI_UNICODE=0|1` selects ASCII or Unicode UI symbols independently of ANSI
+  and color. Automatic selection follows `LC_ALL`, `LC_CTYPE`, then `LANG`.
 
 ### TUI availability
 
