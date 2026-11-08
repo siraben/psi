@@ -10,7 +10,7 @@ local prompt_max_rows_override = nil
 
 local MIN_WIDTH = 40
 local DEFAULT_WIDTH = 80
-local MIN_HEIGHT = 12
+local MIN_HEIGHT = 1
 local DEFAULT_HEIGHT = 24
 local PROMPT_RESERVED_ROWS = 6
 local INPUT_BOX_ROWS = 3
@@ -66,9 +66,9 @@ end
 function M.geometry(width, height)
   width = math.max(MIN_WIDTH, tonumber(width) or DEFAULT_WIDTH)
   height = math.max(MIN_HEIGHT, tonumber(height) or DEFAULT_HEIGHT)
-  local footer_y = height - SINGLE_ROW
-  local input_y = height - INPUT_BOX_ROWS
-  local status_y = input_y - SINGLE_ROW
+  local footer_y = math.max(0, height - SINGLE_ROW)
+  local input_y = math.max(0, height - INPUT_BOX_ROWS)
+  local status_y = math.max(0, input_y - SINGLE_ROW)
   local transcript_h = math.max(SINGLE_ROW, status_y - TRANSCRIPT_START_ROW)
   return {
     width = width,
