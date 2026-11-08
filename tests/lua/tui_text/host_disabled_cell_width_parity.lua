@@ -1,6 +1,7 @@
 --[==[psi-test
 expect = "ok"
 ]==]
+assert(psi.cell_width(0x065f) == 0, "preserve native combining-mark width")
 local native = require("psi.tui_text")
 local host = {
   visible_width = psi.tui_text_visible_width,
@@ -72,6 +73,8 @@ for i = 1, #host_lines do
   assert_equal(fallback_lines[i], host_lines[i], "Arabic wrapped line")
 end
 assert_equal(fallback_lines[1], "Aبّ", "combining mark remains with base")
+assert_equal(text.visible_width("بٟ"), 1, "U+065F remains combining")
+assert_equal(text.wrap_ansi("AبٟB", 2)[1], "Aبٟ", "U+065F remains with base")
 
 local styled = ESC .. "[4m" .. arabic .. ESC .. "[0m"
 host_lines = host.wrap_ansi(styled, 2)
