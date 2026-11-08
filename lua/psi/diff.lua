@@ -551,7 +551,7 @@ function M.colored_diff(before_text, after_text)
   if generated.diff == "" then
     return ansi.dim("  no visible diff")
   end
-  local renderer = require("psi.tui_components.diff")
+  local renderer = require("psi.diff_presentation")
   return renderer.render_diff(generated.diff)
 end
 
