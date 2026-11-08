@@ -1,279 +1,47 @@
-# psi: the portable coding agent
+# psi website
 
-Coding agents are often slow, bloated and inscrutable. Complex for complexity's
-sake. Can you name all of Claude Code's features? How long does it take to
-compile Codex from source? (Hint: [almost an hour](https://hydra.nixos.org/build/331503530)
-on macOS and [over an hour](https://hydra.nixos.org/build/331503528) on Linux.)
+Static source for <https://psicode.ai/>, served by GitHub Pages from the root of
+the `gh-pages` branch in `siraben/psi`. No build step is required.
 
-Some coding agents purport to follow the Unix philosophy, but fall short of
-being a serious, real-world replacement for most use cases. Instead, we took a
-ground-up approach. What's the most portable language? C. What's the most
-portable, high-level runtime that is implemented in C? Lua.
+## Preview
 
-The result is a coding agent that has superpowers for free. A 6 MB binary via
-the [Cosmopolitan C library](https://github.com/jart/cosmopolitan) that runs on
-macOS, Linux and Windows without modification. A coding agent that runs on
-Haiku, *BSD, or your iPhone via [iSH](https://ish.app/).
+From the repository root:
 
-psi has no shortage of features, including:
-
-- support for many LLM backends, including Codex OAuth, OpenRouter, Ollama
-- full session tree, forking and queue management
-- skills
-- interactive (CLI, TUI) and non-interactive use
-- extensions and a self-documenting Lua runtime that can be modified on the fly
-
-Features we *don't* implement:
-
-- No sandboxing. If you want it sandboxed, run it in a container or a VM.
-- No plugin marketplace, hosted backend, telemetry, or auto-update service.
-
-## Running psi
-
-```console
-$ nix run github:siraben/psi-code
+```sh
+python3 -m http.server 8765 --directory website
 ```
 
-For local development:
+Open <http://localhost:8765/>. The site includes responsive layouts, keyboard
+operable installation tabs, copyable commands, and a self-hosted terminal player.
 
-```console
-$ nix develop
-$ make
-$ ./build/psi --help
+## Publish
+
+```sh
+bash scripts/deploy-website.sh
 ```
 
-The same binary supports the TUI, REPL, one-shot print mode, Lua eval, session
-compaction, and direct agent turns:
+The script clones `gh-pages` into a temporary directory and publishes only
+`website/`. It preserves the deployment branch history and leaves the current
+development branch alone. Requires Git, rsync, and existing GitHub SSH access.
 
-```console
-$ ANTHROPIC_API_KEY=... ./build/psi
-$ ./build/psi --repl
-$ ./build/psi --print 'hello'
-$ ./build/psi --agent 'Read README.md and summarize.'
-$ ./build/psi --eval 'psi.tool_call("read", {path = "README.md"})'
-$ ./build/psi --session /tmp/s.jsonl --compact 12
-$ ./build/psi --model openai-codex/gpt-5.5 --thinking xhigh --agent '...'
-```
+## Hosting
 
-The TUI follows pi's current startup and editing model: a compact branded help
-screen expands with Ctrl-O, Shift-Tab cycles thinking effort, Ctrl-P /
-Ctrl-Shift-P cycle models, Ctrl-T toggles thinking blocks, and the prompt border
-tracks the active effort color. Thinking visibility is sticky via
-`hideThinkingBlock` in `~/.config/psi/settings.json` (or
-`$XDG_CONFIG_HOME/psi/settings.json`). Up/Down stay in the editor and its
-history; PgUp/PgDn scroll the transcript in frame/fullscreen mode. Normal-screen
-chat mode leaves mouse-wheel scrollback to the terminal, while
-`PSI_TUI_ALT_SCREEN=1` enables application-owned wheel scrolling and Alt-wheel
-acceleration. Startup shows the name and version (`psi v…`), without a graphic logo.
+- Canonical hostname: `psicode.ai`, also recorded in `CNAME`.
+- GitHub Pages source: `gh-pages`, `/`, legacy static publishing.
+- Cloudflare DNS-only apex `A` records: `185.199.108.153`, `185.199.109.153`,
+  `185.199.110.153`, `185.199.111.153`.
+- Cloudflare DNS-only apex `AAAA` records: `2606:50c0:8000::153`,
+  `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
+- DNS-only `www` CNAME: `siraben.github.io`.
+- `.nojekyll` keeps this a plain static site.
 
-The default `pi-dark` / `pi-light` palettes exactly match released Pi 0.87.1
-(the same palette used by 0.84.4). The `dark` / `light` aliases and existing
-`theme`, `theme.name`, and `tui.theme` settings are also supported.
+See [GitHub's custom-domain documentation](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)
+for current DNS guidance.
 
-In the TUI or REPL, `! command` runs a local shell command without calling the
-model and includes its result in subsequent model context. `!! command` runs
-it but excludes the result from model context (it is still saved locally).
-The TUI streams output, reports exit status, and supports Escape cancellation.
-Shell commands entered while another operation is busy stay in the editor.
-Informational, settings, and extension slash commands execute and render in the
-transcript while the agent is working or thinking. Commands that would replace
-or rewrite active session state instead render a warning and wait for the active
-operation to finish.
+## Terminal player
 
-## Design goals
-
-psi aims to be:
-
-- The most portable and extensible coding agent in the world.
-- Fully auditable (via a Software Bill of Materials)
-- Practical (we daily drive psi)
-- Open source
-
-## Design philosophy
-
-psi is heavily inspired by the [pi coding agent](https://github.com/earendil-works/pi).
-Like pi, psi aims to implement only the base functionality in-tree, and then
-defer features to Lua extensions written by the user, such as the TUI
-rendering, queue management, even the agent loop itself.
-
-The extension language is Lua because of the following reasons we've observed:
-
-- LLMs can write good, idiomatic Lua
-- Lua's runtime has minimal dependencies
-- Lua is reasonably fast and can support modern programming styles and
-  abstractions.
-
-We chose C89 for the base implementation because of its extreme portability.
-Most platforms, even non-POSIX ones, have a compiler for C89.
-
-## Dependencies
-
-Things that have to be fast (e.g. networking) are done in C89 with minimal
-dependencies. We use:
-
-- libedit
-- ncurses
-- curl with mbedTLS
-- wcwidth-compatible Unicode cell-width handling
-- zlib
-- cJSON
-- a C compiler
-- a libc
-
-Optional Make flags default to `1`; set them to `0` to disable the feature.
-
-| Flag | Effect |
-| --- | --- |
-| `TUI` | Inline terminal frontend and `psi.tui_*` host primitives |
-| `ANSI` | ANSI SGR emission and parsing. Required by `TUI`. |
-| `COLOR` | Color SGR emission. Non-color styles can still be used. |
-| `MCP` | Stdio process primitives for protocol clients. |
-| `REPL_EDITLINE` | libedit-backed REPL with history. Falls back to `fgets`. |
-
-Run the build-matrix check when optional dependencies or preprocessor guards
-change:
-
-```console
-$ make check-build-configs
-```
-
-Dependency SBOM generation and vulnerability gating are available with:
-
-```console
-$ nix run .#audit-sbom
-```
-
-See [docs/dependency-audit.md](docs/dependency-audit.md).
-
-## How portable is it?
-
-We've tested on the following operating systems (on i686, x86_64, aarch64,
-riscv64 where available):
-
-Linux, macOS, Windows, Haiku, OpenBSD, FreeBSD.
-
-Really, any operating system that supports a POSIX-like API surface can run psi.
-
-Beyond just being able to *run* psi, we also support a wide variety of ways to
-*compile* and *link* psi. For the clib layer, we've tested glibc, musl,
-cosmopolitan, fil-c, c-ward. For the C compiler itself, we've tested gcc (4.6
-through 15), clang, CompCert, TCC.
-
-See [docs/portability.md](docs/portability.md).
-
-## Providers
-
-psi supports multiple model providers. Choose a provider and model with
-`--model <provider>/<name>`, set `PSI_PROVIDER`, or save `defaults.provider`
-and `defaults.model` in settings. Without an explicit choice, psi selects from
-available credentials. See [provider selection](docs/providers.md#selection)
-for the precedence and fallback rules. Built-in providers include:
-
-- Anthropic
-- Ollama
-- OpenRouter
-- OpenAI Codex
-- Moonshot (Kimi For Coding)
-
-Ask the running agent for live provider metadata:
-
-```text
-psi> /apropos provider:
-psi> /describe provider:anthropic
-```
-
-See [docs/providers.md](docs/providers.md).
-
-## Tools and extensions
-
-`read`, `write`, `edit`, `bash`, `grep`, `find`, `ls`, and `lua` are registered
-out of the box. Extensions add more with `psi.tools.register`.
-
-Drop a Lua file in any of:
-
-- `$PSI_EXTENSIONS_DIR` (colon-separated, loaded first)
-- `~/.config/psi/extensions/`
-- `./.psi/extensions/`
-
-It runs at boot with the `psi` global available. Register tools, subscribe to
-events, add slash commands, customize themes, or hook the TUI. Extensions are
-trusted local code with the same filesystem and process access as psi itself;
-project-local extensions load only after the workspace is trusted. Interactive
-sessions prompt once; non-interactive modes skip untrusted project resources.
-Use `--trust` or `--no-trust` to override that decision for one run.
-
-See [docs/extensions.md](docs/extensions.md).
-
-## Skills
-
-Put each skill's `SKILL.md` under `~/.config/psi/skills/<name>/` or
-`./.psi/skills/<name>/` (use `$XDG_CONFIG_HOME/psi/skills/` when set).
-The file needs frontmatter with a single-line `description` and may set `name`.
-Psi lists skill names, descriptions, and file paths in the system prompt;
-the agent reads the full file with `read` when a task matches. Project skills
-load only after the workspace is trusted. Set `disable-model-invocation: true`
-to keep a skill out of the model's list. Skill packages, `/skill:name`, and
-`.agents/skills` discovery are not implemented.
-
-## Sessions
-
-Sessions are append-only JSONL in pi's v3 schema: typed entries, parent
-pointers, cache markers, file-op provenance, custom entries, custom
-model-context messages, compaction summaries, and branch summaries.
-The Pi 1.4 context projection applies branch-local context edits and compaction
-boundaries while preserving original message IDs. System sections and historical
-tool declarations are checkpointed; only locally registered tools execute.
-Unknown fields and entry types survive save/export; unrecognized entry types
-remain opaque state outside model context. Prompt sections refresh from psi's
-local resources, tool set, and trust policy when continuing a session.
-Pi extensions, packages, credentials, and provider configuration are not imported.
-
-A session started under one provider can be resumed under another.
-Provider-specific thinking and signature blocks may be downgraded during replay.
-Without `--session FILE`, psi assigns a path under
-`$XDG_STATE_HOME/psi/sessions` or `~/.local/state/psi/sessions`.
-
-Use `/tree` to show the session tree or `/tree <entry-id> --summarize` to switch
-branches while preserving the branch you leave as summary context. `/branch`
-and `/branches` remain text aliases for quick inspection and switching.
-
-## Repository layout
-
-```text
-src/main.c              entry point and CLI dispatch
-src/core/               abort signal, process spawn, HTTP, sessions, TLS
-src/runtime/            CLI parser, print/repl/agent dispatch, TUI mode
-src/lua/vm.c            Lua VM and C/Lua bridge
-include/psi/            public host headers
-scripts/embed.c         build-time deflate of Lua sources and docs
-
-lua/boot.lua            Lua bootstrap; wires psi.* and loads extensions
-lua/psi/                tools, prompts, sessions, scheduler, markdown, TUI
-lua/psi/tools/          built-in tool implementations
-lua/psi/providers/      Anthropic, Ollama, OpenRouter, OpenAI Codex adapters
-lua/psi/extensions/     bundled extensions
-
-docs/architecture.md    runtime model and host/runtime boundaries
-docs/portability.md     porting principles and per-OS notes
-docs/port-status.md     audit against pi-mono
-docs/extensions.md      extension API and event catalog
-docs/providers.md       provider configuration
-
-tests/                  Python harnesses for smoke, bench, and valgrind runs
-```
-
-## Evals
-
-There is no published eval suite yet. The repository uses smoke tests,
-build-matrix checks, benchmark harnesses, and valgrind-oriented tests under
-`tests/`.
-
-## Naming
-
-psi was supposed to be a fork of pi that used Scheme as the extension language
-(hence p**s**i), but owing to the complexity of runtimes and in pursuit of a
-more minimal, perfect coding agent, we ultimately chose Lua instead.
-
-## License
-
-The project is MIT licensed.
+`assets/player/` vendors the standalone JS/CSS from `asciinema-player` 3.18.0
+(npm), with its license. No player CDN or asciinema account is required.
+The recording is real output from a fresh psi workspace, using Claude Opus 5.5
+through OpenRouter (`openrouter/anthropic/claude-opus-5.5`). The MP4 is rendered
+from the same recording with idle pauses capped at two seconds.
