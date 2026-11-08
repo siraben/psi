@@ -84,6 +84,7 @@ function chat.editor_push_undo(state)
     editor_mode = state.editor_mode or "insert",
     selection_anchor = state.selection_anchor,
     selection_kind = state.selection_kind,
+    pastes = chat.paste.clone(state),
   }
 end
 
@@ -93,7 +94,7 @@ function chat.editor_clear_undo(state)
 end
 
 function chat.editor_push_kill(state, text, prepend, accumulate)
-  text = tostring(text or "")
+  text = chat.paste.expand(state, tostring(text or ""))
   if text == "" then
     return
   end
@@ -126,6 +127,7 @@ function chat.editor_undo(state)
     return false
   end
   state.input = snapshot.input or ""
+  chat.paste.restore(state, snapshot.pastes)
   state.cursor = math.max(0, math.min(tonumber(snapshot.cursor) or 0, #state.input))
   state.editor_mode = snapshot.editor_mode or "insert"
   state.selection_anchor = snapshot.selection_anchor
@@ -2524,12 +2526,12 @@ function chat.fit_frame_to_viewport(lines, cursor_row, height)
 end
 
 function chat.refresh_render_style(state)
-  local expand_keys = require("psi.keybindings").keys("app.tools.expand")
+  local keybinding_revision = require("psi.keybindings").revision()
   if
     state.style_generation == ansi.generation()
     and state.style_ansi == ansi.enabled
     and state.style_color == ansi.color_enabled
-    and state.style_expand_keys == expand_keys
+    and state.style_keybinding_revision == keybinding_revision
     and state.style_unicode == chat.glyphs.enabled
   then
     return
@@ -2537,7 +2539,7 @@ function chat.refresh_render_style(state)
   state.style_generation = ansi.generation()
   state.style_ansi = ansi.enabled
   state.style_color = ansi.color_enabled
-  state.style_expand_keys = expand_keys
+  state.style_keybinding_revision = keybinding_revision
   state.style_unicode = chat.glyphs.enabled
   for _, entry in ipairs(state.entries or {}) do
     entry.render_cache_width = nil
@@ -4083,12 +4085,15 @@ end
 function chat.reset_queue_navigation(state, restore_draft)
   local draft = state.queue_nav_draft
   local draft_cursor = state.queue_nav_draft_cursor
+  local draft_pastes = state.queue_nav_draft_pastes
   state.queue_nav_index = nil
   state.queue_nav_id = nil
   state.queue_nav_draft = nil
   state.queue_nav_draft_cursor = nil
+  state.queue_nav_draft_pastes = nil
   if restore_draft and draft ~= nil then
     state.input = draft
+    chat.paste.restore(state, draft_pastes)
     state.cursor = clamp(tonumber(draft_cursor) or #draft, 0, #draft)
     clear_selection(state)
     state.block_edit = nil
@@ -4139,6 +4144,7 @@ local function navigate_queue(state, direction)
     if state.queue_nav_draft == nil then
       state.queue_nav_draft = state.input or ""
       state.queue_nav_draft_cursor = state.cursor
+      state.queue_nav_draft_pastes = chat.paste.clone(state)
     end
     index = direction == "previous" and count or 1
   elseif direction == "previous" then
@@ -4157,9 +4163,6 @@ local function navigate_queue(state, direction)
   if item == nil then
     return
   end
-  if state.queue_nav_draft_pastes == nil and type(chat.reset_queue_navigation) == "function" then
-    state.queue_nav_draft_pastes = chat.paste.clone(state)
-  end
   state.queue_nav_index = index
   state.queue_nav_id = item.id
   state.input = item.text or ""
@@ -4167,6 +4170,15 @@ local function navigate_queue(state, direction)
   state.cursor = #state.input
   set_status(state, queue_status_text(), false)
   state.dirty = true
+end
+
+function chat.paste_draft_input(state)
+  if state.queue_nav_index ~= nil and state.queue_nav_draft ~= nil then
+    local draft = {}
+    chat.paste.restore(draft, state.queue_nav_draft_pastes)
+    return chat.paste.expand(draft, state.queue_nav_draft)
+  end
+  return chat.paste.expand(state, state.input or "")
 end
 
 local function restore_queued_message(state, opts)
@@ -4643,14 +4655,28 @@ local function run_turn(state, line)
   return true
 end
 
-local function run_compact(state, keep_recent)
+function chat.begin_busy(state, kind, label)
   state.busy = true
-  state.busy_kind = "compact"
-  state.busy_label = "compacting"
+  state.busy_kind = kind
+  state.busy_label = label
   state.busy_phase = 0
   state.busy_tick = 0
   state.busy_next_frame_at = now_ms() + TUI_CONST.busy_animation_interval_ms
   state.busy_started_at = os.time()
+end
+
+function chat.reset_busy(state)
+  state.busy = false
+  state.busy_kind = nil
+  state.busy_label = nil
+  state.busy_phase = 0
+  state.busy_tick = 0
+  state.busy_next_frame_at = nil
+  state.busy_started_at = nil
+end
+
+local function run_compact(state, keep_recent)
+  chat.begin_busy(state, "compact", "compacting")
   psi.abort_reset()
   set_status(state, "", false)
   redraw(state)
@@ -4673,25 +4699,9 @@ local function run_compact(state, keep_recent)
     add_entry(state, "error", detail)
   end
 
-  state.busy = false
-  state.busy_kind = nil
-  state.busy_label = nil
-  state.busy_phase = 0
-  state.busy_tick = 0
-  state.busy_next_frame_at = nil
-  state.busy_started_at = nil
+  chat.reset_busy(state)
   state.dirty = true
   redraw(state)
-end
-
-local function reset_busy(state)
-  state.busy = false
-  state.busy_kind = nil
-  state.busy_label = nil
-  state.busy_phase = 0
-  state.busy_tick = 0
-  state.busy_next_frame_at = nil
-  state.busy_started_at = nil
 end
 
 local function run_btw(state, question)
@@ -4704,13 +4714,7 @@ local function run_btw(state, question)
 
   local entry_index = add_entry(state, "btw", "/btw " .. question .. "\n")
   state.scroll_offset = 0
-  state.busy = true
-  state.busy_kind = "btw"
-  state.busy_label = "btw"
-  state.busy_phase = 0
-  state.busy_tick = 0
-  state.busy_next_frame_at = now_ms() + TUI_CONST.busy_animation_interval_ms
-  state.busy_started_at = os.time()
+  chat.begin_busy(state, "btw", "btw")
   psi.abort_reset()
   set_status(state, "", false)
   redraw(state)
@@ -4739,7 +4743,7 @@ local function run_btw(state, question)
     set_status(state, "", false)
   end
 
-  reset_busy(state)
+  chat.reset_busy(state)
   state.dirty = true
   redraw(state)
   return true
@@ -4817,13 +4821,7 @@ local function handle_command(state, line, opts)
 
   if action.kind == "tree" then
     local payload = action.payload or {}
-    state.busy = true
-    state.busy_kind = "tree"
-    state.busy_label = payload.summarize and "summarizing branch" or "switching branch"
-    state.busy_phase = 0
-    state.busy_tick = 0
-    state.busy_next_frame_at = now_ms() + TUI_CONST.busy_animation_interval_ms
-    state.busy_started_at = os.time()
+    chat.begin_busy(state, "tree", payload.summarize and "summarizing branch" or "switching branch")
     psi.abort_reset()
     set_status(state, state.busy_label, false)
     redraw(state)
@@ -4859,7 +4857,7 @@ local function handle_command(state, line, opts)
       set_status(state, "tree navigation failed", true)
     end
 
-    reset_busy(state)
+    chat.reset_busy(state)
     state.dirty = true
     redraw(state)
     return true
@@ -5019,17 +5017,13 @@ function chat.run_shell(state, line)
   history_add(state, line)
   local label = "$ " .. request.command .. (request.hidden and " (excluded from context)" or "")
   local index = add_entry(state, "shell", label)
-  state.busy = true
-  state.busy_kind = "shell"
-  state.busy_label = "running command"
-  state.busy_started_at = os.time()
-  state.busy_next_frame_at = now_ms() + TUI_CONST.busy_animation_interval_ms
+  chat.begin_busy(state, "shell", "running command")
   set_status(state, "", false)
   redraw(state)
   local ok, result, err = pcall(shell.run, request, function(output)
     set_entry_text(state, index, label .. "\n" .. output)
   end)
-  reset_busy(state)
+  chat.reset_busy(state)
   set_status(state, "", false)
   if ok and result then
     set_entry_text(
@@ -5126,31 +5120,30 @@ local function submit(state, queue_kind)
   add_entry(state, "user", line)
   state.streaming_assistant_index = add_entry(state, "assistant", "")
   state.scroll_offset = 0
-  state.busy = true
-  state.busy_kind = "agent"
-  state.busy_label = tui.pick_busy_status() or "working"
-  state.busy_phase = 0
-  state.busy_tick = 0
-  state.busy_next_frame_at = now_ms() + TUI_CONST.busy_animation_interval_ms
-  state.busy_started_at = os.time()
+  chat.begin_busy(state, "agent", tui.pick_busy_status() or "working")
   psi.abort_reset()
   set_status(state, "", false)
   redraw(state)
   local turn_ok = run_turn(state, line)
   finish_streaming_assistant(state)
   state.streaming_thinking_index = nil
-  state.busy = false
-  state.busy_kind = nil
-  state.busy_label = nil
-  state.busy_phase = 0
-  state.busy_tick = 0
-  state.busy_next_frame_at = nil
-  state.busy_started_at = nil
+  chat.reset_busy(state)
   if not turn_ok then
     state.force_full_redraw = true
   end
   state.dirty = true
 end
+
+chat.busy_fields = {
+  "busy",
+  "busy_kind",
+  "busy_label",
+  "busy_phase",
+  "busy_tick",
+  "busy_next_frame_at",
+  "busy_started_at",
+  "last_busy_paint_at",
+}
 
 function chat.read_clipboard(state, reader)
   if state.clipboard_reading then
@@ -5158,23 +5151,20 @@ function chat.read_clipboard(state, reader)
   end
   state.clipboard_reading = true
   local input, cursor, mode = state.input, state.cursor, state.editor_mode
-  local previous = {
-    busy = state.busy,
-    kind = state.busy_kind,
-    label = state.busy_label,
-    phase = state.busy_phase,
-    started = state.busy_started_at,
-  }
-  if not previous.busy then
+  local previous
+  if not state.busy then
+    previous = {}
+    for _, field in ipairs(chat.busy_fields) do
+      previous[field] = state[field]
+    end
     psi.abort_reset()
-    state.busy, state.busy_kind = true, "clipboard"
-    state.busy_label, state.busy_started_at = "reading clipboard", os.time()
+    chat.begin_busy(state, "clipboard", "reading clipboard")
   end
   local ok, value, backend, detail = pcall(require("psi.sched").run, reader)
-  if not previous.busy then
-    state.busy, state.busy_kind = previous.busy, previous.kind
-    state.busy_label, state.busy_phase = previous.label, previous.phase
-    state.busy_started_at = previous.started
+  if previous then
+    for _, field in ipairs(chat.busy_fields) do
+      state[field] = previous[field]
+    end
   end
   state.clipboard_reading, state.dirty = nil, true
   if
@@ -7239,54 +7229,5 @@ function M._debug_chat_redraw_sequence(steps, options)
   end
   return result
 end
-
--- Preserve payloads when the undo and queue-draft ports are also present.
-function chat.paste_draft_input(state)
-  if state.queue_nav_index ~= nil and state.queue_nav_draft ~= nil then
-    local draft = {}
-    chat.paste.restore(draft, state.queue_nav_draft_pastes)
-    return chat.paste.expand(draft, state.queue_nav_draft)
-  end
-  return chat.paste.expand(state, state.input or "")
-end
-
-function chat.install_paste_snapshots()
-  if type(chat.editor_push_undo) == "function" then
-    local push = chat.editor_push_undo
-    local undo = chat.editor_undo
-    local kill = chat.editor_push_kill
-    chat.editor_push_kill = function(state, text, prepend, accumulate)
-      kill(state, chat.paste.expand(state, text), prepend, accumulate)
-    end
-    chat.editor_push_undo = function(state)
-      push(state)
-      local stack = state.editor_undo_stack
-      stack[#stack].pastes = chat.paste.clone(state)
-    end
-    chat.editor_undo = function(state)
-      local stack = state.editor_undo_stack or {}
-      local snapshot = stack[#stack]
-      if undo(state) then
-        chat.paste.restore(state, snapshot.pastes)
-        return true
-      end
-      return false
-    end
-  end
-  if type(chat.reset_queue_navigation) == "function" then
-    local reset = chat.reset_queue_navigation
-    chat.reset_queue_navigation = function(state, restore_draft)
-      local snapshot = state.queue_nav_draft_pastes
-      local has_draft = state.queue_nav_draft ~= nil
-      reset(state, restore_draft)
-      state.queue_nav_draft_pastes = nil
-      if restore_draft and has_draft then
-        chat.paste.restore(state, snapshot)
-      end
-    end
-  end
-end
-
-chat.install_paste_snapshots()
 
 return M
