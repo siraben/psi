@@ -1,0 +1,57 @@
+{
+  "source_commit": "66a73a8462d352d7527be4ee49239ced334a08ce",
+  "source_repository": "https://github.com/siraben/psi",
+  "source_url": "https://github.com/siraben/psi/commit/66a73a8462d352d7527be4ee49239ced334a08ce",
+  "target": ".#default",
+  "platform": "x86_64-linux",
+  "scope": "Nix runtime closure",
+  "generated_at": "2026-11-08T15:56:37.717095-05:00",
+  "tool": {
+    "name": "sbomnix",
+    "version": "1.7.6+g8e94a4a",
+    "input_repository": "https://github.com/tiiuae/sbomnix",
+    "input_revision": "8e94a4a7f0983215141e0a50b45977353b56ba94"
+  },
+  "nixpkgs_revision": "4975466d324710c576dc11ad614684e6bd8cad8e",
+  "nix_version": "2.35.3+1",
+  "root_bom_ref": "/nix/store/adf34z0i16bj418ffr6yz33x6gfi81dd-psi-0.1.0.drv",
+  "root_output_path": "/nix/store/yiyasdgamd9r8fpi3p9h2njj30x3jj38-psi-0.1.0",
+  "sbom_file": "psi-runtime.cdx.json",
+  "sbom_sha256": "4d382fe77a226c53463fae778dda60d9c88a9087b313188fc93902e2bcbf6884",
+  "original_generated_sbom_sha256": "cdfc9891534a3baa88647bf3f005017057f8a1ee3aefd2e2114b1882c1dd1f33",
+  "cyclonedx_version": "1.4",
+  "counts": {
+    "nodes": 13,
+    "dependency_components": 12,
+    "direct": 7,
+    "transitive_only": 5,
+    "edges": 21,
+    "runtime_output_paths": 13,
+    "nix_self_references_omitted": 12
+  },
+  "build_command": "nix build .#default --out-link ../psi-result",
+  "generation_command": "sbomnix .#default --exclude-cpe-matching --cdx ../runtime.cdx.json --spdx ../runtime.spdx.json --csv ../runtime.csv",
+  "tool_selection": "Use inputs.sbomnix.packages.x86_64-linux.sbomnix from this source commit\u2019s locked flake, not an unpinned global package.",
+  "sanitization": {
+    "removed_cpe_fields": 13,
+    "reason": "sbomnix still synthesizes unverified CPE fallbacks with matching disabled; default heuristic mapping misidentified psi as unrelated psi-im software. Optional CPE fields are removed from this attributable public snapshot.",
+    "dependency_graph_changed": false,
+    "private_paths_found": false
+  },
+  "validation": {
+    "all_references_resolve": true,
+    "all_components_reachable_from_root": true,
+    "graph_matches_nix_runtime_references_excluding_self": true,
+    "vulnerability_scans_run": false
+  },
+  "limitations": [
+    "This is one Linux x86_64 Nix default dynamic build, not the static musl, Cosmopolitan, Haiku or Windows build.",
+    "Edges are explicit sbomnix CycloneDX dependsOn relationships derived from runtime store references, not C source includes, symbol links or build-time dependencies.",
+    "Nodes retain their original CycloneDX bom-ref identities; package names and versions are not used to merge components.",
+    "sbomnix metadata lists every declared output of a derivation; only runtime_output_paths in the compact graph are observed in this runtime closure.",
+    "xgcc metadata represents its observed libgcc runtime output here, not a claim that the full compiler is shipped.",
+    "Nix closure coverage does not enumerate every source file, statically embedded code fragment, dynamically fetched extension or external runtime service.",
+    "License fields come from generated package metadata and can be absent; no missing licenses were inferred.",
+    "Twelve Nix self references are absent from the tool\u2019s inter-component graph. No graph relationships were invented, and no vulnerability scans were run."
+  ]
+}

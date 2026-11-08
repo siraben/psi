@@ -107,3 +107,75 @@ document.querySelector('.recording-tabs')?.addEventListener('tabselect', () => {
     if (container.closest('[role="tabpanel"]').hidden) player.pause();
   });
 });
+
+// SVG and the accessible table are generated from the same CycloneDX records.
+const dependencySection = document.getElementById('dependencies');
+if (dependencySection) {
+  const graph = JSON.parse(document.getElementById('dependency-data').textContent);
+  const packages = new Map(graph.nodes.map(node => [node.id, node]));
+  const reset = dependencySection.querySelector('.dependency-reset');
+  const relations = dependencySection.querySelector('.dependency-relations');
+  const selectPackage = id => {
+    const selected = packages.get(id);
+    if (!selected) return;
+    const outgoing = graph.edges.filter(edge => edge.source === id).map(edge => edge.target);
+    const incoming = graph.edges.filter(edge => edge.target === id).map(edge => edge.source);
+    const neighbors = new Set([id, ...outgoing, ...incoming]);
+    dependencySection.querySelectorAll('[data-package]').forEach(node => {
+      const active = node.dataset.package === id;
+      node.classList.toggle('is-selected', active);
+      node.classList.toggle('is-muted', !neighbors.has(node.dataset.package));
+      node.setAttribute('aria-pressed', String(active));
+    });
+    dependencySection.querySelectorAll('.edge').forEach(edge => {
+      const connected = edge.dataset.source === id || edge.dataset.target === id;
+      edge.classList.toggle('is-selected', connected);
+      edge.classList.toggle('is-muted', !connected);
+    });
+    dependencySection.querySelector('#dependency-detail-name').textContent = selected.name;
+    dependencySection.querySelector('.dependency-detail-version').textContent = selected.version;
+    dependencySection.querySelector('.dependency-detail-license').textContent = 'License: ' + (selected.licenses.join(', ') || 'not recorded in the SBOM');
+    const renderList = (selector, ids) => {
+      const list = dependencySection.querySelector(selector);
+      list.replaceChildren();
+      ids.sort((a, b) => packages.get(a).name.localeCompare(packages.get(b).name)).forEach(target => {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = packages.get(target).name;
+        button.addEventListener('click', () => {
+          selectPackage(target);
+          dependencySection.querySelector('#dependency-detail-name').focus({preventScroll: true});
+        });
+        li.append(button); list.append(li);
+      });
+      if (!ids.length) {
+        const li = document.createElement('li');
+        li.textContent = 'None recorded'; list.append(li);
+      }
+    };
+    renderList('.dependency-outgoing', outgoing);
+    renderList('.dependency-incoming', incoming);
+    relations.hidden = false; reset.hidden = false;
+    dependencySection.querySelector('.dependency-status').textContent = `${selected.name} ${selected.version}: ${outgoing.length} dependencies, used by ${incoming.length} packages.`;
+  };
+  dependencySection.querySelector('#dependency-detail-name').tabIndex = -1;
+  dependencySection.querySelectorAll('[data-package]').forEach(node => {
+    node.addEventListener('click', () => selectPackage(node.dataset.package));
+    node.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); selectPackage(node.dataset.package);
+      }
+    });
+  });
+  reset.addEventListener('click', () => {
+    dependencySection.querySelectorAll('.is-selected, .is-muted').forEach(node => node.classList.remove('is-selected', 'is-muted'));
+    dependencySection.querySelectorAll('[data-package]').forEach(node => node.setAttribute('aria-pressed', 'false'));
+    dependencySection.querySelector('#dependency-detail-name').textContent = 'Explore the graph';
+    dependencySection.querySelector('.dependency-detail-version').textContent = 'Select any package.';
+    dependencySection.querySelector('.dependency-detail-license').textContent = 'Versions, licenses, and direct connections are recorded in the SBOM.';
+    relations.hidden = true; reset.hidden = true;
+    dependencySection.querySelector('.dependency-status').textContent = 'Showing all package connections.';
+    dependencySection.querySelector('#dependency-detail-name').focus({preventScroll:true});
+  });
+}
