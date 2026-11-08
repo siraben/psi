@@ -1,8 +1,12 @@
 # Providers
 
+psi is a provider-agnostic coding agent. Choose the provider and model that fit
+your workflow; the active provider depends on your model selection,
+configuration, and available credentials.
+
 psi ships with five routed providers:
 
-- Anthropic, the default, via `https://api.anthropic.com`
+- Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
 - OpenRouter, via OpenAI-compatible `/chat/completions`
 - OpenAI Codex, via ChatGPT's Codex Responses backend
@@ -39,7 +43,7 @@ In priority order:
    `--model=openrouter/google/gemini-3-flash-preview` or
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
-2. **`PSI_PROVIDER` env var:** `anthropic` (default), `ollama`,
+2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
    `openrouter`, `openai-codex`, or `moonshot`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
@@ -249,8 +253,8 @@ is removed.
 ## Examples
 
 ```bash
-# Anthropic (default)
-psi --session=s.jsonl --model=claude-sonnet-4-6 --agent="..."
+# Anthropic, selected explicitly
+psi --session=s.jsonl --model=anthropic/claude-sonnet-4-6 --agent="..."
 
 # Ollama local
 psi --session=s.jsonl --model=ollama/llama3.1:latest --agent="..."
