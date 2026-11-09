@@ -92,12 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  installPhase = ''
-    runHook preInstall
-    make PREFIX=$out install
-    runHook postInstall
-  '';
-
   # cosmocc binaries arrive without .debug_* but still carry a full
   # .symtab/.strtab (~400 KB). --strip-unneeded drops those without
   # touching the APE boot stub. --strip-all / -Wl,-s break booting
