@@ -74,39 +74,35 @@ function loadPlayer() {
   ]).catch(error => { playerAssets = undefined; throw error; });
   return playerAssets;
 }
-document.querySelectorAll('.terminal-demo[data-recording]').forEach(container => {
-  const button = container.querySelector('.recording-poster');
-  button?.addEventListener('click', async () => {
-    button.disabled = true;
-    button.setAttribute('aria-busy', 'true');
-    const label = button.querySelector('.play-recording');
-    const originalLabel = label.innerHTML;
-    label.textContent = 'Loading demo…';
-    try {
-      await loadPlayer();
-      container.replaceChildren();
-      const player = window.AsciinemaPlayer.create(container.dataset.recording, container, {
-        autoplay: !container.closest('[role="tabpanel"]').hidden,
-        preload: true,
-        fit: 'width',
-        theme: 'asciinema',
-        idleTimeLimit: 2,
-        terminalFontFamily: "'IBM Plex Mono', monospace",
-      });
-      demoPlayers.set(container, player);
-    } catch {
-      button.disabled = false;
-      button.removeAttribute('aria-busy');
-      label.innerHTML = originalLabel;
-      document.querySelector('.copy-status').textContent = 'The player could not load. Try again or download the recording below.';
+const demoObserver = new IntersectionObserver(entries => {
+  entries.forEach(async entry => {
+    const container = entry.target;
+    const player = demoPlayers.get(container);
+    if (entry.isIntersecting) {
+      if (player) { player.play(); return; }
+      if (container.dataset.loading) return;
+      container.dataset.loading = '1';
+      try {
+        await loadPlayer();
+        container.replaceChildren();
+        demoPlayers.set(container, window.AsciinemaPlayer.create(container.dataset.recording, container, {
+          autoplay: true,
+          loop: true,
+          preload: true,
+          fit: 'width',
+          theme: 'asciinema',
+          idleTimeLimit: 2,
+          terminalFontFamily: "'IBM Plex Mono', monospace",
+        }));
+      } catch {
+        delete container.dataset.loading;
+      }
+    } else if (player) {
+      player.pause();
     }
   });
-});
-document.querySelector('.recording-tabs')?.addEventListener('tabselect', () => {
-  demoPlayers.forEach((player, container) => {
-    if (container.closest('[role="tabpanel"]').hidden) player.pause();
-  });
-});
+}, { threshold: 0.4 });
+document.querySelectorAll('.terminal-demo[data-recording]').forEach(container => demoObserver.observe(container));
 
 // SVG and the accessible table are generated from the same CycloneDX records.
 const dependencySection = document.getElementById('dependencies');
@@ -205,3 +201,35 @@ if (dependencySection) {
     dependencySection.querySelector('.dependency-status').textContent = `Showing ${view === 'both' ? 'runtime and build' : view} dependencies: ${activeGraph.nodes.length} packages.`;
   }));
 }
+
+(function(){
+  var dlg=document.createElement('dialog');
+  dlg.className='lightbox';
+  dlg.innerHTML='<button class="lightbox-close" type="button" aria-label="Close">\u00d7</button><img alt="">';
+  document.body.appendChild(dlg);
+  var img=dlg.querySelector('img');
+  function close(){dlg.close();}
+  dlg.addEventListener('click',close);
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a.gallery-image');
+    if(!a||e.metaKey||e.ctrlKey||e.shiftKey||!dlg.showModal)return;
+    e.preventDefault();
+    var thumb=a.querySelector('img');
+    img.src=a.getAttribute('href');
+    img.alt=thumb?thumb.alt:'';
+    dlg.showModal();
+  });
+})();
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.site-header nav a[href^="#"]'));
+  if(!links.length||!window.IntersectionObserver)return;
+  var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  function update(){
+    var line=window.innerHeight*0.35,active=-1;
+    targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top<=line&&t.getBoundingClientRect().bottom>line)active=i;});
+    links.forEach(function(a,i){if(i===active)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');});
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('resize',update);
+  update();
+})();
