@@ -616,3 +616,22 @@ h1{font-size:clamp(30px,3.3vw,46px);letter-spacing:-1.9px;line-height:1.1;margin
 .window-backdrop .code-window{margin:0;max-width:none;width:100%}
 .start-section{background:var(--paper)!important;border:0!important}
 @media(max-width:900px){.extend-section{grid-template-columns:1fr;padding:48px 0;gap:32px}.window-backdrop{padding:24px 14px}}
+.start-card{background:none!important;padding:0!important;display:block}
+.install-panel,.install-panel.dep-window{max-width:760px;width:100%;margin:0;padding:10px;border:0;border-radius:16px;background:#e3e0dc;box-shadow:none;overflow:visible}
+.install-panel .install-tabs{display:flex;gap:6px;margin:0 0 8px;padding:2px 44px 0 6px;border:0;position:relative}
+.install-panel .install-tabs button{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:8px;background:none;color:#8f8b85;font:500 14px/1.2 var(--sans);cursor:pointer;transition:color .2s ease,background .2s ease}
+.install-panel .install-tabs button::after{display:none}
+.install-panel .install-tabs button:hover{color:var(--ink)}
+.install-panel .install-tabs button[aria-selected=true]{color:var(--ink);background:rgba(40,30,20,.06)}
+.tab-ico{width:17px;height:17px;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat;flex:none}
+.tab-ico-nix{--i:url(assets/icons/tab-nix.svg)}.tab-ico-source{--i:url(assets/icons/tab-source.svg)}
+.install-body{padding:0;position:relative}
+.install-panel .command-row{position:static;display:block;border:0;border-radius:10px;background:#efedeb;padding:22px 24px;min-height:0}
+.install-panel .command-row code,.install-panel .command-row pre{font:14px/1.7 var(--mono);color:var(--ink);background:none;padding:0;margin:0;white-space:pre-wrap}
+.install-panel .copy-button{position:absolute;top:-46px;right:6px;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:none;color:#8f8b85;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s ease,background .2s ease}
+.install-panel .copy-button:hover{color:var(--ink);background:rgba(40,30,20,.06)}
+.copy-ico{width:18px;height:18px;background:currentColor;-webkit-mask:url(assets/icons/copy.svg) center/contain no-repeat;mask:url(assets/icons/copy.svg) center/contain no-repeat}
+.copy-button.is-copied{color:#6b8e4e}.copy-button.is-copied .copy-ico{-webkit-mask-image:url(assets/icons/check.svg);mask-image:url(assets/icons/check.svg)}
+.install-panel .install-content p{padding:10px 8px 4px;margin:0;font:13px/1.5 var(--sans);color:#6d6963}
+.install-note,.install-panel .install-note{margin:20px 0 0;padding:0;border:0;background:none;font:13px/1.5 var(--sans);color:#8f8b85;max-width:760px}
+.install-panel,.install-panel.dep-window{max-width:920px}.install-note{max-width:920px}

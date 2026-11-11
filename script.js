@@ -30,11 +30,10 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   button.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(button.dataset.copy);
-      button.textContent = 'Copied ✓';
+      button.classList.add('is-copied');
       document.querySelector('.copy-status').textContent = 'Command copied to clipboard.';
-      setTimeout(() => { button.textContent = 'Copy ⧉'; }, 2000);
+      setTimeout(() => { button.classList.remove('is-copied'); }, 2000);
     } catch {
-      button.textContent = 'Select text';
       const command = button.parentElement.querySelector('code');
       const range = document.createRange();
       range.selectNodeContents(command);
