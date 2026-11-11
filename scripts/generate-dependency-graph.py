@@ -261,7 +261,7 @@ def render_svg(graph, dot, orientation):
         node_height = max(NODE_HEIGHT, SLOT * (indegree.get(node['id'], 1) - 1) + 14)
         attrs = f'id="{node["id"]}", label="", fixedsize=true, width={node_width(node) / 72:.4f}, height={node_height / 72:.4f}'
         if node['id'] == graph['root']:
-            attrs += ', fillcolor="#b5603e", color="#b5603e"'
+            attrs += ', fillcolor="#b39a6b", color="#b39a6b"'
         elif node.get('scope') == 'build':
             attrs += ', style="filled,dashed"'
         lines.append(f'"{node["id"]}" [{attrs}];')

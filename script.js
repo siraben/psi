@@ -455,6 +455,7 @@ if (portStage) {
   };
   const show = (key, origin) => {
     const previous = panes.find(pane => pane.classList.contains('is-active'));
+    portStage.classList.remove('is-soon');
     panes.forEach(pane => pane.classList.toggle('is-active', pane.dataset.platform === key));
     document.querySelectorAll('.port-card').forEach(card => card.classList.toggle('is-current', stageFor[card.dataset.platform] === key.replace('-alt', '')));
     setBackground(textures[key]);
@@ -482,11 +483,42 @@ if (portStage) {
       cycle = setInterval(() => { alt = !alt; show(alt ? 'linux-alt' : 'linux'); }, 3600);
     }
   };
-  document.querySelectorAll('.port-card').forEach(card => {
+  const showSoon = card => {
+    clearInterval(cycle);
+    panes.forEach(pane => pane.classList.remove('is-active'));
+    portStage.classList.add('is-soon');
+    document.querySelectorAll('.port-card').forEach(other => other.classList.toggle('is-current', other === card));
+  };
+  document.querySelectorAll('.port-card.is-textonly').forEach(card => {
+    card.addEventListener('click', () => showSoon(card));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showSoon(card); }
+    });
+  });
+  document.querySelectorAll('.port-card:not(.is-textonly)').forEach(card => {
     ['mouseenter', 'focus', 'click'].forEach(type => card.addEventListener(type, () => {
       const rect = card.getBoundingClientRect();
       select(card.dataset.platform, rect.top + rect.height / 2);
     }));
   });
   select('linux');
+}
+
+const installTabs = document.querySelector('.install-panel .install-tabs');
+const installBody = document.querySelector('.install-panel .install-body');
+if (installTabs && installBody) {
+  const reduceInstall = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  installTabs.addEventListener('click', event => {
+    if (!event.target.closest('[role="tab"]') || reduceInstall) return;
+    const from = installBody.offsetHeight;
+    requestAnimationFrame(() => {
+      const to = installBody.offsetHeight;
+      if (from === to) return;
+      installBody.style.overflow = 'hidden';
+      const animation = installBody.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 520, easing: 'cubic-bezier(.22,.8,.24,1)' });
+      const visible = installBody.querySelector('.install-content:not([hidden])');
+      if (visible) visible.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'ease-out' });
+      animation.onfinish = () => { installBody.style.overflow = ''; };
+    });
+  }, true);
 }
