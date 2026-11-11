@@ -46,9 +46,6 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   });
 });
 
-document.querySelector('.hero-demo')?.addEventListener('click', () => {
-  document.getElementById('tab-haiku')?.click();
-});
 
 const demoPlayers = new Map();
 let playerAssets;
@@ -78,13 +75,18 @@ const demoObserver = new IntersectionObserver(entries => {
   entries.forEach(async entry => {
     const container = entry.target;
     const player = demoPlayers.get(container);
-    if (entry.isIntersecting) {
-      if (player) { player.play(); return; }
+    const ratio = entry.intersectionRatio;
+    if (ratio >= 0.5) {
+      if (player) {
+        if (container.dataset.state !== 'playing') { container.dataset.state = 'playing'; player.play(); }
+        return;
+      }
       if (container.dataset.loading) return;
       container.dataset.loading = '1';
       try {
         await loadPlayer();
         container.replaceChildren();
+        container.dataset.state = 'playing';
         demoPlayers.set(container, window.AsciinemaPlayer.create(container.dataset.recording, container, {
           autoplay: true,
           loop: true,
@@ -97,11 +99,12 @@ const demoObserver = new IntersectionObserver(entries => {
       } catch {
         delete container.dataset.loading;
       }
-    } else if (player) {
+    } else if (ratio < 0.05 && player && container.dataset.state === 'playing') {
+      container.dataset.state = 'paused';
       player.pause();
     }
   });
-}, { threshold: 0.4 });
+}, { threshold: [0, 0.05, 0.5] });
 document.querySelectorAll('.terminal-demo[data-recording]').forEach(container => demoObserver.observe(container));
 
 // SVG and the accessible table are generated from the same CycloneDX records.
@@ -113,11 +116,18 @@ if (dependencySection) {
   let selectedPackage = null;
   const enabledScopes = new Set(['runtime', 'build']);
   const reset = dependencySection.querySelector('.dependency-reset');
+  const hintBox = dependencySection.querySelector('.dependency-hint');
+  dependencySection.querySelectorAll('.dep-folder-toggle').forEach(toggle => toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.parentElement.classList.toggle('is-open', open);
+  }));
   const relations = dependencySection.querySelector('.dependency-relations');
   const selectPackage = id => {
     const selected = packages.get(id);
     if (!selected) return;
     selectedPackage = id;
+    dependencySection.querySelectorAll('[data-list]').forEach(item => item.classList.toggle('is-current', item.dataset.list === id));
     const outgoing = activeGraph.edges.filter(edge => edge.source === id).map(edge => edge.target);
     const incoming = activeGraph.edges.filter(edge => edge.target === id).map(edge => edge.source);
     const neighbors = new Set([id, ...outgoing, ...incoming]);
@@ -133,16 +143,22 @@ if (dependencySection) {
       edge.classList.toggle('is-muted', !connected);
     });
     dependencySection.querySelector('#dependency-detail-name').textContent = selected.name;
+    dependencySection.querySelector('.dep-path-name').textContent = selected.name;
+    dependencySection.querySelector('.dep-statusbar').textContent = `${outgoing.length} dependencies, ${incoming.length} dependents`;
     dependencySection.querySelector('.dependency-detail-version').textContent = selected.version + ' · ' + (selected.scope === 'runtime' ? 'Retained at runtime' : 'Build-time only');
     dependencySection.querySelector('.dependency-detail-license').textContent = 'Package license metadata: ' + (selected.licenses.join(', ') || 'not recorded in the SBOM');
     const renderList = (selector, ids) => {
       const list = dependencySection.querySelector(selector);
       list.replaceChildren();
+      list.closest('.dep-folder').querySelector('.dep-count').textContent = ids.length;
       ids.sort((a, b) => packages.get(a).name.localeCompare(packages.get(b).name)).forEach(target => {
         const li = document.createElement('li');
         const button = document.createElement('button');
         button.type = 'button';
         button.textContent = packages.get(target).name;
+        const version = document.createElement('span');
+        version.textContent = packages.get(target).version;
+        button.append(version);
         button.addEventListener('click', () => {
           selectPackage(target);
           dependencySection.querySelector('#dependency-detail-name').focus({preventScroll: true});
@@ -156,11 +172,20 @@ if (dependencySection) {
     };
     renderList('.dependency-outgoing', outgoing);
     renderList('.dependency-incoming', incoming);
-    relations.hidden = false; reset.hidden = false;
+    relations.hidden = false; hintBox.classList.add('is-selected'); reset.tabIndex = 0;
     dependencySection.querySelector('.dependency-status').textContent = `${selected.name} ${selected.version}: ${outgoing.length} shown dependencies, used by ${incoming.length} shown packages.`;
   };
   dependencySection.querySelector('#dependency-detail-name').tabIndex = -1;
   dependencySection.querySelectorAll('[data-package]').forEach(node => {
+    const trace = on => node.closest('svg').querySelectorAll('.edge').forEach(edge => {
+      const linked = on && (edge.dataset.source === node.dataset.package || edge.dataset.target === node.dataset.package);
+      edge.classList.toggle('is-hover', linked);
+      if (linked) edge.parentNode.appendChild(edge);
+    });
+    node.addEventListener('mouseenter', () => trace(true));
+    node.addEventListener('mouseleave', () => trace(false));
+    node.addEventListener('focus', () => trace(true));
+    node.addEventListener('blur', () => trace(false));
     node.addEventListener('click', () => selectPackage(node.dataset.package));
     node.addEventListener('keydown', event => {
       if (event.key === 'Enter' || event.key === ' ') {
@@ -168,18 +193,101 @@ if (dependencySection) {
       }
     });
   });
+  const sideScroll = dependencySection.querySelector('.dep-side-scroll');
+  let freshFrame = 0;
+  new MutationObserver(() => {
+    cancelAnimationFrame(freshFrame);
+    freshFrame = requestAnimationFrame(() => {
+      sideScroll.classList.remove('is-fresh');
+      void sideScroll.offsetWidth;
+      sideScroll.classList.add('is-fresh');
+    });
+  }).observe(sideScroll, {childList: true, characterData: true, subtree: true});
   const clearSelection = (focus = false) => {
     selectedPackage = null;
+    dependencySection.querySelectorAll('[data-list]').forEach(item => item.classList.remove('is-current'));
     dependencySection.querySelectorAll('.is-selected, .is-muted').forEach(node => node.classList.remove('is-selected', 'is-muted'));
     dependencySection.querySelectorAll('[data-package]').forEach(node => node.setAttribute('aria-pressed', 'false'));
-    dependencySection.querySelector('#dependency-detail-name').textContent = 'Explore the graph';
+    dependencySection.querySelector('#dependency-detail-name').textContent = 'Select a package';
+    dependencySection.querySelector('.dep-path-name').textContent = 'All packages';
+    dependencySection.querySelector('.dep-statusbar').textContent = 'Select a package';
     dependencySection.querySelector('.dependency-detail-version').textContent = 'Select any package.';
     dependencySection.querySelector('.dependency-detail-license').textContent = 'Select a node to see its version, package license metadata, and shown connections.';
-    relations.hidden = true; reset.hidden = true;
+    relations.hidden = true; hintBox.classList.remove('is-selected'); reset.tabIndex = -1;
     dependencySection.querySelector('.dependency-status').textContent = 'Showing all package connections.';
     if (focus) dependencySection.querySelector('#dependency-detail-name').focus({preventScroll:true});
   };
   reset.addEventListener('click', () => clearSelection(true));
+  const graphSvg = dependencySection.querySelector('.dependency-svg');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const baseBox = graphSvg ? graphSvg.getAttribute('viewBox').trim().split(/\s+/).map(Number) : null;
+  let nodeBoxes = null;
+  let panFrame = 0;
+  const measureNodes = () => {
+    const matrix = graphSvg.getScreenCTM();
+    if (!matrix || !graphSvg.clientWidth) return null;
+    const inverse = matrix.inverse();
+    const boxes = new Map();
+    graphSvg.querySelectorAll('[data-package]').forEach(node => {
+      const rect = node.getBoundingClientRect();
+      const a = new DOMPoint(rect.left, rect.top).matrixTransform(inverse);
+      const b = new DOMPoint(rect.right, rect.bottom).matrixTransform(inverse);
+      boxes.set(node.dataset.package, [a.x, a.y, b.x, b.y]);
+    });
+    return boxes;
+  };
+  const nodeOn = id => id === graph.root || enabledScopes.has(packages.get(id).scope);
+  const panTo = target => {
+    const from = graphSvg.getAttribute('viewBox').trim().split(/\s+/).map(Number);
+    cancelAnimationFrame(panFrame);
+    if (reduceMotion) { graphSvg.setAttribute('viewBox', target.join(' ')); return; }
+    const started = performance.now();
+    const step = now => {
+      const progress = Math.min((now - started) / 700, 1);
+      const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+      graphSvg.setAttribute('viewBox', from.map((value, index) => value + (target[index] - value) * eased).join(' '));
+      if (progress < 1) panFrame = requestAnimationFrame(step);
+    };
+    panFrame = requestAnimationFrame(step);
+  };
+  const applyScopes = () => {
+    if (!graphSvg) return;
+    graphSvg.querySelectorAll('[data-package]').forEach(node => {
+      const on = nodeOn(node.dataset.package);
+      node.classList.toggle('is-off', !on);
+      node.setAttribute('tabindex', on ? '0' : '-1');
+      node.setAttribute('aria-hidden', String(!on));
+    });
+    dependencySection.querySelectorAll('[data-list]').forEach(item => item.closest('li').classList.toggle('is-off', item.dataset.list !== graph.root && !enabledScopes.has(item.dataset.listScope)));
+    graphSvg.querySelectorAll('.edge').forEach(edge => edge.classList.toggle('is-off', !enabledScopes.has(edge.dataset.scope)));
+    const cluster = graphSvg.querySelector('.cluster');
+    if (cluster) cluster.classList.toggle('is-off', !enabledScopes.has('build'));
+    if (!nodeBoxes) nodeBoxes = measureNodes();
+    if (!nodeBoxes) return;
+    if (enabledScopes.size === 2) { panTo(baseBox); return; }
+    const shown = [...nodeBoxes].filter(([id]) => nodeOn(id)).map(([, box]) => box);
+    const left = Math.min(...shown.map(box => box[0])), right = Math.max(...shown.map(box => box[2]));
+    const top = Math.min(...shown.map(box => box[1])), bottom = Math.max(...shown.map(box => box[3]));
+    panTo([(left + right) / 2 - baseBox[2] / 2, (top + bottom) / 2 - baseBox[3] / 2, baseBox[2], baseBox[3]]);
+  };
+  dependencySection.querySelectorAll('[data-list]').forEach(item => item.addEventListener('click', () => {
+    if (activeGraph.nodes.some(node => node.id === item.dataset.list)) selectPackage(item.dataset.list);
+  }));
+  const infoButton = dependencySection.querySelector('.dep-info');
+  const infoPop = dependencySection.querySelector('.dep-info-pop');
+  const setInfo = open => {
+    infoButton.setAttribute('aria-expanded', String(open));
+    infoPop.classList.toggle('is-open', open);
+  };
+  infoButton.addEventListener('click', () => setInfo(infoButton.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('click', event => { if (!infoPop.contains(event.target) && !infoButton.contains(event.target)) setInfo(false); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') setInfo(false); });
+  const groupToggle = dependencySection.querySelector('.dep-group-toggle');
+  groupToggle.addEventListener('click', () => {
+    const open = groupToggle.getAttribute('aria-expanded') !== 'true';
+    groupToggle.setAttribute('aria-expanded', String(open));
+    groupToggle.parentElement.classList.toggle('is-open', open);
+  });
   const scopeButtons = [...dependencySection.querySelectorAll('[data-scope]')];
   scopeButtons.forEach(button => button.addEventListener('click', () => {
     const scope = button.dataset.scope;
@@ -188,6 +296,7 @@ if (dependencySection) {
       enabledScopes.delete(scope);
     } else enabledScopes.add(scope);
     const view = enabledScopes.size === 2 ? 'both' : [...enabledScopes][0];
+    applyScopes();
     activeGraph = graph.views[view];
     dependencySection.querySelectorAll('[data-view]').forEach(element => { element.hidden = element.dataset.view !== view; });
     scopeButtons.forEach(control => {
@@ -195,7 +304,7 @@ if (dependencySection) {
       control.setAttribute('aria-pressed', String(active));
       control.disabled = active && enabledScopes.size === 1;
     });
-    dependencySection.querySelector('.dependency-count').textContent = `${activeGraph.nodes.length} packages / ${activeGraph.edges.length} connections`;
+    const countEl = dependencySection.querySelector('.dependency-count'); if (countEl) countEl.textContent = `${activeGraph.nodes.length} packages / ${activeGraph.edges.length} connections`;
     if (selectedPackage && activeGraph.nodes.some(node => node.id === selectedPackage)) selectPackage(selectedPackage);
     else clearSelection();
     dependencySection.querySelector('.dependency-status').textContent = `Showing ${view === 'both' ? 'runtime and build' : view} dependencies: ${activeGraph.nodes.length} packages.`;
@@ -233,3 +342,116 @@ if (dependencySection) {
   window.addEventListener('resize',update);
   update();
 })();
+
+(function(){
+  var DUR=420,current=null,busy=false;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function target(win){
+    var vw=window.innerWidth,vh=window.innerHeight;
+    var bar=win.querySelector('.mac-bar').offsetHeight;
+    var extra=bar+6+6+2,aspect=620/430.5;
+    var W=Math.min(860,vw*0.68);
+    var H=extra+(W-14)/aspect;
+    if(H>vh*0.72){H=vh*0.72;W=(H-extra)*aspect+14;}
+    return{left:(vw-W)/2,top:(vh-H)/2,width:W,height:H};
+  }
+  function place(win,r){
+    win.style.left=r.left+'px';win.style.top=r.top+'px';win.style.width=r.width+'px';win.style.height=r.height+'px';
+  }
+  function open(win){
+    if(busy||current)return;
+    busy=true;
+    var r=win.getBoundingClientRect();
+    var ph=document.createElement('div');
+    ph.className='mac-ph';
+    ph.style.width=r.width+'px';ph.style.height=r.height+'px';
+    win.before(ph);
+    var bd=document.createElement('div');
+    bd.className='pop-backdrop';
+    document.body.append(bd);
+    bd.addEventListener('click',close);
+    win.style.transition='none';
+    place(win,r);
+    win.classList.add('is-popup');
+    document.documentElement.style.overflow='hidden';
+    void win.offsetWidth;
+    win.style.transition='';
+    place(win,target(win));
+    bd.classList.add('on');
+    current={win:win,ph:ph,bd:bd};
+    setTimeout(function(){busy=false;if(current)current.win.style.height='auto';},reduce?0:DUR+30);
+  }
+  function close(){
+    if(busy||!current)return;
+    busy=true;
+    var c=current,r=c.ph.getBoundingClientRect();
+    c.win.style.height=c.win.getBoundingClientRect().height+'px';
+    void c.win.offsetWidth;
+    place(c.win,r);
+    c.bd.classList.remove('on');
+    setTimeout(function(){
+      c.win.classList.remove('is-popup');
+      c.win.removeAttribute('style');
+      c.ph.remove();c.bd.remove();
+      document.documentElement.style.overflow='';
+      current=null;busy=false;
+    },reduce?0:DUR+30);
+  }
+  function toggle(win){current?close():open(win);}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.ap-fullscreen-button');
+    var w=b&&b.closest('.mac-window');
+    if(!w)return;
+    e.preventDefault();e.stopImmediatePropagation();toggle(w);
+  },true);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&current){e.preventDefault();close();return;}
+    if((e.key==='f'||e.key==='F')&&!e.metaKey&&!e.ctrlKey&&!e.altKey){
+      var w=e.target.closest&&e.target.closest('.mac-window');
+      if(w&&w.querySelector('.ap-player')){e.preventDefault();e.stopImmediatePropagation();toggle(w);}
+    }
+  },true);
+  window.addEventListener('resize',function(){
+    if(!current)return;
+    current.win.style.transition='none';
+    place(current.win,target(current.win));
+    current.win.style.height='auto';
+    void current.win.offsetWidth;
+    current.win.style.transition='';
+  });
+})();
+
+const portCards = document.querySelector('.port-cards');
+if (portCards) {
+  const revealCards = () => portCards.classList.add('is-in');
+  if (window.IntersectionObserver) {
+    const portObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { revealCards(); portObserver.disconnect(); }
+    }, {threshold: 0.25});
+    portObserver.observe(portCards);
+  } else revealCards();
+}
+
+const portStage = document.querySelector('.port-stage');
+if (portStage) {
+  const panes = [...portStage.querySelectorAll('.stage-pane')];
+  const stageFor = { linux: 'linux', windows: 'windows', haiku: 'haiku' };
+  let cycle = 0;
+  const show = key => {
+    panes.forEach(pane => pane.classList.toggle('is-active', pane.dataset.platform === key));
+  };
+  const select = platform => {
+    const key = stageFor[platform];
+    if (!key) return;
+    clearInterval(cycle);
+    show(key);
+    if (key === 'linux') {
+      let alt = false;
+      cycle = setInterval(() => { alt = !alt; show(alt ? 'linux-alt' : 'linux'); }, 3600);
+    }
+  };
+  document.querySelectorAll('.port-card').forEach(card => {
+    ['mouseenter', 'focus', 'click'].forEach(type => card.addEventListener(type, () => select(card.dataset.platform)));
+  });
+  select('linux');
+}
