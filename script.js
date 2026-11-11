@@ -279,6 +279,7 @@ if (dependencySection) {
     infoButton.setAttribute('aria-expanded', String(open));
     infoPop.classList.toggle('is-open', open);
   };
+  infoPop.querySelector('.pop-close').addEventListener('click', () => setInfo(false));
   infoButton.addEventListener('click', () => setInfo(infoButton.getAttribute('aria-expanded') !== 'true'));
   document.addEventListener('click', event => { if (!infoPop.contains(event.target) && !infoButton.contains(event.target)) setInfo(false); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') setInfo(false); });
@@ -436,22 +437,57 @@ const portStage = document.querySelector('.port-stage');
 if (portStage) {
   const panes = [...portStage.querySelectorAll('.stage-pane')];
   const stageFor = { linux: 'linux', windows: 'windows', haiku: 'haiku' };
-  let cycle = 0;
-  const show = key => {
-    panes.forEach(pane => pane.classList.toggle('is-active', pane.dataset.platform === key));
+  const textures = { linux: 'photo1', 'linux-alt': 'photo1', windows: 'photo3', haiku: 'photo4' };
+  const reduceStage = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bgUrl = name => `url(assets/textures/${name}.jpg?v=4)`;
+  const base = document.createElement('div');
+  base.className = 'stage-bg';
+  const glitch = document.createElement('div');
+  glitch.className = 'stage-glitch';
+  portStage.prepend(glitch);
+  portStage.prepend(base);
+  let currentTexture = null;
+  let glitchTimer = 0;
+  const STRIPS = 14;
+  const setBackground = texture => {
+    if (texture === currentTexture) return;
+    currentTexture = texture;
+    base.style.backgroundImage = bgUrl(texture);
   };
-  const select = platform => {
+  const show = (key, origin) => {
+    const previous = panes.find(pane => pane.classList.contains('is-active'));
+    panes.forEach(pane => pane.classList.toggle('is-active', pane.dataset.platform === key));
+    document.querySelectorAll('.port-card').forEach(card => card.classList.toggle('is-current', stageFor[card.dataset.platform] === key.replace('-alt', '')));
+    setBackground(textures[key]);
+    const active = panes.find(pane => pane.dataset.platform === key);
+    if (!origin || reduceStage || active === previous) return;
+    const windowEl = active.querySelector('.mac-window');
+    const box = windowEl.getBoundingClientRect();
+    const originY = Math.min(Math.max((origin - box.top) / box.height, 0), 1) * 100;
+    windowEl.style.transformOrigin = `-8% ${originY}%`;
+    windowEl.animate([
+      { transform: 'scale(0.03, 0.06)', clipPath: 'polygon(0 36%, 100% 0, 100% 100%, 0 64%)', opacity: 0.9, offset: 0 },
+      { transform: 'scale(0.7, 0.55)', clipPath: 'polygon(0 4%, 100% 0, 100% 100%, 0 96%)', opacity: 1, offset: 0.55 },
+      { transform: 'scale(1, 1)', clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', opacity: 1, offset: 1 }
+    ], { duration: 720, easing: 'cubic-bezier(.22,.8,.24,1)' });
+  };
+  let cycle = 0;
+  const select = (platform, origin) => {
     const key = stageFor[platform];
     if (!key) return;
+    const wasActive = panes.some(pane => pane.classList.contains('is-active') && pane.dataset.platform.startsWith(key));
     clearInterval(cycle);
-    show(key);
+    if (!wasActive || !origin) show(key, wasActive ? 0 : origin);
     if (key === 'linux') {
       let alt = false;
       cycle = setInterval(() => { alt = !alt; show(alt ? 'linux-alt' : 'linux'); }, 3600);
     }
   };
   document.querySelectorAll('.port-card').forEach(card => {
-    ['mouseenter', 'focus', 'click'].forEach(type => card.addEventListener(type, () => select(card.dataset.platform)));
+    ['mouseenter', 'focus', 'click'].forEach(type => card.addEventListener(type, () => {
+      const rect = card.getBoundingClientRect();
+      select(card.dataset.platform, rect.top + rect.height / 2);
+    }));
   });
   select('linux');
 }
