@@ -312,24 +312,6 @@ if (dependencySection) {
 }
 
 (function(){
-  var dlg=document.createElement('dialog');
-  dlg.className='lightbox';
-  dlg.innerHTML='<button class="lightbox-close" type="button" aria-label="Close">\u00d7</button><img alt="">';
-  document.body.appendChild(dlg);
-  var img=dlg.querySelector('img');
-  function close(){dlg.close();}
-  dlg.addEventListener('click',close);
-  document.addEventListener('click',function(e){
-    var a=e.target.closest&&e.target.closest('a.gallery-image');
-    if(!a||e.metaKey||e.ctrlKey||e.shiftKey||!dlg.showModal)return;
-    e.preventDefault();
-    var thumb=a.querySelector('img');
-    img.src=a.getAttribute('href');
-    img.alt=thumb?thumb.alt:'';
-    dlg.showModal();
-  });
-})();
-(function(){
   var links=[].slice.call(document.querySelectorAll('.site-header nav a[href^="#"]'));
   if(!links.length||!window.IntersectionObserver)return;
   var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
@@ -434,58 +416,107 @@ if (portCards) {
 
 const portStage = document.querySelector('.port-stage');
 if (portStage) {
+  portStage.querySelectorAll('img').forEach(img => { img.draggable = false; });
+  portStage.addEventListener('dragstart', event => event.preventDefault());
   const panes = [...portStage.querySelectorAll('.stage-pane')];
-  const stageFor = { linux: 'linux', windows: 'windows', haiku: 'haiku' };
-  const textures = { linux: 'photo1', 'linux-alt': 'photo1', windows: 'photo3', haiku: 'photo4' };
+  const paneFor = { linux: ['linux', 'linux-alt'], windows: ['windows'], haiku: ['haiku'] };
   const reduceStage = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const bgUrl = name => `url(assets/textures/${name}.jpg?v=4)`;
   const base = document.createElement('div');
   base.className = 'stage-bg';
-  const glitch = document.createElement('div');
-  glitch.className = 'stage-glitch';
-  portStage.prepend(glitch);
+  base.style.backgroundImage = 'url(assets/textures/photo1.jpg?v=4)';
   portStage.prepend(base);
-  let currentTexture = null;
-  let glitchTimer = 0;
-  const STRIPS = 14;
-  const setBackground = texture => {
-    if (texture === currentTexture) return;
-    currentTexture = texture;
-    base.style.backgroundImage = bgUrl(texture);
+  const spots = [[-70, -26], [64, 30], [-26, 54], [96, -48]];
+  const offsets = new Map();
+  let opened = 0;
+  let zTop = 2;
+  const clampOffset = (win, x, y) => {
+    const stage = portStage.getBoundingClientRect();
+    const rect = win.getBoundingClientRect();
+    const baseLeft = rect.left - (offsets.get(win)?.x || 0);
+    const baseTop = rect.top - (offsets.get(win)?.y || 0);
+    const minX = stage.left + 90 - (baseLeft + rect.width) ;
+    const maxX = stage.right - 90 - baseLeft;
+    const minY = stage.top - baseTop;
+    const maxY = stage.bottom - 48 - baseTop;
+    return [Math.min(Math.max(x, minX), maxX), Math.min(Math.max(y, minY), maxY)];
   };
-  const show = (key, origin) => {
-    const previous = panes.find(pane => pane.classList.contains('is-active'));
+  const place = (win, x, y) => {
+    offsets.set(win, { x, y });
+    win.style.translate = `${x}px ${y}px`;
+  };
+  const markCurrent = pane => {
+    const key = pane.dataset.platform.replace('-alt', '');
+    document.querySelectorAll('.port-card').forEach(card => card.classList.toggle('is-current', card.dataset.platform === key));
+  };
+  const bringToFront = pane => {
+    zTop += 1;
+    pane.style.zIndex = zTop;
+    panes.forEach(other => other.classList.toggle('is-top', other === pane));
+    markCurrent(pane);
+  };
+  const compact = window.matchMedia('(max-width: 1050px)');
+  const openPane = (pane, pop) => {
     portStage.classList.remove('is-soon');
-    panes.forEach(pane => pane.classList.toggle('is-active', pane.dataset.platform === key));
-    document.querySelectorAll('.port-card').forEach(card => card.classList.toggle('is-current', stageFor[card.dataset.platform] === key.replace('-alt', '')));
-    setBackground(textures[key]);
-    const active = panes.find(pane => pane.dataset.platform === key);
-    if (!origin || reduceStage || active === previous) return;
-    const windowEl = active.querySelector('.mac-window');
-    const box = windowEl.getBoundingClientRect();
-    const originY = Math.min(Math.max((origin - box.top) / box.height, 0), 1) * 100;
-    windowEl.style.transformOrigin = `-8% ${originY}%`;
-    windowEl.animate([
-      { transform: 'scale(0.03, 0.06)', clipPath: 'polygon(0 36%, 100% 0, 100% 100%, 0 64%)', opacity: 0.9, offset: 0 },
-      { transform: 'scale(0.7, 0.55)', clipPath: 'polygon(0 4%, 100% 0, 100% 100%, 0 96%)', opacity: 1, offset: 0.55 },
-      { transform: 'scale(1, 1)', clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', opacity: 1, offset: 1 }
-    ], { duration: 720, easing: 'cubic-bezier(.22,.8,.24,1)' });
-  };
-  let cycle = 0;
-  const select = (platform, origin) => {
-    const key = stageFor[platform];
-    if (!key) return;
-    const wasActive = panes.some(pane => pane.classList.contains('is-active') && pane.dataset.platform.startsWith(key));
-    clearInterval(cycle);
-    if (!wasActive || !origin) show(key, wasActive ? 0 : origin);
-    if (key === 'linux') {
-      let alt = false;
-      cycle = setInterval(() => { alt = !alt; show(alt ? 'linux-alt' : 'linux'); }, 3600);
+    if (compact.matches) {
+      panes.forEach(other => {
+        if (other === pane) return;
+        other.classList.remove('is-active', 'is-top');
+        offsets.delete(other.querySelector('.mac-window'));
+        other.querySelector('.mac-window').style.translate = '';
+      });
+    }
+    const win = pane.querySelector('.mac-window');
+    const fresh = !pane.classList.contains('is-active');
+    pane.classList.add('is-active');
+    if (fresh) {
+      const [x, y] = compact.matches ? [0, 0] : spots[opened % spots.length];
+      const k = Math.min(1, portStage.offsetWidth / 860);
+      opened += 1;
+      place(win, x * k, y * k);
+    }
+    bringToFront(pane);
+    if (pop && !reduceStage) {
+      win.animate([{ transform: 'scale(0.9)' }, { transform: 'scale(1.015)', offset: 0.7 }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(.22,.8,.24,1)' });
     }
   };
+  panes.forEach(pane => {
+    const win = pane.querySelector('.mac-window');
+    const bar = win.querySelector('.mac-bar');
+    pane.addEventListener('pointerdown', () => { if (!pane.classList.contains('is-top')) bringToFront(pane); });
+    let drag = null;
+    bar.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || compact.matches) return;
+      const start = offsets.get(win) || { x: 0, y: 0 };
+      drag = { id: event.pointerId, px: event.clientX, py: event.clientY, x: start.x, y: start.y };
+      bar.setPointerCapture(event.pointerId);
+      win.classList.add('is-dragging');
+      event.preventDefault();
+    });
+    bar.addEventListener('pointermove', event => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const [x, y] = clampOffset(win, drag.x + event.clientX - drag.px, drag.y + event.clientY - drag.py);
+      place(win, x, y);
+    });
+    const end = event => {
+      if (!drag || event.pointerId !== drag.id) return;
+      drag = null;
+      win.classList.remove('is-dragging');
+    };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+  });
+  const select = platform => {
+    const keys = paneFor[platform];
+    if (!keys) return;
+    keys.forEach((key, index) => {
+      if (compact.matches && index > 0) return;
+      const pane = panes.find(item => item.dataset.platform === key);
+      const run = () => openPane(pane, !pane.classList.contains('is-active'));
+      if (index === 0) run();
+      else setTimeout(run, 260);
+    });
+  };
   const showSoon = card => {
-    clearInterval(cycle);
-    panes.forEach(pane => pane.classList.remove('is-active'));
     portStage.classList.add('is-soon');
     document.querySelectorAll('.port-card').forEach(other => other.classList.toggle('is-current', other === card));
   };
@@ -496,29 +527,80 @@ if (portStage) {
     });
   });
   document.querySelectorAll('.port-card:not(.is-textonly)').forEach(card => {
-    ['mouseenter', 'focus', 'click'].forEach(type => card.addEventListener(type, () => {
-      const rect = card.getBoundingClientRect();
-      select(card.dataset.platform, rect.top + rect.height / 2);
-    }));
+    card.addEventListener('click', () => select(card.dataset.platform));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(card.dataset.platform); }
+    });
   });
-  select('linux');
+  const first = panes.find(pane => pane.dataset.platform === 'linux');
+  openPane(first, false);
 }
 
 const installTabs = document.querySelector('.install-panel .install-tabs');
 const installBody = document.querySelector('.install-panel .install-body');
 if (installTabs && installBody) {
+  const pill = installTabs.querySelector('.tab-pill');
+  const movePill = animate => {
+    const current = installTabs.querySelector('[aria-selected="true"]');
+    if (!pill || !current) return;
+    if (!animate) pill.style.transition = 'none';
+    pill.style.width = `${current.offsetWidth}px`;
+    pill.style.height = `${current.offsetHeight}px`;
+    pill.style.transform = `translate(${current.offsetLeft}px, ${current.offsetTop}px)`;
+    if (!animate) { pill.getBoundingClientRect(); pill.style.transition = ''; }
+  };
+  movePill(false);
+  window.addEventListener('resize', () => movePill(false));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => movePill(false));
+  installTabs.addEventListener('click', () => requestAnimationFrame(() => movePill(true)));
   const reduceInstall = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let resizeToken = 0;
   installTabs.addEventListener('click', event => {
     if (!event.target.closest('[role="tab"]') || reduceInstall) return;
-    const from = installBody.offsetHeight;
+    const from = installBody.getBoundingClientRect().height;
+    installBody.getAnimations().forEach(animation => animation.cancel());
+    installBody.querySelectorAll('.install-content').forEach(panel => panel.getAnimations().forEach(animation => animation.cancel()));
+    installBody.style.height = `${from}px`;
+    installBody.style.clipPath = 'inset(-60px -20px 0 -20px)';
+    const token = ++resizeToken;
     requestAnimationFrame(() => {
-      const to = installBody.offsetHeight;
-      if (from === to) return;
-      installBody.style.overflow = 'hidden';
-      const animation = installBody.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 520, easing: 'cubic-bezier(.22,.8,.24,1)' });
+      if (token !== resizeToken) return;
+      installBody.style.height = '';
+      const to = installBody.getBoundingClientRect().height;
       const visible = installBody.querySelector('.install-content:not([hidden])');
-      if (visible) visible.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'ease-out' });
-      animation.onfinish = () => { installBody.style.overflow = ''; };
+      if (visible) visible.animate([{ opacity: 0.55 }, { opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.22,.8,.24,1)' });
+      if (Math.abs(from - to) < 1) { installBody.style.clipPath = ''; return; }
+      const animation = installBody.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 300, easing: 'cubic-bezier(.22,.8,.24,1)' });
+      const release = () => { if (token === resizeToken) installBody.style.clipPath = ''; };
+      animation.addEventListener('finish', release);
+      animation.addEventListener('cancel', release);
     });
   }, true);
 }
+
+(function () {
+  var rows = [].slice.call(document.querySelectorAll('.marquee-row'));
+  if (!rows.length) return;
+  function itemHtml(row, first) {
+    var extra = first ? '' : ' tabindex="-1" aria-hidden="true"';
+    return '<a class="m-item" href="' + row.dataset.href + '" target="_blank" rel="noopener"' + extra + '>' + row.dataset.text + '</a>';
+  }
+  function fill() {
+    rows.forEach(function (row) {
+      row.innerHTML = '<div class="marquee-track"><div class="marquee-group"></div><div class="marquee-group"></div></div>';
+      var groups = row.querySelectorAll('.marquee-group');
+      groups[0].innerHTML = itemHtml(row, true);
+      var unit = groups[0].offsetWidth || 300;
+      var count = Math.ceil(row.offsetWidth / unit) + 1;
+      var one = '';
+      var two = '';
+      for (var i = 0; i < count; i += 1) { one += itemHtml(row, i === 0); two += itemHtml(row, false); }
+      groups[0].innerHTML = one;
+      groups[1].innerHTML = two;
+    });
+  }
+  fill();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fill);
+  var timer = 0;
+  window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(fill, 150); });
+})();
