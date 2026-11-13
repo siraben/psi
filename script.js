@@ -47,6 +47,7 @@ document.querySelectorAll('[data-copy]').forEach(button => {
 
 
 const demoPlayers = new Map();
+const visibleDemos = new Set();
 let playerAssets;
 function loadPlayer() {
   if (window.AsciinemaPlayer) return Promise.resolve();
@@ -76,6 +77,8 @@ const demoObserver = new IntersectionObserver(entries => {
     const player = demoPlayers.get(container);
     const ratio = entry.intersectionRatio;
     if (ratio >= 0.5) {
+      visibleDemos.add(container);
+      if (document.hidden) return;
       if (player) {
         if (container.dataset.state !== 'playing') { container.dataset.state = 'playing'; player.play(); }
         return;
@@ -85,9 +88,10 @@ const demoObserver = new IntersectionObserver(entries => {
       try {
         await loadPlayer();
         container.replaceChildren();
-        container.dataset.state = 'playing';
+        const playing = visibleDemos.has(container) && !document.hidden;
+        container.dataset.state = playing ? 'playing' : 'paused';
         demoPlayers.set(container, window.AsciinemaPlayer.create(container.dataset.recording, container, {
-          autoplay: true,
+          autoplay: playing,
           loop: true,
           preload: true,
           fit: 'width',
@@ -98,9 +102,12 @@ const demoObserver = new IntersectionObserver(entries => {
       } catch {
         delete container.dataset.loading;
       }
-    } else if (ratio < 0.05 && player && container.dataset.state === 'playing') {
-      container.dataset.state = 'paused';
-      player.pause();
+    } else if (ratio < 0.05) {
+      visibleDemos.delete(container);
+      if (player && container.dataset.state === 'playing') {
+        container.dataset.state = 'paused';
+        player.pause();
+      }
     }
   });
 }, { threshold: [0, 0.05, 0.5] });
@@ -288,7 +295,7 @@ if (dependencySection) {
     groupToggle.setAttribute('aria-expanded', String(open));
     groupToggle.parentElement.classList.toggle('is-open', open);
   });
-  const scopeButtons = [...dependencySection.querySelectorAll('[data-scope]')];
+  const scopeButtons = [...dependencySection.querySelectorAll('.dependency-controls button[data-scope]')];
   scopeButtons.forEach(button => button.addEventListener('click', () => {
     const scope = button.dataset.scope;
     if (enabledScopes.has(scope)) {
@@ -315,13 +322,18 @@ if (dependencySection) {
   var links=[].slice.call(document.querySelectorAll('.site-header nav a[href^="#"]'));
   if(!links.length||!window.IntersectionObserver)return;
   var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  var frame=0,current=-2;
   function update(){
+    frame=0;
     var line=window.innerHeight*0.35,active=-1;
-    targets.forEach(function(t,i){if(t&&t.getBoundingClientRect().top<=line&&t.getBoundingClientRect().bottom>line)active=i;});
+    targets.forEach(function(t,i){if(t){var bounds=t.getBoundingClientRect();if(bounds.top<=line&&bounds.bottom>line)active=i;}});
+    if(active===current)return;
+    current=active;
     links.forEach(function(a,i){if(i===active)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');});
   }
-  window.addEventListener('scroll',update,{passive:true});
-  window.addEventListener('resize',update);
+  function schedule(){if(!frame)frame=requestAnimationFrame(update);}
+  window.addEventListener('scroll',schedule,{passive:true});
+  window.addEventListener('resize',schedule);
   update();
 })();
 
@@ -429,7 +441,7 @@ if (portStage) {
   const offsets = new Map();
   let opened = 0;
   let zTop = 2;
-  const clampOffset = (win, x, y) => {
+  const dragBounds = win => {
     const stage = portStage.getBoundingClientRect();
     const rect = win.getBoundingClientRect();
     const baseLeft = rect.left - (offsets.get(win)?.x || 0);
@@ -438,7 +450,7 @@ if (portStage) {
     const maxX = stage.right - 90 - baseLeft;
     const minY = stage.top - baseTop;
     const maxY = stage.bottom - 48 - baseTop;
-    return [Math.min(Math.max(x, minX), maxX), Math.min(Math.max(y, minY), maxY)];
+    return { minX, maxX, minY, maxY };
   };
   const place = (win, x, y) => {
     offsets.set(win, { x, y });
@@ -484,26 +496,37 @@ if (portStage) {
     const bar = win.querySelector('.mac-bar');
     pane.addEventListener('pointerdown', () => { if (!pane.classList.contains('is-top')) bringToFront(pane); });
     let drag = null;
+    let dragFrame = 0;
+    const move = () => {
+      dragFrame = 0;
+      if (!drag) return;
+      const { minX, maxX, minY, maxY } = drag.bounds;
+      place(win, Math.min(Math.max(drag.x + drag.dx, minX), maxX), Math.min(Math.max(drag.y + drag.dy, minY), maxY));
+    };
     bar.addEventListener('pointerdown', event => {
       if (event.button !== 0 || compact.matches) return;
       const start = offsets.get(win) || { x: 0, y: 0 };
-      drag = { id: event.pointerId, px: event.clientX, py: event.clientY, x: start.x, y: start.y };
+      drag = { id: event.pointerId, px: event.clientX, py: event.clientY, x: start.x, y: start.y, dx: 0, dy: 0, bounds: dragBounds(win) };
       bar.setPointerCapture(event.pointerId);
       win.classList.add('is-dragging');
       event.preventDefault();
     });
     bar.addEventListener('pointermove', event => {
       if (!drag || event.pointerId !== drag.id) return;
-      const [x, y] = clampOffset(win, drag.x + event.clientX - drag.px, drag.y + event.clientY - drag.py);
-      place(win, x, y);
+      drag.dx = event.clientX - drag.px;
+      drag.dy = event.clientY - drag.py;
+      if (!dragFrame) dragFrame = requestAnimationFrame(move);
     });
     const end = event => {
       if (!drag || event.pointerId !== drag.id) return;
+      cancelAnimationFrame(dragFrame);
+      move();
       drag = null;
       win.classList.remove('is-dragging');
     };
     bar.addEventListener('pointerup', end);
     bar.addEventListener('pointercancel', end);
+    bar.addEventListener('lostpointercapture', end);
   });
   const select = platform => {
     const keys = paneFor[platform];
@@ -604,3 +627,38 @@ if (installTabs && installBody) {
   var timer = 0;
   window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(fill, 150); });
 })();
+
+// Keep the same visible effects without animating artwork outside the viewport.
+const artworkObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => entry.target.classList.toggle('is-animation-idle', !entry.isIntersecting));
+}, { rootMargin: '100px' });
+document.querySelectorAll('.feature-art, .marquee-row').forEach(artwork => {
+  artwork.classList.add('is-animation-idle');
+  artworkObserver.observe(artwork);
+});
+
+const textureObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('is-texture-ready');
+    textureObserver.unobserve(entry.target);
+  });
+}, { rootMargin: '300px' });
+document.querySelectorAll('.demo-media, .feature-art, .dependency-card, .extend-section, .window-backdrop, .start-card, .stage-bg').forEach(surface => textureObserver.observe(surface));
+
+const syncPageVisibility = () => {
+  document.documentElement.classList.toggle('is-page-idle', document.hidden);
+  demoPlayers.forEach((player, container) => {
+    const playing = !document.hidden && visibleDemos.has(container);
+    if ((container.dataset.state === 'playing') === playing) return;
+    container.dataset.state = playing ? 'playing' : 'paused';
+    if (playing) player.play(); else player.pause();
+  });
+  if (!document.hidden) visibleDemos.forEach(container => {
+    if (demoPlayers.has(container)) return;
+    demoObserver.unobserve(container);
+    demoObserver.observe(container);
+  });
+};
+document.addEventListener('visibilitychange', syncPageVisibility);
+syncPageVisibility();

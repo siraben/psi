@@ -868,3 +868,9 @@ h1{font-size:clamp(30px,3.3vw,46px);letter-spacing:-1.9px;line-height:1.1;margin
 .port-body .port-stage .stage-media{padding:56px 14px;align-items:center;justify-content:center}
 .port-body .port-stage .stage-media .mac-bar{cursor:default}
 }
+
+.is-animation-idle,.is-animation-idle *,.is-animation-idle::before,.is-animation-idle::after,.is-animation-idle *::before,.is-animation-idle *::after,.is-page-idle *,.is-page-idle *::before,.is-page-idle *::after{animation-play-state:paused!important}
+/* Preserve backgrounds without fetching distant textures during the initial load. */
+@media(scripting:enabled){
+.demo-media:not(.is-texture-ready),.feature-art:not(.is-texture-ready),.dependency-card:not(.is-texture-ready),.extend-section:not(.is-texture-ready),.window-backdrop:not(.is-texture-ready),.start-card:not(.is-texture-ready),.stage-bg:not(.is-texture-ready){background-image:none!important}
+}
