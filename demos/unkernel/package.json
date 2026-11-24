@@ -1,0 +1,14 @@
+{
+  "name": "psi-unkernel-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node smoke.mjs"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "unkernel": "0.2.0-261124-c08e977"
+  }
+}

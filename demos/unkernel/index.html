@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>psi in unkernel</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./vendor/xterm/xterm.css">
+<style>
+  body { margin: 1rem; color: #f0f0f0; background: #151515; font: 1rem system-ui, sans-serif; }
+  h1 { font-size: 1.4rem; }
+  #terminal { height: min(70vh, 50rem); min-height: 15rem; background: #000; padding: .5rem; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "unkernel": "./vendor/unkernel/web.mjs",
+    "@xterm/xterm": "./vendor/xterm/xterm.mjs",
+    "@xterm/addon-fit": "./vendor/addon-fit/addon-fit.mjs"
+  }
+}
+</script>
+<h1>psi in unkernel</h1>
+<p>Try <code>/help</code> in psi. This demo is offline: it doesn’t call a model or need an API key.</p>
+<p id="status" role="status">Booting Linux and starting psi…</p>
+<div id="terminal" aria-label="psi terminal"></div>
+<script type="module" src="./terminal.mjs"></script>
+</html>

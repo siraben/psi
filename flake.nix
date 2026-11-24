@@ -270,6 +270,17 @@
               extraMeta = { platforms = [ "x86_64-linux" "aarch64-linux" ]; };
             };
 
+          # unkernel runs AArch64 Linux userspace inside its WebAssembly kernel.
+          psi-static-aarch64 =
+            let p = if system == "aarch64-linux" then pkgs.pkgsStatic
+                    else pkgs.pkgsCross.aarch64-multiplatform-musl.pkgsStatic; in
+            mkPsi {
+              inherit p;
+              static = true;
+              deps = buildDeps { inherit p; luaPkg = staticLuaFor p; };
+              extraMeta = { platforms = [ "aarch64-linux" ]; };
+            };
+
           psi-static-riscv64 =
             let p = pkgs.pkgsCross.riscv64-musl.pkgsStatic; in
             mkPsi {
