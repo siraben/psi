@@ -52,6 +52,15 @@ In priority order:
    Moonshot and Google AI Ultra. Ollama is excluded because it does not require credentials. If no
    provider is authenticated, psi falls back to Anthropic.
 
+## Anthropic bearer credentials
+
+For an externally issued Claude API bearer credential (for example, from
+[Workload Identity Federation](https://platform.claude.com/docs/en/manage-claude/authentication#workload-identity-federation)),
+set `ANTHROPIC_AUTH_TOKEN` before starting Psi. A stored Anthropic API key takes
+precedence, followed by `ANTHROPIC_AUTH_TOKEN`, then `ANTHROPIC_API_KEY`. Psi does
+not issue or refresh bearer credentials; supply a fresh token when it expires.
+This is Claude API authentication, not Claude Pro/Max subscription sign-in.
+
 ## Google AI Ultra
 
 Google AI Ultra uses a Google Desktop OAuth client approved for Psi's app, not
