@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Psi · Browser demo</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./demo.css">
+  <script type="importmap">
+    {"imports":{"unkernel":"./vendor/unkernel/web.mjs","ghostty-web":"./vendor/ghostty/ghostty-web.js"}}
+  </script>
+  <script type="module" src="./terminal.mjs"></script>
+</head>
+<body>
+  <header><div class="wrap nav">
+    <a class="wordmark" href="https://psicode.ai/"><span aria-hidden="true">ψ</span> psi</a>
+    <a href="https://github.com/siraben/psi">GitHub</a>
+  </div></header>
+  <main class="wrap">
+    <form id="launch" autocomplete="off" hidden>
+      <fieldset id="network" hidden>
+        <label><input id="enable-network" type="checkbox"> Enable guest networking</label>
+        <label for="provider">API key provider</label>
+        <select id="provider" disabled>
+          <option value="">No key</option>
+          <option value="OPENROUTER_API_KEY">OpenRouter</option>
+          <option value="ANTHROPIC_API_KEY">Anthropic</option>
+        </select>
+        <label for="key">Session API key</label>
+        <input id="key" type="password" autocomplete="off" spellcheck="false" disabled>
+        <p>Use a restricted key. Programs in the guest can read it; reloading discards the guest.</p>
+      </fieldset>
+      <button type="submit" disabled>Restart with networking <span aria-hidden="true">→</span></button>
+    </form>
+    <section class="terminal-frame" aria-label="Psi terminal">
+      <div class="terminal-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>psi — Ghostty</span></div>
+      <div id="terminal"></div>
+    </section>
+    <div class="terminal-footer">
+      <p id="status" role="status">Booting Linux…</p>
+      <button id="copy-terminal" type="button" hidden>Copy terminal text</button>
+      <button id="paste-terminal" type="button" hidden>Paste</button>
+      <span id="clipboard-status" role="status"></span>
+    </div>
+  </main>
+</body>
+</html>

@@ -159,7 +159,8 @@ Beyond just being able to *run* psi, we also support a wide variety of ways to
 cosmopolitan, fil-c, c-ward. For the C compiler itself, we've tested gcc (4.6
 through 15), clang, CompCert, TCC.
 
-See [docs/portability.md](docs/portability.md).
+See [docs/portability.md](docs/portability.md). To try the terminal UI in a
+browser, build the [unkernel WebAssembly demo](demos/unkernel/README.md).
 
 ## Providers
 

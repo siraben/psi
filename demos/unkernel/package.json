@@ -1,0 +1,13 @@
+{
+  "name": "psi-unkernel-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node smoke.mjs"
+  },
+  "dependencies": {
+    "ghostty-web": "0.4.0",
+    "unkernel": "0.2.0-261124-c08e977"
+  }
+}
