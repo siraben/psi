@@ -4,7 +4,7 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with nine routed providers:
+psi ships with ten routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
@@ -14,6 +14,7 @@ psi ships with nine routed providers:
 - xAI Grok, via OpenAI-compatible Chat Completions
 - Meta Muse, via OpenAI-compatible Responses
 - GitHub Copilot, via Copilot Responses
+- Radius, via the `pi-messages` gateway protocol
 - Moonshot (Kimi For Coding), via the Anthropic-compatible
   `https://api.kimi.com/coding`
 
@@ -49,13 +50,13 @@ In priority order:
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
    `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, `meta`,
-   or `github-copilot`.
+   `github-copilot`, or `radius`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
 4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot, Google AI Ultra, xAI, Meta, and GitHub Copilot. Ollama is excluded
-   because it does not require credentials. If no provider is authenticated,
-   psi falls back to Anthropic.
+   Moonshot, Google AI Ultra, xAI, Meta, GitHub Copilot, and Radius. Ollama is
+   excluded because it does not require credentials. If no provider is
+   authenticated, psi falls back to Anthropic.
 
 ## Anthropic bearer credentials
 
@@ -111,6 +112,16 @@ github-copilot check`. A GitHub.com account with Copilot entitlement is required
 Select `github-copilot/gpt-5-mini` or a Responses-compatible model allowed by
 your account. Psi does not copy another app's client, change your model policy,
 or support custom GitHub Enterprise domains in this flow.
+
+## Radius
+
+Use `RADIUS_API_KEY` or `/login api-key radius` for an API key. For device
+sign-in, set `PSI_RADIUS_OAUTH_CLIENT_ID` to a client authorized by the Radius
+gateway for Psi. Run `/login oauth radius`, approve the code, then run
+`/login oauth radius check`. API keys take precedence over OAuth credentials.
+The default is `radius/balanced`; you can enter another gateway model ID
+explicitly. This adapter uses `radius.pi.dev` and does not discover private
+models or support custom gateways.
 
 ## Streaming retries
 
