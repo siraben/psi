@@ -870,6 +870,10 @@ h1{font-size:clamp(30px,3.3vw,46px);letter-spacing:-1.9px;line-height:1.1;margin
 }
 
 .is-animation-idle,.is-animation-idle *,.is-animation-idle::before,.is-animation-idle::after,.is-animation-idle *::before,.is-animation-idle *::after,.is-page-idle *,.is-page-idle *::before,.is-page-idle *::after{animation-play-state:paused!important}
+.provider-setup-note{margin-top:12px;color:var(--muted);font:13px/1.5 var(--sans)}
+.provider-setup-link{color:var(--ink);font-size:13px;font-weight:600}
+.provider-setup-link:hover{text-decoration:underline;text-underline-offset:3px}
+
 /* Preserve backgrounds without fetching distant textures during the initial load. */
 @media(scripting:enabled){
 .demo-media:not(.is-texture-ready),.feature-art:not(.is-texture-ready),.dependency-card:not(.is-texture-ready),.extend-section:not(.is-texture-ready),.window-backdrop:not(.is-texture-ready),.start-card:not(.is-texture-ready),.stage-bg:not(.is-texture-ready){background-image:none!important}
