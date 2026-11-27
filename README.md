@@ -173,7 +173,6 @@ for the precedence and fallback rules. Built-in providers include:
 - Ollama
 - OpenRouter
 - OpenAI Codex
-- Google AI Ultra (requires an approved Psi OAuth client)
 - Moonshot (Kimi For Coding)
 
 Ask the running agent for live provider metadata:

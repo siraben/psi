@@ -336,7 +336,6 @@ local function oauth_login(option, input)
   if not flow then
     return false, err or "Could not start OAuth login"
   end
-  local target = flow.require_redirect_url and "redirect-url" or "redirect-url-or-code"
   local copied = copy_auth_url(flow.url)
   local lines = {
     "Open this URL in your browser:",
@@ -355,11 +354,9 @@ local function oauth_login(option, input)
       .. " check"
     return true, table.concat(lines, "\n")
   end
-  lines[#lines + 1] = flow.require_redirect_url
-      and "Copy the full redirect URL from the address bar, even if the loopback page fails to load."
-    or "Complete sign-in in the browser, then copy the final redirect URL or code."
+  lines[#lines + 1] = "Complete sign-in in the browser, then copy the final redirect URL or code."
   lines[#lines + 1] = "Paste it back into psi with:"
-  lines[#lines + 1] = "/login " .. option.provider .. " <" .. target .. ">"
+  lines[#lines + 1] = "/login " .. option.provider .. " <redirect-url-or-code>"
   lines[#lines + 1] = ""
   lines[#lines + 1] = "psi uses manual paste so OAuth also works on small and headless hosts."
   return true, table.concat(lines, "\n")
