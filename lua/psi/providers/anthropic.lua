@@ -86,53 +86,42 @@ local function bearer_token(flavor)
   end
 end
 
+local function auth_spec(flavor)
+  return {
+    ambient = function()
+      local token = bearer_token(flavor)
+      if token then
+        return token, "bearer-env"
+      end
+      for _, name in ipairs(flavor.api_key_envs) do
+        local key = os.getenv(name)
+        if key and key ~= "" then
+          return key, "env"
+        end
+      end
+      if flavor.allow_bridge and psi.amiga_bridge_api_key then
+        local bridge = psi.amiga_bridge_api_key()
+        if bridge and bridge ~= "" then
+          return bridge, "bridge"
+        end
+      end
+    end,
+  }
+end
+
 local function resolve_auth_header(flavor)
-  -- Keep stored credentials first, then match Pi's bearer and API-key env ordering.
-  local key = auth_storage.resolve_api_key(flavor.provider_name, nil)
-  if key and key ~= "" then
-    return flavor.auth_header(key)
+  local key, source = auth_storage.resolve_provider(flavor.provider_name, auth_spec(flavor))
+  if not key then
+    return nil, source or flavor.key_missing_msg
   end
-  local token = bearer_token(flavor)
-  if token then
-    return "Authorization: Bearer " .. token
+  if key:find("[%c%s]") then
+    return nil, "Invalid " .. flavor.label .. " credential"
   end
-  for _, name in ipairs(flavor.api_key_envs) do
-    local env_key = os.getenv(name)
-    if env_key and env_key ~= "" then
-      return flavor.auth_header(env_key)
-    end
-  end
-  if flavor.allow_bridge and psi.amiga_bridge_api_key then
-    local bridge = psi.amiga_bridge_api_key()
-    if bridge and bridge ~= "" then
-      return flavor.auth_header(bridge)
-    end
-  end
-  return nil
+  return source == "bearer-env" and ("Authorization: Bearer " .. key) or flavor.auth_header(key)
 end
 
 local function resolve_model(flavor, m)
   return prelude.resolve_env(m, flavor.model_env, flavor.model_default)
-end
-
-local function has_api_key(flavor)
-  -- Keep the route/auth gate side-effect free: do not resolve !commands here.
-  if auth_storage.has_api_key_entry(flavor.provider_name) or bearer_token(flavor) then
-    return true
-  end
-  for _, name in ipairs(flavor.api_key_envs) do
-    local key = os.getenv(name)
-    if key and key ~= "" then
-      return true
-    end
-  end
-  if flavor.allow_bridge and psi.amiga_bridge_api_key then
-    local bridge = psi.amiga_bridge_api_key()
-    if bridge and bridge ~= "" then
-      return true
-    end
-  end
-  return false
 end
 
 -- Tool specs for the API: drop prompt_snippet + prompt_guidelines,
@@ -664,10 +653,10 @@ local http_post_text = sched.http_post_text
 
 function M.complete_text(opts, flavor)
   flavor = flavor or ANTHROPIC_FLAVOR
-  local auth_header = resolve_auth_header(flavor)
+  local auth_header, err = resolve_auth_header(flavor)
   if not auth_header then
-    notice.error(flavor.key_missing_msg)
-    return false, flavor.key_missing_msg
+    notice.error(err)
+    return false, err
   end
   -- Same UTF-8 sanitisation as the streaming path; both fields arrive
   -- on the wire as JSON strings and Anthropic refuses any malformed
@@ -711,17 +700,18 @@ function M.complete_text(opts, flavor)
 end
 
 function M.has_auth(flavor)
-  return has_api_key(flavor or ANTHROPIC_FLAVOR)
+  flavor = flavor or ANTHROPIC_FLAVOR
+  return auth_storage.provider_has_auth(flavor.provider_name, auth_spec(flavor))
 end
 
 -- ---------- Agent turn (streaming + tool loop) ----------
 
 function M.run_turn(opts, flavor)
   flavor = flavor or ANTHROPIC_FLAVOR
-  local auth_header = resolve_auth_header(flavor)
+  local auth_header, err = resolve_auth_header(flavor)
   if not auth_header then
-    notice.error(flavor.key_missing_msg)
-    return false, flavor.key_missing_msg
+    notice.error(err)
+    return false, err
   end
 
   local model = resolve_model(flavor, opts.model)

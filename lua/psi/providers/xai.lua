@@ -6,18 +6,20 @@ local compat = require("psi.providers.openai_compat")
 local capabilities = require("psi.provider_capabilities")
 local registry = require("psi.api_registry")
 local M = {}
+local auth_spec =
+  { env = "XAI_API_KEY", oauth = auth.access_token, has_oauth = auth.has_credentials }
 
 function M.has_auth()
-  return storage.has_api_key("xai", "XAI_API_KEY") or auth.has_credentials()
+  return storage.provider_has_auth("xai", auth_spec)
 end
 
 local function config(opts)
-  local key, err = storage.resolve_api_key("xai", "XAI_API_KEY")
+  local key, err = storage.resolve_provider("xai", auth_spec)
   if not key then
-    key, err = auth.access_token()
+    return nil, err or "Run /login oauth xai or set XAI_API_KEY"
   end
-  if not key or key:find("[%c%s]") then
-    return nil, err or "Invalid xAI credential"
+  if key:find("[%c%s]") then
+    return nil, "Invalid xAI credential"
   end
   opts.model = registry.resolve_model("xai", opts.model)
   return chat.chat_config({

@@ -127,9 +127,9 @@ function M.new(spec)
     return ok, ok and ("Signed in to " .. spec.name) or write_err
   end
 
-  local function stored()
+  local function stored(candidate)
     local client = client_id()
-    local entry = client and storage.get(spec.provider)
+    local entry = client and (candidate or storage.get(spec.provider))
     if
       type(entry) == "table"
       and entry.type == "oauth"
@@ -140,12 +140,12 @@ function M.new(spec)
     end
   end
 
-  function auth.has_credentials()
-    return stored() ~= nil
+  function auth.has_credentials(candidate)
+    return stored(candidate) ~= nil
   end
 
-  function auth.access_token()
-    local entry = stored()
+  function auth.access_token(candidate)
+    local entry = stored(candidate)
     if not entry then
       return nil, "Run " .. command .. " first"
     end

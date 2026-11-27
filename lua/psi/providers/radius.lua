@@ -12,6 +12,8 @@ local tools = require("psi.tools")
 local registry = require("psi.api_registry")
 local compat = require("psi.providers.openai_compat")
 local M = {}
+local auth_spec =
+  { env = "RADIUS_API_KEY", oauth = auth.access_token, has_oauth = auth.has_credentials }
 local url = "https://radius.pi.dev/v1/messages"
 
 local function text(value)
@@ -319,28 +321,24 @@ local function finalize(state)
 end
 
 local function persist(state, model, blocks, _, stop, err)
-  session_manager.append_assistant(
-    state_text(state),
-    blocks,
-    {
-      provider = "radius",
-      api = "pi-messages",
-      model = model,
-      response_id = state.response_id,
-      usage = state.usage,
-      stop_reason = stop or state.stop_reason,
-      error_message = err,
-    }
-  )
+  session_manager.append_assistant(state_text(state), blocks, {
+    provider = "radius",
+    api = "pi-messages",
+    model = model,
+    response_id = state.response_id,
+    usage = state.usage,
+    stop_reason = stop or state.stop_reason,
+    error_message = err,
+  })
 end
 
 local function headers()
-  local key, err = storage.resolve_api_key("radius", "RADIUS_API_KEY")
+  local key, err = storage.resolve_provider("radius", auth_spec)
   if not key then
-    key, err = auth.access_token()
+    return nil, err or "Run /login oauth radius or set RADIUS_API_KEY"
   end
-  if not key or key:find("[%c%s]") then
-    return nil, err or "Invalid Radius credential"
+  if key:find("[%c%s]") then
+    return nil, "Invalid Radius credential"
   end
   return {
     "Authorization: Bearer " .. key,
@@ -350,7 +348,7 @@ local function headers()
 end
 
 function M.has_auth()
-  return storage.has_api_key("radius", "RADIUS_API_KEY") or auth.has_credentials()
+  return storage.provider_has_auth("radius", auth_spec)
 end
 
 function M.run_turn(opts)
