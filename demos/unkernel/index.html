@@ -1,27 +1,45 @@
 <!doctype html>
 <html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>psi in unkernel</title>
-<link rel="icon" href="data:,">
-<link rel="stylesheet" href="./vendor/xterm/xterm.css">
-<style>
-  body { margin: 1rem; color: #f0f0f0; background: #151515; font: 1rem system-ui, sans-serif; }
-  h1 { font-size: 1.4rem; }
-  #terminal { height: min(70vh, 50rem); min-height: 15rem; background: #000; padding: .5rem; }
-</style>
-<script type="importmap">
-{
-  "imports": {
-    "unkernel": "./vendor/unkernel/web.mjs",
-    "@xterm/xterm": "./vendor/xterm/xterm.mjs",
-    "@xterm/addon-fit": "./vendor/addon-fit/addon-fit.mjs"
-  }
-}
-</script>
-<h1>psi in unkernel</h1>
-<p>Try <code>/help</code> in psi. This demo is offline: it doesn’t call a model or need an API key.</p>
-<p id="status" role="status">Booting Linux and starting psi…</p>
-<div id="terminal" aria-label="psi terminal"></div>
-<script type="module" src="./terminal.mjs"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Psi · Browser demo</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./demo.css">
+  <script type="importmap">
+    {"imports":{"unkernel":"./vendor/unkernel/web.mjs","ghostty-web":"./vendor/ghostty/ghostty-web.js"}}
+  </script>
+  <script type="module" src="./terminal.mjs"></script>
+</head>
+<body>
+  <header><div class="wrap nav">
+    <a class="wordmark" href="https://psicode.ai/"><span aria-hidden="true">ψ</span> psi</a>
+    <a href="https://github.com/siraben/psi">GitHub</a>
+  </div></header>
+  <main class="wrap">
+    <p class="eyebrow">Browser demo</p>
+    <h1>Try Psi<span>.</span></h1>
+    <p class="intro">Run Psi in an AArch64 Linux guest. Try <code>/help</code> in the terminal.</p>
+    <form id="launch" autocomplete="off">
+      <fieldset id="network" hidden>
+        <label><input id="enable-network" type="checkbox"> Enable guest networking</label>
+        <label for="provider">API key provider</label>
+        <select id="provider" disabled>
+          <option value="">No key</option>
+          <option value="OPENROUTER_API_KEY">OpenRouter</option>
+          <option value="ANTHROPIC_API_KEY">Anthropic</option>
+        </select>
+        <label for="key">Session API key</label>
+        <input id="key" type="password" autocomplete="off" spellcheck="false" disabled>
+        <p>Use a restricted key. Programs in the guest can read it; reloading discards the guest.</p>
+      </fieldset>
+      <button type="submit">Start session <span aria-hidden="true">→</span></button>
+    </form>
+    <section class="terminal-frame" aria-label="Psi terminal">
+      <div class="terminal-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>psi — Ghostty</span></div>
+      <div id="terminal"></div>
+    </section>
+    <p id="status" role="status">Start a session to boot Linux.</p>
+  </main>
+</body>
 </html>

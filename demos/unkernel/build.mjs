@@ -1,25 +1,37 @@
-import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const guest = process.argv[2] ? resolve(process.argv[2])
   : resolve(here, '../../build/psi-unkernel-aarch64/bin/psi');
+const relay = process.env.PSI_DEMO_WISP_URL;
+const caBundle = process.env.PSI_DEMO_CA_BUNDLE || '/etc/ssl/certs/ca-certificates.crt';
+if (relay) {
+  const url = new URL(relay);
+  if (url.protocol !== 'wss:' || url.username || url.password || url.search || url.hash) {
+    throw new Error('PSI_DEMO_WISP_URL must be a wss:// URL without credentials, query or fragment');
+  }
+}
 const assets = {
   'psi-aarch64': guest,
   'index.html': 'index.html',
   'guest.mjs': 'guest.mjs',
   'terminal.mjs': 'terminal.mjs',
+  'demo.css': 'demo.css',
+  'fonts/dm-sans.871fd1188d.woff2': 'fonts/dm-sans.871fd1188d.woff2',
+  'fonts/ibm-plex-mono.65b0e6c0be.woff2': 'fonts/ibm-plex-mono.65b0e6c0be.woff2',
+  'fonts/dm-sans-OFL.txt': 'fonts/dm-sans-OFL.txt',
+  'fonts/ibm-plex-mono-OFL.txt': 'fonts/ibm-plex-mono-OFL.txt',
+  ...(relay ? { 'ca-bundle.crt': caBundle } : {}),
   'vendor/unkernel/web.mjs': 'node_modules/unkernel/dist/web.mjs',
   'vendor/unkernel/_chunks/core.mjs': 'node_modules/unkernel/dist/_chunks/core.mjs',
   'vendor/unkernel/unkernel.wasm': 'node_modules/unkernel/dist/unkernel.wasm',
   'vendor/unkernel/LICENSE': 'node_modules/unkernel/LICENSE',
   'vendor/unkernel/LICENSE-MIT': 'node_modules/unkernel/LICENSE-MIT',
-  'vendor/xterm/xterm.mjs': 'node_modules/@xterm/xterm/lib/xterm.mjs',
-  'vendor/xterm/xterm.css': 'node_modules/@xterm/xterm/css/xterm.css',
-  'vendor/xterm/LICENSE': 'node_modules/@xterm/xterm/LICENSE',
-  'vendor/addon-fit/addon-fit.mjs': 'node_modules/@xterm/addon-fit/lib/addon-fit.mjs',
-  'vendor/addon-fit/LICENSE': 'node_modules/@xterm/addon-fit/LICENSE',
+  'vendor/ghostty/ghostty-web.js': 'node_modules/ghostty-web/dist/ghostty-web.js',
+  'vendor/ghostty/ghostty-vt.wasm': 'node_modules/ghostty-web/dist/ghostty-vt.wasm',
+  'vendor/ghostty/LICENSE': 'node_modules/ghostty-web/LICENSE',
 };
 
 for (const [dest, source] of Object.entries(assets)) {
@@ -29,4 +41,6 @@ for (const [dest, source] of Object.entries(assets)) {
   await rm(target, { force: true });
   await copyFile(resolve(here, source), target);
 }
+await writeFile(resolve(here, 'dist/config.mjs'), `export const relay = ${JSON.stringify(relay || '')};\n`);
+if (!relay) await rm(resolve(here, 'dist/ca-bundle.crt'), { force: true });
 console.log('Built demos/unkernel/dist/');

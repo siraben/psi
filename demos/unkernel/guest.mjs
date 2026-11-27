@@ -1,10 +1,19 @@
-import { createKernel } from 'unkernel';
+import { createKernel, wispBackend } from 'unkernel';
 
 export const psiPath = '/tmp/psi';
 
-export async function bootPsi(guestBytes) {
-  // Use the embedded BusyBox image, with no network or persistent storage.
-  const vm = await createKernel({ mounts: { '/mnt/demo': { psi: guestBytes } } });
+export async function bootPsi(guestBytes, { relay, caBytes } = {}) {
+  const files = { psi: guestBytes };
+  if (relay) {
+    if (new URL(relay).protocol !== 'wss:' || !caBytes?.length) {
+      throw new Error('Network mode requires a secure Wisp relay and CA bundle.');
+    }
+    files['ca-bundle.crt'] = caBytes;
+  }
+  const vm = await createKernel({
+    mounts: { '/mnt/demo': files },
+    ...(relay ? { net: wispBackend(relay) } : {}),
+  });
   try {
     const { exitCode, stderr } = await vm.exec('/bin/sh', [
       '-c', 'cp /mnt/demo/psi /tmp/psi && chmod 755 /tmp/psi',

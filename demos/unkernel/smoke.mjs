@@ -8,7 +8,10 @@ const deadline = setTimeout(() => {
 }, 30_000);
 let vm;
 try {
-  vm = await bootPsi(await readFile(new URL('./dist/psi-aarch64', import.meta.url)));
+  const binary = await readFile(new URL('./dist/psi-aarch64', import.meta.url));
+  await assert.rejects(bootPsi(binary, { relay: 'ws://example.com' }), /secure Wisp relay/);
+  await assert.rejects(bootPsi(binary, { relay: 'wss://example.com' }), /CA bundle/);
+  vm = await bootPsi(binary);
   const arch = await vm.exec('/bin/uname', ['-m']);
   assert.equal(arch.exitCode, 0, arch.stderr);
   assert.equal(arch.stdout.trim(), 'aarch64');

@@ -1,13 +1,10 @@
-# psi in unkernel
+# Psi browser demo
 
-Boot Linux in a browser and try the psi terminal UI. Try `/help` or `/model`.
-The guest has no networking or persistent storage. It does not call a model,
-ask for an API key, or send terminal input anywhere. Reload for a fresh guest.
+Run Psi in an AArch64 Linux guest with [unkernel](https://github.com/pithings/unkernel) and [Ghostty Web](https://github.com/coder/ghostty-web). Reload to discard the guest. The default build is offline.
 
 ## Build and run
 
-From the repository root on Linux, with Nix flakes, npm/Node.js 24 or later,
-and Python 3:
+From the repository root on Linux, with Nix flakes, Node.js 24+ and Python 3:
 
 ```sh
 nix build .#psi-static-aarch64 --out-link build/psi-unkernel-aarch64
@@ -18,20 +15,16 @@ npm test
 python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
 ```
 
-Open <http://127.0.0.1:8000/> in a browser with WebAssembly JSPI support
-(e.g. Chrome or Edge 137+). The page and guest boot files are all served
-from `dist/`; no external assets are loaded at runtime. `npm test` boots
-unkernel under Node.js and runs `psi --version` inside the guest.
+Open <http://127.0.0.1:8000/> in a browser with WebAssembly JSPI support (such as Chrome or Edge 137+). Start a session and try `/help`. `npm test` boots the guest under Node and checks its architecture and `psi --version`. All browser assets are served from `dist/`.
 
-The compiled WebAssembly is [unkernel's Linux kernel](https://github.com/pithings/unkernel/tree/c08e977),
-shipped by the pinned `unkernel` npm package. psi itself is a statically linked
-AArch64 Linux executable, not a WASI module. The page copies it into the guest
-and runs it on a PTY. The generated `dist/` is not checked into Git.
+## Network access
 
-## How fx handles credentials
+Set `PSI_DEMO_WISP_URL` at build time to your own `wss://` Wisp relay. Serve the page over HTTPS outside localhost. If the build machine stores its CA bundle elsewhere, set `PSI_DEMO_CA_BUNDLE` to a public trust bundle. Do not bundle private roots.
 
-[Vercel's hosted fx demo](https://fx.sh/) offers limited keyless inference
-through a shared proxy. Visitors can optionally enter their own AI Gateway key
-to bypass the proxy and use their own balance. The [fx example README](https://github.com/vercel-labs/fx/blob/main/examples/README.md#run-an-example)
-describes the shared limits and how to configure a separate server-side key.
-The hosted fx allowance is not used by this psi demo.
+```sh
+PSI_DEMO_WISP_URL=wss://relay.example.com/wisp/ npm run build
+```
+
+Enable guest networking before starting the session. Use **No key** for network access without model credentials, or supply an OpenRouter or Anthropic API key to call models. The key goes to the guest process environment, not browser storage or the static server. Guest tools can read it, so use a restricted key with a spending limit. Subscription login and shared demo credits are not included.
+
+The relay operator must restrict page origins and guest destinations, block private and link-local targets, and limit connections and traffic. Do not expose an unrestricted relay. No proxy or model credentials are bundled.
