@@ -193,6 +193,11 @@ M.register_api("openai-codex-responses", {
   },
 })
 
+M.register_api("pi-messages", {
+  module = "psi.providers.radius",
+  compat = { supports_tool_use = true, supports_reasoning = true },
+})
+
 M.register_api("copilot-responses", {
   module = "psi.providers.github_copilot",
   compat = { supports_tool_use = true, thinking_format = "openai-responses" },
@@ -261,6 +266,27 @@ M.register_provider("openai-codex", {
       module = "psi.providers.oauth_openai_codex",
     },
   },
+})
+
+M.register_provider("radius", {
+  display_name = "Radius",
+  api = "pi-messages",
+  model_env = "PSI_RADIUS_MODEL",
+  default_model = "balanced",
+  auth = {
+    api_key = { env = "RADIUS_API_KEY" },
+    oauth = { label = "Radius account", module = "psi.providers.oauth_radius" },
+  },
+})
+
+M.register_model("radius/balanced", {
+  provider = "radius",
+  api = "pi-messages",
+  context_window = 1048576,
+  max_output_tokens = 65536,
+  reasoning = true,
+  supports_tool_use = true,
+  input = { "text", "image" },
 })
 
 M.register_provider("github-copilot", {
@@ -534,6 +560,7 @@ local FALLBACK_PROVIDER_ORDER = {
   "xai",
   "meta",
   "github-copilot",
+  "radius",
 }
 
 local function first_authenticated_provider()
