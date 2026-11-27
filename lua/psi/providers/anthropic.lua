@@ -40,7 +40,8 @@ local ANTHROPIC_FLAVOR = {
   api_name = "anthropic-messages",
   label = "Anthropic",
   api_key_envs = { "ANTHROPIC_API_KEY" },
-  key_missing_msg = "ANTHROPIC_API_KEY is not set",
+  bearer_env = "ANTHROPIC_AUTH_TOKEN",
+  key_missing_msg = "ANTHROPIC_API_KEY is not set and no ANTHROPIC_AUTH_TOKEN is available",
   model_env = "PSI_ANTHROPIC_MODEL",
   model_default = "claude-opus-4-8",
   base_url_env = "PSI_ANTHROPIC_BASE_URL",
@@ -64,11 +65,11 @@ local function api_url(flavor)
   return base .. "v1/messages"
 end
 
-local function build_headers(flavor, api_key)
+local function build_headers(flavor, auth_header)
   local hdrs = {
     "content-type: application/json",
     "anthropic-version: 2023-06-01",
-    flavor.auth_header(api_key),
+    auth_header,
   }
   if type(flavor.extra_headers) == "table" then
     for _, h in ipairs(flavor.extra_headers) do
@@ -78,22 +79,33 @@ local function build_headers(flavor, api_key)
   return hdrs
 end
 
-local function resolve_api_key(flavor)
-  -- Match pi's precedence: auth.json first, then provider-specific env vars.
+local function bearer_token(flavor)
+  local token = flavor.bearer_env and os.getenv(flavor.bearer_env)
+  if token and token ~= "" and not token:find("[%c%s]") then
+    return token
+  end
+end
+
+local function resolve_auth_header(flavor)
+  -- Keep stored credentials first, then match Pi's bearer and API-key env ordering.
   local key = auth_storage.resolve_api_key(flavor.provider_name, nil)
   if key and key ~= "" then
-    return key
+    return flavor.auth_header(key)
+  end
+  local token = bearer_token(flavor)
+  if token then
+    return "Authorization: Bearer " .. token
   end
   for _, name in ipairs(flavor.api_key_envs) do
     local env_key = os.getenv(name)
     if env_key and env_key ~= "" then
-      return env_key
+      return flavor.auth_header(env_key)
     end
   end
   if flavor.allow_bridge and psi.amiga_bridge_api_key then
     local bridge = psi.amiga_bridge_api_key()
     if bridge and bridge ~= "" then
-      return bridge
+      return flavor.auth_header(bridge)
     end
   end
   return nil
@@ -105,7 +117,7 @@ end
 
 local function has_api_key(flavor)
   -- Keep the route/auth gate side-effect free: do not resolve !commands here.
-  if auth_storage.has_api_key_entry(flavor.provider_name) then
+  if auth_storage.has_api_key_entry(flavor.provider_name) or bearer_token(flavor) then
     return true
   end
   for _, name in ipairs(flavor.api_key_envs) do
@@ -652,8 +664,8 @@ local http_post_text = sched.http_post_text
 
 function M.complete_text(opts, flavor)
   flavor = flavor or ANTHROPIC_FLAVOR
-  local api_key = resolve_api_key(flavor)
-  if not api_key then
+  local auth_header = resolve_auth_header(flavor)
+  if not auth_header then
     notice.error(flavor.key_missing_msg)
     return false, flavor.key_missing_msg
   end
@@ -671,7 +683,7 @@ function M.complete_text(opts, flavor)
   }
   local status, body = http_post_text(
     api_url(flavor),
-    build_headers(flavor, api_key),
+    build_headers(flavor, auth_header),
     psi.json_encode(request),
     opts.abort_check
   )
@@ -706,8 +718,8 @@ end
 
 function M.run_turn(opts, flavor)
   flavor = flavor or ANTHROPIC_FLAVOR
-  local api_key = resolve_api_key(flavor)
-  if not api_key then
+  local auth_header = resolve_auth_header(flavor)
+  if not auth_header then
     notice.error(flavor.key_missing_msg)
     return false, flavor.key_missing_msg
   end
@@ -726,7 +738,7 @@ function M.run_turn(opts, flavor)
     provider_name = flavor.provider_name,
     api_name = flavor.api_name,
     url = api_url(flavor),
-    headers = build_headers(flavor, api_key),
+    headers = build_headers(flavor, auth_header),
     tool_specs = api_tool_specs,
     build_messages = function(session)
       return build_api_messages(session, not image_policy.blocked())
