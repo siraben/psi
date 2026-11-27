@@ -193,6 +193,11 @@ M.register_api("openai-codex-responses", {
   },
 })
 
+M.register_api("xai-chat-completions", {
+  module = "psi.providers.xai",
+  compat = { supports_tool_use = true },
+})
+
 M.register_api("google-interactions", {
   module = "psi.providers.google_ai_plan",
   compat = { supports_tool_use = true, supports_reasoning = true },
@@ -246,6 +251,26 @@ M.register_provider("openai-codex", {
       module = "psi.providers.oauth_openai_codex",
     },
   },
+})
+
+M.register_provider("xai", {
+  display_name = "xAI Grok",
+  api = "xai-chat-completions",
+  model_env = "PSI_XAI_MODEL",
+  default_model = "grok-4.7",
+  auth = {
+    api_key = { env = "XAI_API_KEY" },
+    oauth = { label = "xAI account", module = "psi.providers.oauth_xai" },
+  },
+})
+
+M.register_model("xai/grok-4.7", {
+  provider = "xai",
+  api = "xai-chat-completions",
+  context_window = 500000,
+  max_output_tokens = 500000,
+  supports_tool_use = true,
+  input = { "text", "image" },
 })
 
 M.register_provider("google-ai-plan", {
@@ -456,7 +481,7 @@ end
 -- ollama is excluded: its has_auth() is always true, which would make it
 -- the silent default in an otherwise-unconfigured environment.
 local FALLBACK_PROVIDER_ORDER =
-  { "anthropic", "openai-codex", "openrouter", "moonshot", "google-ai-plan" }
+  { "anthropic", "openai-codex", "openrouter", "moonshot", "google-ai-plan", "xai" }
 
 local function first_authenticated_provider()
   for _, name in ipairs(FALLBACK_PROVIDER_ORDER) do

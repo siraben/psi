@@ -218,14 +218,14 @@ end
 
 -- ---------- Provider config ----------
 
-local function make_config(model)
+function M.chat_config(spec)
   return {
-    provider_name = "openrouter",
-    api_name = "openrouter-chat-completions",
-    url = api_url("chat/completions"),
-    headers = headers(),
+    provider_name = spec.provider,
+    api_name = spec.api,
+    url = spec.url,
+    headers = spec.headers,
     include_response_id = true,
-    supports_images = model_supports_images(model),
+    supports_images = spec.supports_images,
 
     request_body = function(args)
       local body = {
@@ -247,10 +247,10 @@ local function make_config(model)
     finalize_tool_calls = finalize_tool_calls,
     stream_error = function(state)
       if state.stop_reason == "network_error" then
-        return "openrouter: stream ended with network_error"
+        return spec.provider .. ": stream ended with network_error"
       end
       if state.malformed_tool_input_error then
-        return "openrouter: " .. state.malformed_tool_input_error
+        return spec.provider .. ": " .. state.malformed_tool_input_error
       end
       return nil
     end,
@@ -282,6 +282,16 @@ local function make_config(model)
       return choice.message.content or ""
     end,
   }
+end
+
+local function make_config(model)
+  return M.chat_config({
+    provider = PROVIDER,
+    api = "openrouter-chat-completions",
+    url = api_url("chat/completions"),
+    headers = headers(),
+    supports_images = model_supports_images(model),
+  })
 end
 
 M._debug = {
