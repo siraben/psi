@@ -193,6 +193,11 @@ M.register_api("openai-codex-responses", {
   },
 })
 
+M.register_api("meta-responses", {
+  module = "psi.providers.meta",
+  compat = { supports_tool_use = true, thinking_format = "openai-responses" },
+})
+
 M.register_api("xai-chat-completions", {
   module = "psi.providers.xai",
   compat = { supports_tool_use = true },
@@ -251,6 +256,24 @@ M.register_provider("openai-codex", {
       module = "psi.providers.oauth_openai_codex",
     },
   },
+})
+
+M.register_provider("meta", {
+  display_name = "Meta Muse",
+  api = "meta-responses",
+  model_env = "PSI_META_MODEL",
+  default_model = "muse-spark-1.3",
+  auth = {
+    api_key = { env = "META_API_KEY" },
+    oauth = { label = "Meta account", module = "psi.providers.oauth_meta" },
+  },
+})
+
+M.register_model("meta/muse-spark-1.3", {
+  provider = "meta",
+  api = "meta-responses",
+  supports_tool_use = true,
+  input = { "text" },
 })
 
 M.register_provider("xai", {
@@ -481,7 +504,7 @@ end
 -- ollama is excluded: its has_auth() is always true, which would make it
 -- the silent default in an otherwise-unconfigured environment.
 local FALLBACK_PROVIDER_ORDER =
-  { "anthropic", "openai-codex", "openrouter", "moonshot", "google-ai-plan", "xai" }
+  { "anthropic", "openai-codex", "openrouter", "moonshot", "google-ai-plan", "xai", "meta" }
 
 local function first_authenticated_provider()
   for _, name in ipairs(FALLBACK_PROVIDER_ORDER) do

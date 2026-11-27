@@ -4,7 +4,7 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with seven routed providers:
+psi ships with eight routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
@@ -12,6 +12,7 @@ psi ships with seven routed providers:
 - OpenAI Codex, via ChatGPT's Codex Responses backend
 - Google AI Ultra, via Gemini Interactions
 - xAI Grok, via OpenAI-compatible Chat Completions
+- Meta Muse, via OpenAI-compatible Responses
 - Moonshot (Kimi For Coding), via the Anthropic-compatible
   `https://api.kimi.com/coding`
 
@@ -46,12 +47,12 @@ In priority order:
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
-   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, or `xai`.
+   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, or `meta`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
 4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot, Google AI Ultra, and xAI. Ollama is excluded because it does not
-   require credentials. If no provider is authenticated, psi falls back to Anthropic.
+   Moonshot, Google AI Ultra, xAI, and Meta. Ollama is excluded because it does
+   not require credentials. If no provider is authenticated, psi falls back to Anthropic.
 
 ## Anthropic bearer credentials
 
@@ -87,6 +88,16 @@ set `PSI_XAI_OAUTH_CLIENT_ID` to a client authorized by xAI for Psi. Run
 `/login oauth xai check`. Psi does not ship another application's client ID.
 A stored or environment API key takes precedence over OAuth credentials.
 Select `xai/grok-4.7` with `/model` or pass a different supported model explicitly.
+
+## Meta Muse
+
+Use `META_API_KEY` or `/login api-key meta` for Model API keys. For device
+sign-in, set `PSI_META_OAUTH_CLIENT_ID` to a Meta client authorized for Psi.
+Run `/login oauth meta`, approve the displayed code, then run
+`/login oauth meta check`. Psi exchanges the Meta identity token for a Model API
+key and requests a new key before expiry. If the identity grant expires, sign in
+again. API keys take precedence over OAuth credentials. Select
+`meta/muse-spark-1.3` with `/model`.
 
 ## Streaming retries
 
