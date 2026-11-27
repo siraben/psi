@@ -4,18 +4,20 @@ local storage = require("psi.auth_storage")
 local responses = require("psi.providers.openai_codex")
 local registry = require("psi.api_registry")
 local M = {}
+local auth_spec =
+  { env = "META_API_KEY", oauth = auth.access_token, has_oauth = auth.has_credentials }
 
 function M.has_auth()
-  return storage.has_api_key("meta", "META_API_KEY") or auth.has_credentials()
+  return storage.provider_has_auth("meta", auth_spec)
 end
 
 local function config(model)
-  local key, err = storage.resolve_api_key("meta", "META_API_KEY")
+  local key, err = storage.resolve_provider("meta", auth_spec)
   if not key then
-    key, err = auth.access_token()
+    return nil, err or "Run /login oauth meta or set META_API_KEY"
   end
-  if not key or key:find("[%c%s]") then
-    return nil, err or "Invalid Meta credential"
+  if key:find("[%c%s]") then
+    return nil, "Invalid Meta credential"
   end
   return {
     model = registry.resolve_model("meta", model),

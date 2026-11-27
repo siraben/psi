@@ -7,11 +7,8 @@ local env, stored = { ANTHROPIC_AUTH_TOKEN = "temporary", ANTHROPIC_API_KEY = "e
 os.getenv = function(name)
   return env[name]
 end
-storage.resolve_api_key = function()
-  return stored
-end
-storage.has_api_key_entry = function()
-  return stored ~= nil
+storage.get = function()
+  return stored and { type = "api_key", key = stored }
 end
 require("psi.provider_loop").run_turn = function(_, cfg)
   return cfg.headers[3]

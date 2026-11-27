@@ -90,7 +90,8 @@ Use `XAI_API_KEY` or `/login api-key xai` for API billing. For device sign-in,
 set `PSI_XAI_OAUTH_CLIENT_ID` to a client authorized by xAI for Psi. Run
 `/login oauth xai`, approve the displayed device code in the browser, then run
 `/login oauth xai check`. Psi does not ship another application's client ID.
-A stored or environment API key takes precedence over OAuth credentials.
+The saved credential takes precedence over `XAI_API_KEY`, including when the
+saved credential is an OAuth login.
 Select `xai/grok-4.7` with `/model` or pass a different supported model explicitly.
 
 ## Meta Muse
@@ -100,7 +101,7 @@ sign-in, set `PSI_META_OAUTH_CLIENT_ID` to a Meta client authorized for Psi.
 Run `/login oauth meta`, approve the displayed code, then run
 `/login oauth meta check`. Psi exchanges the Meta identity token for a Model API
 key and requests a new key before expiry. If the identity grant expires, sign in
-again. API keys take precedence over OAuth credentials. Select
+again. The saved credential takes precedence over `META_API_KEY`. Select
 `meta/muse-spark-1.3` with `/model`.
 
 ## GitHub Copilot
@@ -118,7 +119,8 @@ or support custom GitHub Enterprise domains in this flow.
 Use `RADIUS_API_KEY` or `/login api-key radius` for an API key. For device
 sign-in, set `PSI_RADIUS_OAUTH_CLIENT_ID` to a client authorized by the Radius
 gateway for Psi. Run `/login oauth radius`, approve the code, then run
-`/login oauth radius check`. API keys take precedence over OAuth credentials.
+`/login oauth radius check`. The saved credential takes precedence over
+`RADIUS_API_KEY`.
 The default is `radius/balanced`; you can enter another gateway model ID
 explicitly. This adapter uses `radius.pi.dev` and does not discover private
 models or support custom gateways.
@@ -181,8 +183,11 @@ surface a transport error or retry at the provider layer.
 ## API-key credentials (`auth.json`)
 
 API-key providers read their key from `~/.config/psi/auth.json` in addition to
-the environment variable, matching pi-mono's credential handling. The
-*auth-file entry takes precedence over the environment variable*.
+the environment variable, matching Pi's credential handling. A saved login
+or key owns that provider. If it is invalid, fails to refresh, or cannot be
+resolved, Psi reports the error rather than using an environment key that
+might bill a different account. Remove the saved entry with `/logout` to
+use environment credentials.
 
 Use `/login` without arguments to choose an authentication method, then a
 provider. Provider and method names are available through Tab completion:

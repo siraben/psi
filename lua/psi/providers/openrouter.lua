@@ -52,8 +52,7 @@ local function resolve_key()
   return auth_storage.resolve_api_key(PROVIDER, API_KEY_ENV)
 end
 
-local function headers()
-  local key = resolve_key() or ""
+local function headers(key)
   local hdrs = {
     "Content-Type: application/json",
     "Authorization: Bearer " .. key,
@@ -284,12 +283,12 @@ function M.chat_config(spec)
   }
 end
 
-local function make_config(model)
+local function make_config(model, key)
   return M.chat_config({
     provider = PROVIDER,
     api = "openrouter-chat-completions",
     url = api_url("chat/completions"),
-    headers = headers(),
+    headers = headers(key or ""),
     supports_images = model_supports_images(model),
   })
 end
@@ -304,13 +303,15 @@ M._debug = {
 -- ---------- Public entry points ----------
 
 local function check_api_key()
-  local key = resolve_key()
-  if not key or key == "" then
-    local msg = API_KEY_ENV .. " is not set (and no auth-file entry for " .. PROVIDER .. ")"
-    notice.error(msg)
-    return false, msg
+  local key, err = resolve_key()
+  if key and not key:find("[%c%s]") then
+    return key
   end
-  return true
+  local msg = (key and "Invalid OpenRouter credential")
+    or err
+    or (API_KEY_ENV .. " is not set (and no auth-file entry for " .. PROVIDER .. ")")
+  notice.error(msg)
+  return nil, msg
 end
 
 function M.has_auth()
@@ -318,8 +319,8 @@ function M.has_auth()
 end
 
 function M.run_turn(opts)
-  local ok, err = check_api_key()
-  if not ok then
+  local key, err = check_api_key()
+  if not key then
     return false, err
   end
   local model = resolve_model(opts.model)
@@ -330,12 +331,12 @@ function M.run_turn(opts)
     max_tokens = opts.max_tokens,
     system_prompt = opts.system_prompt,
     tool_specs = opts.tool_specs,
-  }, make_config(model))
+  }, make_config(model, key))
 end
 
 function M.complete_text(opts)
-  local ok, err = check_api_key()
-  if not ok then
+  local key, err = check_api_key()
+  if not key then
     return false, err
   end
   local model = resolve_model(opts.model)
@@ -345,7 +346,7 @@ function M.complete_text(opts)
     user_text = opts.user_text,
     abort_check = opts.abort_check,
     max_tokens = opts.max_tokens,
-  }, make_config(model))
+  }, make_config(model, key))
 end
 
 return M

@@ -200,40 +200,69 @@ function M.has_api_key_entry(provider)
     and entry.key ~= ""
 end
 
--- Resolve the effective API key for `provider`, giving the auth file
--- precedence over the environment variable (matching pi). The auth-file
--- value is run through psi.credential so `$VAR`, `${VAR}`, and
--- `!shell-command` forms are expanded. Returns (key, source) where
--- source is "auth-file" or "env", or nil when neither is configured.
-function M.resolve_api_key(provider, env_var)
-  if M.has_api_key_entry(provider) then
-    local entry = M.get(provider)
-    local resolved = credential.resolve(entry.key)
-    if resolved and resolved ~= "" then
-      return resolved, "auth-file"
-    end
-  end
-  if env_var then
-    local env = os.getenv(env_var)
-    if env and env ~= "" then
-      return env, "env"
-    end
-  end
-  return nil
+local function nonempty(value)
+  return type(value) == "string" and value ~= ""
 end
 
--- Presence gate for api-key providers: an auth-file entry (not yet
--- resolved) or a set environment variable. Avoids running credential
--- shell commands, so it is safe on the resolver's hot path.
+local function ambient(spec)
+  if spec.ambient then
+    return spec.ambient()
+  end
+  local value = spec.env and os.getenv(spec.env)
+  if nonempty(value) then
+    return value, "env"
+  end
+end
+
+-- The stored credential owns the provider. An unusable saved login
+-- must not silently spend money on a different ambient account.
+-- Returns (secret, source) on success or (nil, error) on failure.
+function M.resolve_provider(provider, spec)
+  local entry, err = M.get(provider)
+  if err then
+    return nil, err
+  end
+  if not entry then
+    return ambient(spec)
+  end
+  if entry.type == "api_key" then
+    local value = nonempty(entry.key) and credential.resolve(entry.key)
+    if nonempty(value) then
+      return value, "auth-file"
+    end
+    return nil, "Unable to resolve the stored API key for " .. provider
+  end
+  if entry.type == "oauth" and spec.oauth then
+    local value, oauth_err = spec.oauth(entry)
+    if nonempty(value) then
+      return value, "oauth"
+    end
+    return nil, oauth_err or ("Unable to authenticate " .. provider .. " with the stored login")
+  end
+  return nil, "Unsupported stored credential for " .. provider
+end
+
+-- Presence only: no command-backed credentials or refresh over the network.
+function M.provider_has_auth(provider, spec)
+  local entry, err = M.get(provider)
+  if err then
+    return false
+  end
+  if not entry then
+    return nonempty(ambient(spec))
+  end
+  if entry.type == "oauth" then
+    return spec.has_oauth ~= nil and spec.has_oauth(entry) == true
+  end
+  return entry.type == "api_key" and nonempty(entry.key)
+end
+
+function M.resolve_api_key(provider, env_var)
+  return M.resolve_provider(provider, { env = env_var })
+end
+
 function M.has_api_key(provider, env_var)
-  if M.has_api_key_entry(provider) then
-    return true
-  end
-  if env_var then
-    local env = os.getenv(env_var)
-    return env ~= nil and env ~= ""
-  end
-  return false
+  return M.provider_has_auth(provider, { env = env_var })
 end
 
 return M
