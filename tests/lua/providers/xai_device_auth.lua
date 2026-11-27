@@ -1,9 +1,10 @@
 --[==[psi-test
 expect = "ok"
+env = { PSI_AUTH_FILE = "{TMP}/auth.json" }
 ]==]
 local auth = require("psi.providers.oauth_xai")
 local storage = require("psi.auth_storage")
-local client, now, entry, phase, calls = nil, 1000, nil, "device", 0
+local client, now, phase, calls = nil, 1000, "device", 0
 local getenv = os.getenv
 os.getenv = function(key)
   if key == "PSI_XAI_OAUTH_CLIENT_ID" then
@@ -13,14 +14,6 @@ os.getenv = function(key)
 end
 os.time = function()
   return now
-end
-storage.set = function(provider, value)
-  assert(provider == "xai")
-  entry = value
-  return true
-end
-storage.get = function()
-  return entry
 end
 psi.http_post = function(url, _, body)
   calls = calls + 1
@@ -54,7 +47,7 @@ now = 1015
 assert(auth.finish_login("check") and auth.has_credentials())
 assert(auth.access_token() == "access")
 now, phase = 4600, "refresh"
-assert(auth.access_token() == "fresh" and entry.refresh == "refresh")
+assert(auth.access_token() == "fresh" and storage.get("xai").refresh == "refresh")
 client = "other"
 assert(not auth.has_credentials())
 return "ok"

@@ -1,10 +1,11 @@
 --[==[psi-test
 expect = "ok"
+env = { PSI_AUTH_FILE = "{TMP}/auth.json", RADIUS_API_KEY = "" }
 ]==]
 local auth = require("psi.providers.oauth_radius")
 local radius = require("psi.providers.radius")
 local storage = require("psi.auth_storage")
-local entry, now = nil, 1000
+local now = 1000
 local getenv = os.getenv
 os.getenv = function(name)
   if name == "PSI_RADIUS_OAUTH_CLIENT_ID" then
@@ -14,17 +15,6 @@ os.getenv = function(name)
 end
 os.time = function()
   return now
-end
-storage.get = function()
-  return entry
-end
-storage.resolve_api_key = function()
-  return nil
-end
-storage.set = function(provider, value)
-  assert(provider == "radius")
-  entry = value
-  return true
 end
 psi.http_post = function(url, _, body)
   assert(body:find("client_id=psi%-radius"))
@@ -44,7 +34,7 @@ now = 1005
 assert(auth.finish_login("check") and auth.has_credentials())
 assert(auth.access_token() == "first")
 now = 2600
-assert(auth.access_token() == "refreshed" and entry.refresh == "keep")
+assert(auth.access_token() == "refreshed" and storage.get("radius").refresh == "keep")
 require("psi.provider_loop").run_turn = function(opts, cfg)
   assert(opts.model == "balanced" and cfg.url == "https://radius.pi.dev/v1/messages")
   assert(cfg.headers[1] == "Authorization: Bearer refreshed")

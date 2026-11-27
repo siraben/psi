@@ -187,7 +187,9 @@ the environment variable, matching Pi's credential handling. A saved login
 or key owns that provider. If it is invalid, fails to refresh, or cannot be
 resolved, Psi reports the error rather than using an environment key that
 might bill a different account. Remove the saved entry with `/logout` to
-use environment credentials.
+use environment credentials. Psi serializes updates and OAuth refreshes using
+an adjacent `auth.json.lock` file. Do not remove the lock file while Psi is
+running. The operating system releases the lock when the process exits.
 
 Use `/login` without arguments to choose an authentication method, then a
 provider. Provider and method names are available through Tab completion:

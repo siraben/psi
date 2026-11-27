@@ -1,10 +1,11 @@
 --[==[psi-test
 expect = "ok"
+env = { PSI_AUTH_FILE = "{TMP}/auth.json", META_API_KEY = "" }
 ]==]
 local auth = require("psi.providers.oauth_meta")
 local meta = require("psi.providers.meta")
 local storage = require("psi.auth_storage")
-local entry, now, mint_count, revoked = nil, 1000, 0, false
+local now, mint_count, revoked = 1000, 0, false
 local getenv = os.getenv
 os.getenv = function(name)
   if name == "PSI_META_OAUTH_CLIENT_ID" then
@@ -14,17 +15,6 @@ os.getenv = function(name)
 end
 os.time = function()
   return now
-end
-storage.set = function(provider, value)
-  assert(provider == "meta")
-  entry = value
-  return true
-end
-storage.get = function()
-  return entry
-end
-storage.resolve_api_key = function()
-  return nil
 end
 psi.http_post = function(url, headers, body)
   if url == "https://auth.meta.com/oidc/device/authorization/" then
@@ -49,7 +39,11 @@ end
 assert(auth.begin_login().user_code == "PUBLIC")
 now = 1005
 assert(auth.finish_login("check"))
-assert(auth.has_credentials() and entry.refresh == "identity" and auth.access_token() == "mint-1")
+assert(
+  auth.has_credentials()
+    and storage.get("meta").refresh == "identity"
+    and auth.access_token() == "mint-1"
+)
 now = now + 86400
 assert(auth.access_token() == "mint-2")
 require("psi.provider_loop").run_turn = function(args, cfg)

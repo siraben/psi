@@ -1,10 +1,11 @@
 --[==[psi-test
 expect = "ok"
+env = { PSI_AUTH_FILE = "{TMP}/auth.json" }
 ]==]
 local auth = require("psi.providers.oauth_github_copilot")
 local copilot = require("psi.providers.github_copilot")
 local storage = require("psi.auth_storage")
-local entry, now, exchanges = nil, 1000, 0
+local now, exchanges = 1000, 0
 local getenv = os.getenv
 os.getenv = function(name)
   if name == "PSI_GITHUB_COPILOT_CLIENT_ID" then
@@ -14,14 +15,6 @@ os.getenv = function(name)
 end
 os.time = function()
   return now
-end
-storage.set = function(provider, value)
-  assert(provider == "github-copilot")
-  entry = value
-  return true
-end
-storage.get = function()
-  return entry
 end
 psi.http_post = function(url, _, body)
   assert(body:find("client_id=psi%-copilot"))
@@ -50,7 +43,7 @@ now = 1005
 assert(auth.finish_login("check"))
 assert(
   auth.has_credentials()
-    and entry.refresh == "github-token"
+    and storage.get("github-copilot").refresh == "github-token"
     and auth.access_token() == token
     and exchanges == 1
 )
@@ -64,7 +57,9 @@ end
 assert(copilot.run_turn({}))
 now = now + 3600
 assert(auth.access_token() == token and exchanges == 2)
+local entry = storage.get("github-copilot")
 entry.access = "secret;proxy-ep=proxy.attacker.example;end"
+assert(storage.set("github-copilot", entry))
 local ok, err = copilot.run_turn({})
 assert(not ok and err:find("unsupported gateway", 1, true))
 return "ok"
