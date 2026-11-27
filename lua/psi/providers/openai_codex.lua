@@ -92,15 +92,13 @@ local function split_tool_id(id)
   return tostring(id or ""), nil
 end
 
-local function model_supports_images(model)
-  return capabilities.supports_images("openai-codex", model) == true
-end
-
-local function response_input_from_session(session, _system_prompt, _cfg, model)
+local function response_input_from_session(session, _system_prompt, cfg, model)
+  local provider = cfg and cfg.provider_name or "openai-codex"
   local out = prelude.array(#session)
   local msg_index = 0
   local images_blocked = image_policy.blocked()
-  local supports_images = model_supports_images(model) and not images_blocked
+  local supports_images = capabilities.supports_images(provider, model) == true
+    and not images_blocked
   local user_image_placeholder = images_blocked and image_policy.DISABLED_TEXT
     or transform.USER_IMAGE_PLACEHOLDER
   local tool_image_placeholder = images_blocked and image_policy.DISABLED_TEXT
@@ -173,7 +171,14 @@ local function response_input_from_session(session, _system_prompt, _cfg, model)
       for _, block in ipairs(message.content or {}) do
         if type(block) == "table" and block.type == "thinking" then
           local item = safe_decode(block.thinkingSignature)
-          if type(item) == "table" then
+          if
+            type(item) == "table"
+            and (
+              provider == "openai-codex" or (
+                message.provider == provider and message.model == model
+              )
+            )
+          then
             out[#out + 1] = item
           end
         elseif type(block) == "table" and block.type == "text" then
@@ -500,7 +505,7 @@ local function state_text(state)
   return table.concat(out)
 end
 
-local function persist(state, model, _content, tool_calls, stop_override, error_message)
+local function persist_for(cfg, state, model, _content, tool_calls, stop_override, error_message)
   local blocks = prelude.array(#(state.blocks or {}))
   for _, b in ipairs(state.blocks or {}) do
     if b.kind == "thinking" then
@@ -529,8 +534,8 @@ local function persist(state, model, _content, tool_calls, stop_override, error_
     stop_reason = stop_override or state.stop_reason,
     error_message = error_message or state.error_message,
     model = model,
-    provider = "openai-codex",
-    api = "openai-codex-responses",
+    provider = cfg.provider_name,
+    api = cfg.api_name,
     response_id = state.response_id,
   })
   if #tool_calls > 0 then
@@ -540,8 +545,8 @@ end
 
 local RAW_COMPLETION_BODY_MAX = 16 * 1024
 
-local function complete_text_stream(creds, body, abort_check)
-  local handle, begin_err = psi.http_stream_begin(api_url(), headers(creds), psi.json_encode(body))
+local function complete_text_stream(cfg, body, abort_check)
+  local handle, begin_err = psi.http_stream_begin(cfg.url, cfg.headers, psi.json_encode(body))
   if handle == nil then
     return false, "http request failed: " .. tostring(begin_err)
   end
@@ -580,14 +585,14 @@ local function complete_text_stream(creds, body, abort_check)
       openai_compat.classify_http_error(
         tonumber(status) or 0,
         table.concat(raw_body),
-        "openai-codex"
+        cfg.provider_name
       )
   end
   local stream_error = nil
   if state.stop_reason == "error" then
-    stream_error = state.error_message or "Codex response failed"
+    stream_error = state.error_message or (cfg.provider_name .. " response failed")
   elseif state.malformed_tool_input_error then
-    stream_error = "openai-codex: " .. state.malformed_tool_input_error
+    stream_error = cfg.provider_name .. ": " .. state.malformed_tool_input_error
   end
   if stream_error then
     return false, stream_error
@@ -621,17 +626,9 @@ function M.has_auth()
   return auth.has_credentials and auth.has_credentials() or false
 end
 
-function M.run_turn(opts)
-  local creds, err = auth.credentials()
-  if not creds then
-    notice.error(
-      "openai-codex auth failed: " .. tostring(err) .. "\nRun /login openai-codex first."
-    )
-    return false, err
-  end
-  local model = resolve_model(opts.model)
+function M.run_responses_turn(opts, cfg)
   return provider_loop.run_turn({
-    model = model,
+    model = cfg.model,
     max_tokens = opts.max_tokens,
     thinking_level = opts.thinking_level,
     reasoning_effort = opts.reasoning_effort,
@@ -641,25 +638,27 @@ function M.run_turn(opts)
     abort_check = opts.abort_check,
     no_auto_compact = opts.no_auto_compact,
   }, {
-    provider_name = "openai-codex",
-    api_name = "openai-codex-responses",
-    url = api_url(),
-    headers = headers(creds),
+    provider_name = cfg.provider_name,
+    api_name = cfg.api_name,
+    url = cfg.url,
+    headers = cfg.headers,
     tool_specs = api_tool_specs,
     build_messages = build_messages,
-    request_body = request_body,
+    request_body = cfg.request_body,
     parser_new = stream_parser.sse_parser,
     parser_push = parser_push,
     new_state = new_state,
     finalize = finalize,
-    persist = persist,
+    persist = function(...)
+      return persist_for(cfg, ...)
+    end,
     classify_http_error = openai_compat.classify_http_error,
     stream_error = function(state)
       if state.stop_reason == "error" then
-        return state.error_message or "Codex response failed"
+        return state.error_message or (cfg.provider_name .. " response failed")
       end
       if state.malformed_tool_input_error then
-        return "openai-codex: " .. state.malformed_tool_input_error
+        return cfg.provider_name .. ": " .. state.malformed_tool_input_error
       end
       return nil
     end,
@@ -670,16 +669,9 @@ function M.run_turn(opts)
   })
 end
 
-function M.complete_text(opts)
-  local creds, err = auth.credentials()
-  if not creds then
-    local msg = "openai-codex auth failed: " .. tostring(err) .. " (run /login openai-codex)"
-    notice.error(msg)
-    return false, msg
-  end
-  local model = resolve_model(opts.model)
-  local body = request_body({
-    model = model,
+function M.complete_responses_text(opts, cfg)
+  local body = cfg.request_body({
+    model = cfg.model,
     system_prompt = opts.system_prompt or "",
     messages = prelude.as_array({
       {
@@ -695,12 +687,45 @@ function M.complete_text(opts)
   body.tools = nil
   body.tool_choice = nil
   body.parallel_tool_calls = nil
-  local ok, text = complete_text_stream(creds, body, opts.abort_check)
+  local ok, text = complete_text_stream(cfg, body, opts.abort_check)
   if not ok then
     notice.error(text)
     return false, text
   end
   return true, text
+end
+
+local function codex_config(model)
+  local creds, err = auth.credentials()
+  if not creds then
+    local msg = "openai-codex auth failed: " .. tostring(err) .. " (run /login openai-codex)"
+    notice.error(msg)
+    return nil, msg
+  end
+  return {
+    provider_name = "openai-codex",
+    api_name = "openai-codex-responses",
+    url = api_url(),
+    headers = headers(creds),
+    model = resolve_model(model),
+    request_body = request_body,
+  }
+end
+
+function M.run_turn(opts)
+  local cfg, err = codex_config(opts.model)
+  if not cfg then
+    return false, err
+  end
+  return M.run_responses_turn(opts, cfg)
+end
+
+function M.complete_text(opts)
+  local cfg, err = codex_config(opts.model)
+  if not cfg then
+    return false, err
+  end
+  return M.complete_responses_text(opts, cfg)
 end
 
 M._debug = {
