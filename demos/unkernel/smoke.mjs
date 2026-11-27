@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { bootPsi, psiPath } from './guest.mjs';
+import { terminalOutput } from './terminal-output.mjs';
+
+const clipboard = [];
+const filter = terminalOutput(value => clipboard.push(value));
+const bytes = new TextEncoder();
+assert.equal(filter(bytes.encode('─\x1b]5')), '─');
+assert.equal(filter(bytes.encode('2;c;aMOpbGxv\x1b')), '');
+assert.equal(filter(bytes.encode('\\x\x1b]52;c;?\x07')), 'x');
+assert.deepEqual(clipboard, ['héllo']);
+assert.equal(filter(bytes.encode('\x1b]8;;javascript:alert(1)\x07')), '\x1b]8;;\x07');
+assert.equal(filter(bytes.encode('\x1b]8;;https://psicode.ai/\x07')), '\x1b]8;;https://psicode.ai/\x07');
+assert.equal(filter(bytes.encode('\x1b]52;c;' + 'a'.repeat(17_000) + '\x07Z')), 'Z');
 
 const deadline = setTimeout(() => {
   console.error('Timed out booting unkernel or running psi');

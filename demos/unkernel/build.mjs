@@ -18,6 +18,7 @@ const assets = {
   'index.html': 'index.html',
   'guest.mjs': 'guest.mjs',
   'terminal.mjs': 'terminal.mjs',
+  'terminal-output.mjs': 'terminal-output.mjs',
   'demo.css': 'demo.css',
   'fonts/dm-sans.871fd1188d.woff2': 'fonts/dm-sans.871fd1188d.woff2',
   'fonts/ibm-plex-mono.65b0e6c0be.woff2': 'fonts/ibm-plex-mono.65b0e6c0be.woff2',

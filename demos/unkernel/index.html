@@ -17,10 +17,7 @@
     <a href="https://github.com/siraben/psi">GitHub</a>
   </div></header>
   <main class="wrap">
-    <p class="eyebrow">Browser demo</p>
-    <h1>Try Psi<span>.</span></h1>
-    <p class="intro">Run Psi in an AArch64 Linux guest. Try <code>/help</code> in the terminal.</p>
-    <form id="launch" autocomplete="off">
+    <form id="launch" autocomplete="off" hidden>
       <fieldset id="network" hidden>
         <label><input id="enable-network" type="checkbox"> Enable guest networking</label>
         <label for="provider">API key provider</label>
@@ -33,13 +30,18 @@
         <input id="key" type="password" autocomplete="off" spellcheck="false" disabled>
         <p>Use a restricted key. Programs in the guest can read it; reloading discards the guest.</p>
       </fieldset>
-      <button type="submit">Start session <span aria-hidden="true">→</span></button>
+      <button type="submit" disabled>Restart with networking <span aria-hidden="true">→</span></button>
     </form>
     <section class="terminal-frame" aria-label="Psi terminal">
       <div class="terminal-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>psi — Ghostty</span></div>
       <div id="terminal"></div>
     </section>
-    <p id="status" role="status">Start a session to boot Linux.</p>
+    <div class="terminal-footer">
+      <p id="status" role="status">Booting Linux…</p>
+      <button id="copy-terminal" type="button" hidden>Copy terminal text</button>
+      <button id="paste-terminal" type="button" hidden>Paste</button>
+      <span id="clipboard-status" role="status"></span>
+    </div>
   </main>
 </body>
 </html>
