@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -30,7 +30,6 @@ const assets = {
   'vendor/unkernel/unkernel.wasm': 'node_modules/unkernel/dist/unkernel.wasm',
   'vendor/unkernel/LICENSE': 'node_modules/unkernel/LICENSE',
   'vendor/unkernel/LICENSE-MIT': 'node_modules/unkernel/LICENSE-MIT',
-  'vendor/ghostty/ghostty-web.js': 'node_modules/ghostty-web/dist/ghostty-web.js',
   'vendor/ghostty/ghostty-vt.wasm': 'node_modules/ghostty-web/dist/ghostty-vt.wasm',
   'vendor/ghostty/LICENSE': 'node_modules/ghostty-web/LICENSE',
 };
@@ -42,6 +41,16 @@ for (const [dest, source] of Object.entries(assets)) {
   await rm(target, { force: true });
   await copyFile(resolve(here, source), target);
 }
+// Canvas dimensions truncate to integers. Ghostty Web 0.4.0 compares
+// against fractional DPR products and otherwise reallocates every frame.
+const ghosttySource = await readFile(resolve(here, 'node_modules/ghostty-web/dist/ghostty-web.js'), 'utf8');
+const dimensions = /this\.canvas\.(width|height) !== (D\.(?:cols|rows) \* this\.metrics\.\1 \* this\.devicePixelRatio)/g;
+if ([...ghosttySource.matchAll(dimensions)].length !== 2) {
+  throw new Error('Recheck the Ghostty fractional-DPR canvas fix after upgrading');
+}
+const ghostty = resolve(here, 'dist/vendor/ghostty/ghostty-web.js');
+await rm(ghostty, { force: true });
+await writeFile(ghostty, ghosttySource.replace(dimensions, 'this.canvas.$1 !== Math.trunc($2)'));
 await writeFile(resolve(here, 'dist/config.mjs'), `export const relay = ${JSON.stringify(relay || '')};\n`);
 if (!relay) await rm(resolve(here, 'dist/ca-bundle.crt'), { force: true });
 console.log('Built demos/unkernel/dist/');

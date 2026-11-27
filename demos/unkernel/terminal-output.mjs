@@ -41,8 +41,10 @@ export function terminalOutput(onCopy) {
     return `${ESC}]${value}${BEL}`;
   }
   return bytes => {
+    const decoded = decoder.decode(bytes, { stream: true });
+    if (!escape && osc === null && !/[\x1b\x9d]/u.test(decoded)) return decoded;
     let out = '';
-    for (const char of decoder.decode(bytes, { stream: true })) {
+    for (const char of decoded) {
       if (osc !== null) {
         if (char === BEL || char === '\x9c' || (oscEscape && char === '\\')) {
           out += finish();
@@ -67,4 +69,30 @@ export function terminalOutput(onCopy) {
     }
     return out;
   };
+}
+
+// Ghostty parses write() synchronously and paints on its own animation loop.
+// Yield to browser tasks during a flood, not once per individual PTY chunk.
+export async function pumpTerminal(stream, write, {
+  now = () => performance.now(),
+  yieldTask = () => globalThis.scheduler?.yield?.() ?? new Promise(resolve => setTimeout(resolve, 0)),
+} = {}) {
+  const reader = stream.getReader();
+  let started = now();
+  let bytes = 0;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) return;
+      write(value);
+      bytes += value.byteLength;
+      if (bytes >= 64 * 1024 || now() - started >= 8) {
+        await yieldTask();
+        started = now();
+        bytes = 0;
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }

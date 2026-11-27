@@ -1,7 +1,7 @@
 import { init, Terminal, FitAddon } from 'ghostty-web';
 import { bootPsi, psiPath } from './guest.mjs';
 import { relay } from './config.mjs';
-import { terminalOutput } from './terminal-output.mjs';
+import { pumpTerminal, terminalOutput } from './terminal-output.mjs';
 
 const form = document.querySelector('#launch');
 const network = document.querySelector('#network');
@@ -102,12 +102,10 @@ async function runSession(online) {
     vm = await bootPsi(guest, { relay: online ? relay : '', caBytes });
     const pty = await vm.spawn(psiPath, [], { cols: term.cols, rows: term.rows, env });
     const filterOutput = terminalOutput(handleCopy);
-    const output = pty.output.pipeTo(new WritableStream({
-      write(bytes) {
-        const text = filterOutput(bytes);
-        if (text) return new Promise(resolve => term.write(text, resolve));
-      },
-    }));
+    const output = pumpTerminal(pty.output, bytes => {
+      const text = filterOutput(bytes);
+      if (text) term.write(text);
+    });
     input = term.onData(data => { void Promise.resolve(pty.write(data)).catch(() => {}); });
     resize = term.onResize(({ cols, rows }) => pty.resize(cols, rows));
     observer = new ResizeObserver(() => fit.fit());

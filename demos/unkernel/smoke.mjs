@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { bootPsi, psiPath } from './guest.mjs';
-import { terminalOutput } from './terminal-output.mjs';
+import { pumpTerminal, terminalOutput } from './terminal-output.mjs';
 
 const clipboard = [];
 const filter = terminalOutput(value => clipboard.push(value));
@@ -13,6 +13,19 @@ assert.deepEqual(clipboard, ['héllo']);
 assert.equal(filter(bytes.encode('\x1b]8;;javascript:alert(1)\x07')), '\x1b]8;;\x07');
 assert.equal(filter(bytes.encode('\x1b]8;;https://psicode.ai/\x07')), '\x1b]8;;https://psicode.ai/\x07');
 assert.equal(filter(bytes.encode('\x1b]52;c;' + 'a'.repeat(17_000) + '\x07Z')), 'Z');
+
+const received = [];
+const yieldedAfter = [];
+const burst = new ReadableStream({ start(controller) {
+  for (let i = 0; i < 5; i++) controller.enqueue(new Uint8Array(32 * 1024).fill(i));
+  controller.close();
+} });
+await pumpTerminal(burst, chunk => received.push(chunk[0]), {
+  now: () => 0, yieldTask: async () => { yieldedAfter.push(received.length); },
+});
+assert.deepEqual(received, [0, 1, 2, 3, 4]);
+assert.deepEqual(yieldedAfter, [2, 4]);
+assert.equal(burst.locked, false);
 
 const deadline = setTimeout(() => {
   console.error('Timed out booting unkernel or running psi');
