@@ -549,35 +549,50 @@ function M.resolve_model(provider_name, requested)
   return env(p.model_env, p.default_model)
 end
 
--- ollama is excluded: its has_auth() is always true, which would make it
--- the silent default in an otherwise-unconfigured environment.
+-- Pi's default-model priority, restricted to providers Psi implements.
+-- Google AI Ultra uses the priority of the upstream Google AI Plan port.
 local FALLBACK_PROVIDER_ORDER = {
   "anthropic",
   "openai-codex",
-  "openrouter",
-  "moonshot",
-  "google-ai-plan",
-  "xai",
-  "meta",
-  "github-copilot",
   "radius",
+  "google-ai-plan",
+  "github-copilot",
+  "openrouter",
+  "xai",
+  "moonshot",
+  "meta",
 }
 
 local function first_authenticated_provider()
+  local checked = { ollama = true }
   for _, name in ipairs(FALLBACK_PROVIDER_ORDER) do
+    checked[name] = true
     if providers[name] and M.provider_has_auth(name) then
       return providers[name]
     end
   end
-  return providers.anthropic
+  -- New providers can be available without a preferred default. Ollama's
+  -- auth check does not establish that a local server is running.
+  for _, item in ipairs(M.all_providers()) do
+    if not checked[item.name] and M.provider_has_auth(item.name) then
+      return providers[item.name]
+    end
+  end
+end
+
+local function split_model_ref(model)
+  if type(model) == "string" then
+    local name, id = model:match("^([^/]+)/(.+)$")
+    if name and providers[name] then
+      return providers[name], id
+    end
+  end
 end
 
 function M.resolve_route(model)
-  if type(model) == "string" then
-    local provider_name, rest = model:match("^([^/]+)/(.+)$")
-    if provider_name and providers[provider_name] then
-      return providers[provider_name], rest
-    end
+  local spec, id = split_model_ref(model)
+  if spec then
+    return spec, id
   end
 
   local env_provider = os.getenv("PSI_PROVIDER")
@@ -588,8 +603,11 @@ function M.resolve_route(model)
   local ok, settings = pcall(require, "psi.settings_manager")
   if ok and settings then
     local configured_model = settings.get("defaults.model", nil)
-    if (not model or model == "") and type(configured_model) == "string" then
-      return M.resolve_route(configured_model)
+    if not model or model == "" then
+      local configured_spec, configured_id = split_model_ref(configured_model)
+      if configured_spec and M.provider_has_auth(configured_spec.name) then
+        return configured_spec, configured_id
+      end
     end
     local configured_provider = settings.get("defaults.provider", nil)
     if providers[configured_provider] and M.provider_has_auth(configured_provider) then

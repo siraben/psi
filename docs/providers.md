@@ -51,12 +51,15 @@ In priority order:
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
    `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, `meta`,
    `github-copilot`, or `radius`.
-3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
-   `~/.config/psi/settings.json` or `./.psi/settings.json`.
-4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot, Google AI Ultra, xAI, Meta, GitHub Copilot, and Radius. Ollama is
-   excluded because it does not require credentials. If no provider is
-   authenticated, psi falls back to Anthropic.
+3. **Settings:** use `defaults.model` or `defaults.provider` from
+   `~/.config/psi/settings.json` or `./.psi/settings.json` if the provider is
+   configured for authentication.
+4. **Automatic selection:** prefer configured providers in Pi's default-model
+   order: Anthropic, OpenAI Codex, Radius, Google AI Ultra, GitHub Copilot,
+   OpenRouter, xAI, Moonshot, then Meta. If no provider is configured, no
+   model is selected. Run `/login` or select a model explicitly. Ollama
+   requires explicit selection because an auth check cannot tell whether a
+   local server is running.
 
 ## Anthropic bearer credentials
 

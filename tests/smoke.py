@@ -1812,7 +1812,7 @@ def t_tui_bang_shell_commands(psi: Psi):
 def t_tui_input_box_background(psi: Psi):
     state = psi.tmp / "state-tui-input-box"
     raw = run_pty(
-        [psi.binary, "--tui"],
+        [psi.binary, "--tui", "--model", "anthropic/claude-opus-4-8", "--thinking", "medium"],
         [(b"", 0.5), (b"/quit\r", 1.0)],
         env_extra={"NO_COLOR": "", "TERM": "xterm-256color", "XDG_STATE_HOME": str(state)},
         idle_drain=1.0,
@@ -1855,7 +1855,7 @@ def t_tui_bracketed_paste(psi: Psi):
     assert_bytes_contains(raw, b"paste alpha", "first pasted line should reach the editor")
     assert_bytes_contains(raw, b"paste beta", "second pasted line should reach the editor")
     assert_true(
-        "ANTHROPIC_API_KEY" not in raw.screen_text,
+        "No model available" not in raw.screen_text and "ANTHROPIC_API_KEY" not in raw.screen_text,
         "bracketed paste must not submit each line as its own message",
     )
 
@@ -2057,7 +2057,7 @@ def t_tui_multiline_prompt(psi: Psi):
     )
     raw.assert_clean_exit()
     text = strip_ansi(raw)
-    assert_contains(text, "ANTHROPIC_API_KEY is not set", "multiline input submitted")
+    assert_contains(text, "No model available", "multiline input submitted")
 
 @test("mode/tui_short_viewport", requires=('tui',))
 def t_tui_short_viewport(psi: Psi):

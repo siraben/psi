@@ -8,7 +8,12 @@ agent.clear_queues()
 agent.queue_steering("steer now")
 agent.queue_follow_up("follow later")
 local lines = rt._debug_pending_queue_lines(80)
-local footer = status.status_line({ busy = true, scroll = 0, show_queue_in_status = false })
+local footer = status.status_line({
+  busy = true,
+  scroll = 0,
+  show_queue_in_status = false,
+  model = "anthropic/claude-opus-4-8",
+})
 return table.concat({
   require("psi.tui_text").strip_ansi(lines[2] or ""),
   require("psi.tui_text").strip_ansi(lines[3] or ""),

@@ -6,6 +6,7 @@
 -- API message mapping, tool loop, compaction assembly) is pure Lua.
 
 local context = require("psi.context")
+local notice = require("psi.notice")
 local control = require("psi.agent_control")
 local transform = require("psi.transform_messages")
 local prompt = require("psi.prompt")
@@ -25,12 +26,21 @@ local M = {}
 -- the orchestrator works with whichever provider the descriptor resolves.
 local function pick_provider(model)
   local resolved = providers.resolve_descriptor(model)
-  return providers.load_provider(providers.provider(resolved.provider)), resolved
+  if not resolved then
+    return nil,
+      nil,
+      "No model available. Use /login to configure a provider or /model to select one."
+  end
+  local provider = providers.load_provider(providers.provider(resolved.provider))
+  if not provider then
+    return nil, nil, "No adapter available for " .. resolved.provider
+  end
+  return provider, resolved
 end
 
 function M.provider_for(model)
-  local provider, resolved = pick_provider(model)
-  return provider, resolved.id
+  local provider, resolved, err = pick_provider(model)
+  return provider, resolved and resolved.id, err
 end
 
 function M.model_descriptor(fallback)
@@ -238,13 +248,17 @@ local function turn_max_tokens(resolved, requested)
 end
 
 local function drive_turn(opts, append_user)
+  local provider, resolved, err = pick_provider(M.current_model(opts.model))
+  if not provider then
+    notice.error(err)
+    return false, err
+  end
   local system_prompt = opts.system_prompt or prompt.prepare_checkpoint()
   if append_user then
     local user_text = opts.user_text or ""
     session.append_user(user_text)
     session.save()
   end
-  local provider, resolved = pick_provider(M.current_model(opts.model))
   local thinking_level = M.thinking_level_for(resolved, opts.thinking_level, opts.reasoning_effort)
   return sched.run(function()
     return provider.run_turn({
@@ -276,7 +290,10 @@ function M.side_question(question, opts)
   local excerpt = transcript_excerpt(opts.context_chars or 24000)
   local excerpt_text = excerpt ~= "" and excerpt or "(empty transcript)"
 
-  local provider, resolved = pick_provider(M.current_model(opts.model))
+  local provider, resolved, err = pick_provider(M.current_model(opts.model))
+  if not provider then
+    return false, err
+  end
   local user_text = "Current transcript excerpt:\n\n"
     .. excerpt_text
     .. "\n\nSide question:\n"
@@ -337,7 +354,10 @@ function M.run_compact(opts)
 
   local summary = before.summary
   if not summary then
-    local provider, resolved = pick_provider(M.current_model(opts.model))
+    local provider, resolved, err = pick_provider(M.current_model(opts.model))
+    if not provider then
+      return false, err
+    end
     local thinking_level =
       M.thinking_level_for(resolved, opts.thinking_level, opts.reasoning_effort)
 
@@ -432,7 +452,10 @@ function M.run_tree(opts)
       }
   end
 
-  local provider, resolved = pick_provider(M.current_model(opts.model))
+  local provider, resolved, err = pick_provider(M.current_model(opts.model))
+  if not provider then
+    return false, err
+  end
   local thinking_level = M.thinking_level_for(resolved, opts.thinking_level, opts.reasoning_effort)
   local request = prompt.branch_summary_request(entries, opts.custom_instructions)
   local ok, summary = sched.run(function()
