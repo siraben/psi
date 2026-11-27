@@ -4,12 +4,13 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with five routed providers:
+psi ships with six routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
 - OpenRouter, via OpenAI-compatible `/chat/completions`
 - OpenAI Codex, via ChatGPT's Codex Responses backend
+- Google AI Ultra, via Gemini Interactions
 - Moonshot (Kimi For Coding), via the Anthropic-compatible
   `https://api.kimi.com/coding`
 
@@ -44,12 +45,29 @@ In priority order:
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
-   `openrouter`, `openai-codex`, or `moonshot`.
+   `openrouter`, `openai-codex`, `moonshot`, or `google-ai-plan`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
 4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot. Ollama is excluded because it does not require credentials. If no
+   Moonshot and Google AI Ultra. Ollama is excluded because it does not require credentials. If no
    provider is authenticated, psi falls back to Anthropic.
+
+## Google AI Ultra
+
+Google AI Ultra uses a Google Desktop OAuth client approved for Psi's app, not
+an API key. As in [Pi PR #12614](https://github.com/earendil-works/pi/pull/12614),
+approval is per app. Psi does not ship a client; do not reuse Pi's client or
+copy credentials from another Google application.
+
+This optional login uses Node.js 22+ on `PATH` and a build with `MCP=1` (stdio
+process support). Set `PSI_GOOGLE_AI_PLAN_CLIENT_ID` and
+`PSI_GOOGLE_AI_PLAN_CLIENT_SECRET` in the environment before starting Psi.
+Run `/login google-ai-plan`, open the displayed address, and paste the full
+loopback redirect URL into the displayed `/login` command. The redirect page
+will not load because Psi uses manual paste rather than a local callback
+server. Use `/model google-ai-plan/gemini-4-hydrogen` to select the provider.
+Keep `auth.json` private: it holds both the refresh token and its DPoP key.
+Use `/logout google-ai-plan` to remove the local credential.
 
 ## Streaming retries
 
