@@ -394,14 +394,12 @@ make
     <section class="extend-section wrap" id="provider-auth" aria-labelledby="provider-auth-heading">
       <div class="extend-copy">
         <h2 id="provider-auth-heading">Provider sign-in</h2>
-        <p>Run <code>/login</code> to save an API key or sign in with OpenAI Codex. Ollama runs locally without a key.</p>
+        <p>Run <code>/login</code> to save an API key or sign in to a provider account. Ollama runs locally without a key.</p>
         <a class="text-link" href="https://github.com/siraben/psi/blob/master/docs/providers.md">Provider setup →</a>
       </div>
       <div class="intro-body">
-        <h3>Preview: <code>adding-new-auth</code></h3>
-        <p>Google AI Ultra, GitHub Copilot, xAI, Meta Muse, and Radius sign-in require a provider-authorized app client. Anthropic accepts a Claude API bearer token, not a Claude Pro or Max login.</p>
-        <p>These options are not in the current release. Live sign-in has not been verified.</p>
-        <a class="text-link" href="https://github.com/siraben/psi/blob/adding-new-auth/docs/providers.md">Preview setup →</a>
+        <p>Sign in with OpenAI Codex, GitHub Copilot, xAI, Meta Muse, or Radius. Copilot, xAI, Meta, and Radius require a provider-authorized OAuth client. Anthropic accepts a Claude API bearer token, not a Claude Pro or Max login.</p>
+        <p>Build from source to use the latest sign-in options; the v0.2.0 binaries predate them.</p>
       </div>
     </section>
   </main>
