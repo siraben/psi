@@ -213,11 +213,6 @@ M.register_api("xai-chat-completions", {
   compat = { supports_tool_use = true },
 })
 
-M.register_api("google-interactions", {
-  module = "psi.providers.google_ai_plan",
-  compat = { supports_tool_use = true, supports_reasoning = true },
-})
-
 M.register_api("moonshot-messages", {
   module = "psi.providers.moonshot",
   compat = {
@@ -343,33 +338,6 @@ M.register_model("xai/grok-4.7", {
   supports_tool_use = true,
   input = { "text", "image" },
 })
-
-M.register_provider("google-ai-plan", {
-  display_name = "Google AI Ultra",
-  api = "google-interactions",
-  model_env = "PSI_GOOGLE_AI_PLAN_MODEL",
-  default_model = "gemini-4-hydrogen",
-  auth = {
-    oauth = { label = "Google AI Ultra account", module = "psi.providers.oauth_google_ai_plan" },
-  },
-})
-
-for _, model in ipairs({
-  "gemini-4-hydrogen",
-  "gemini-4-neon",
-  "gemini-4-carbon",
-  "gemini-3.5-flash-lite",
-}) do
-  M.register_model("google-ai-plan/" .. model, {
-    provider = "google-ai-plan",
-    api = "google-interactions",
-    context_window = 1048576,
-    max_output_tokens = 65536,
-    reasoning = true,
-    supports_tool_use = true,
-    input = { "text", "image" },
-  })
-end
 
 M.register_provider("moonshot", {
   display_name = "Moonshot (Kimi For Coding)",
@@ -550,12 +518,10 @@ function M.resolve_model(provider_name, requested)
 end
 
 -- Pi's default-model priority, restricted to providers Psi implements.
--- Google AI Ultra uses the priority of the upstream Google AI Plan port.
 local FALLBACK_PROVIDER_ORDER = {
   "anthropic",
   "openai-codex",
   "radius",
-  "google-ai-plan",
   "github-copilot",
   "openrouter",
   "xai",

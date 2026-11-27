@@ -4,13 +4,12 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with ten routed providers:
+psi ships with nine routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
 - OpenRouter, via OpenAI-compatible `/chat/completions`
 - OpenAI Codex, via ChatGPT's Codex Responses backend
-- Google AI Ultra, via Gemini Interactions
 - xAI Grok, via OpenAI-compatible Chat Completions
 - Meta Muse, via OpenAI-compatible Responses
 - GitHub Copilot, via Copilot Responses
@@ -49,14 +48,14 @@ In priority order:
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
-   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, `meta`,
+   `openrouter`, `openai-codex`, `moonshot`, `xai`, `meta`,
    `github-copilot`, or `radius`.
 3. **Settings:** use `defaults.model` or `defaults.provider` from
    `~/.config/psi/settings.json` or `./.psi/settings.json` if the provider is
    configured for authentication.
 4. **Automatic selection:** prefer configured providers in Pi's default-model
-   order: Anthropic, OpenAI Codex, Radius, Google AI Ultra, GitHub Copilot,
-   OpenRouter, xAI, Moonshot, then Meta. If no provider is configured, no
+   order: Anthropic, OpenAI Codex, Radius, GitHub Copilot, OpenRouter,
+   xAI, Moonshot, then Meta. If no provider is configured, no
    model is selected. Run `/login` or select a model explicitly. Ollama
    requires explicit selection because an auth check cannot tell whether a
    local server is running.
@@ -69,23 +68,6 @@ set `ANTHROPIC_AUTH_TOKEN` before starting Psi. A stored Anthropic API key takes
 precedence, followed by `ANTHROPIC_AUTH_TOKEN`, then `ANTHROPIC_API_KEY`. Psi does
 not issue or refresh bearer credentials; supply a fresh token when it expires.
 This is Claude API authentication, not Claude Pro/Max subscription sign-in.
-
-## Google AI Ultra
-
-Google AI Ultra uses a Google Desktop OAuth client approved for Psi's app, not
-an API key. As in [Pi PR #12614](https://github.com/earendil-works/pi/pull/12614),
-approval is per app. Psi does not ship a client; do not reuse Pi's client or
-copy credentials from another Google application.
-
-This optional login uses Node.js 22+ on `PATH` and a build with `MCP=1` (stdio
-process support). Set `PSI_GOOGLE_AI_PLAN_CLIENT_ID` and
-`PSI_GOOGLE_AI_PLAN_CLIENT_SECRET` in the environment before starting Psi.
-Run `/login google-ai-plan`, open the displayed address, and paste the full
-loopback redirect URL into the displayed `/login` command. The redirect page
-will not load because Psi uses manual paste rather than a local callback
-server. Use `/model google-ai-plan/gemini-4-hydrogen` to select the provider.
-Keep `auth.json` private: it holds both the refresh token and its DPoP key.
-Use `/logout google-ai-plan` to remove the local credential.
 
 ## xAI Grok
 
