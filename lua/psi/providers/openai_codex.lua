@@ -174,9 +174,8 @@ local function response_input_from_session(session, _system_prompt, cfg, model)
           if
             type(item) == "table"
             and (
-              provider == "openai-codex" or (
-                message.provider == provider and message.model == model
-              )
+              provider == "openai-codex"
+              or (message.provider == provider and message.model == model)
             )
           then
             out[#out + 1] = item
@@ -624,6 +623,20 @@ end
 
 function M.has_auth()
   return auth.has_credentials and auth.has_credentials() or false
+end
+
+function M.responses_request(args)
+  local body = { model = args.model, input = args.messages, store = false, stream = true }
+  if args.system_prompt and args.system_prompt ~= "" then
+    body.instructions = clean_text(args.system_prompt)
+  end
+  if args.max_tokens then
+    body.max_output_tokens = args.max_tokens
+  end
+  if args.tool_specs and #args.tool_specs > 0 then
+    body.tools = args.tool_specs
+  end
+  return body
 end
 
 function M.run_responses_turn(opts, cfg)

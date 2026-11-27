@@ -4,7 +4,7 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with eight routed providers:
+psi ships with nine routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
@@ -13,6 +13,7 @@ psi ships with eight routed providers:
 - Google AI Ultra, via Gemini Interactions
 - xAI Grok, via OpenAI-compatible Chat Completions
 - Meta Muse, via OpenAI-compatible Responses
+- GitHub Copilot, via Copilot Responses
 - Moonshot (Kimi For Coding), via the Anthropic-compatible
   `https://api.kimi.com/coding`
 
@@ -47,12 +48,14 @@ In priority order:
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
-   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, or `meta`.
+   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, `xai`, `meta`,
+   or `github-copilot`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
 4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot, Google AI Ultra, xAI, and Meta. Ollama is excluded because it does
-   not require credentials. If no provider is authenticated, psi falls back to Anthropic.
+   Moonshot, Google AI Ultra, xAI, Meta, and GitHub Copilot. Ollama is excluded
+   because it does not require credentials. If no provider is authenticated,
+   psi falls back to Anthropic.
 
 ## Anthropic bearer credentials
 
@@ -98,6 +101,16 @@ Run `/login oauth meta`, approve the displayed code, then run
 key and requests a new key before expiry. If the identity grant expires, sign in
 again. API keys take precedence over OAuth credentials. Select
 `meta/muse-spark-1.3` with `/model`.
+
+## GitHub Copilot
+
+Set `PSI_GITHUB_COPILOT_CLIENT_ID` to an OAuth client configured for device
+sign-in and authorized for Psi's Copilot integration. Run `/login oauth
+github-copilot`, approve the device in the browser, then run `/login oauth
+github-copilot check`. A GitHub.com account with Copilot entitlement is required.
+Select `github-copilot/gpt-5-mini` or a Responses-compatible model allowed by
+your account. Psi does not copy another app's client, change your model policy,
+or support custom GitHub Enterprise domains in this flow.
 
 ## Streaming retries
 

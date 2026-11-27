@@ -3,25 +3,10 @@ local auth = require("psi.providers.oauth_meta")
 local storage = require("psi.auth_storage")
 local responses = require("psi.providers.openai_codex")
 local registry = require("psi.api_registry")
-local prelude = require("psi.prelude")
 local M = {}
 
 function M.has_auth()
   return storage.has_api_key("meta", "META_API_KEY") or auth.has_credentials()
-end
-
-local function request(args)
-  local body = { model = args.model, input = args.messages, store = false, stream = true }
-  if args.system_prompt and args.system_prompt ~= "" then
-    body.instructions = prelude.sanitize_surrogates(args.system_prompt)
-  end
-  if args.max_tokens then
-    body.max_output_tokens = args.max_tokens
-  end
-  if args.tool_specs and #args.tool_specs > 0 then
-    body.tools = args.tool_specs
-  end
-  return body
 end
 
 local function config(model)
@@ -37,7 +22,7 @@ local function config(model)
     provider_name = "meta",
     api_name = "meta-responses",
     url = "https://api.meta.ai/v1/responses",
-    request_body = request,
+    request_body = responses.responses_request,
     headers = {
       "Content-Type: application/json",
       "Authorization: Bearer " .. key,

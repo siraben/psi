@@ -193,6 +193,11 @@ M.register_api("openai-codex-responses", {
   },
 })
 
+M.register_api("copilot-responses", {
+  module = "psi.providers.github_copilot",
+  compat = { supports_tool_use = true, thinking_format = "openai-responses" },
+})
+
 M.register_api("meta-responses", {
   module = "psi.providers.meta",
   compat = { supports_tool_use = true, thinking_format = "openai-responses" },
@@ -256,6 +261,23 @@ M.register_provider("openai-codex", {
       module = "psi.providers.oauth_openai_codex",
     },
   },
+})
+
+M.register_provider("github-copilot", {
+  display_name = "GitHub Copilot",
+  api = "copilot-responses",
+  model_env = "PSI_GITHUB_COPILOT_MODEL",
+  default_model = "gpt-5-mini",
+  auth = {
+    oauth = { label = "GitHub account", module = "psi.providers.oauth_github_copilot" },
+  },
+})
+
+M.register_model("github-copilot/gpt-5-mini", {
+  provider = "github-copilot",
+  api = "copilot-responses",
+  supports_tool_use = true,
+  input = { "text" },
 })
 
 M.register_provider("meta", {
@@ -503,8 +525,16 @@ end
 
 -- ollama is excluded: its has_auth() is always true, which would make it
 -- the silent default in an otherwise-unconfigured environment.
-local FALLBACK_PROVIDER_ORDER =
-  { "anthropic", "openai-codex", "openrouter", "moonshot", "google-ai-plan", "xai", "meta" }
+local FALLBACK_PROVIDER_ORDER = {
+  "anthropic",
+  "openai-codex",
+  "openrouter",
+  "moonshot",
+  "google-ai-plan",
+  "xai",
+  "meta",
+  "github-copilot",
+}
 
 local function first_authenticated_provider()
   for _, name in ipairs(FALLBACK_PROVIDER_ORDER) do
