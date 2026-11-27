@@ -16,6 +16,7 @@ local prelude = require("psi.prelude")
 local credential = require("psi.credential")
 local notice = require("psi.notice")
 local platform = require("psi.platform")
+local sched = require("psi.sched")
 
 local M = {}
 
@@ -68,8 +69,7 @@ local function check_permissions(path)
   end
 end
 
-local function read_all()
-  local path = M.path()
+local function read_all(path)
   if not path or not psi.file_exists(path) then
     return {}
   end
@@ -90,14 +90,7 @@ local function read_all()
   return parsed
 end
 
-local function write_all(data)
-  local path = M.path()
-  if not path then
-    return false, "credential storage unavailable: set HOME or PSI_AUTH_FILE"
-  end
-  if not psi.mkdir_parent(path) then
-    return false, "could not create auth directory"
-  end
+local function write_all(path, data)
   -- 0600 from first open + atomic rename: credentials never sit on
   -- disk world-readable, and there's no failed-chmod cleanup window.
   local encoded_ok, encoded = pcall(psi.json_encode, data or {})
@@ -111,54 +104,130 @@ local function write_all(data)
   return true
 end
 
+local function acquire_lock(path)
+  local sleep = sched.in_coroutine() and sched.sleep_ms or psi.sleep_ms
+  for attempt = 1, 101 do
+    local handle, err = psi.file_try_lock(path .. ".lock")
+    if handle or err ~= "busy" then
+      return handle, err
+    end
+    if psi.is_aborted() then
+      return nil, "aborted while waiting for the credential lock"
+    end
+    if attempt < 101 then
+      sleep(50)
+    end
+  end
+  return nil, "credential file is busy; try again shortly"
+end
+
+local function with_lock(fn)
+  local path = M.path()
+  if not path then
+    return nil, "credential storage unavailable: set HOME or PSI_AUTH_FILE"
+  end
+  if not psi.mkdir_parent(path) then
+    return nil, "could not create auth directory"
+  end
+  local lock <close>, lock_err = acquire_lock(path)
+  if not lock then
+    return nil, lock_err
+  end
+  local data, read_err = read_all(path)
+  if not data then
+    return nil, read_err
+  end
+  return fn(path, data)
+end
+
 function M.load()
-  return read_all()
+  return read_all(M.path())
 end
 
 function M.get(provider)
-  local data, err = read_all()
+  local data, err = M.load()
   if not data then
     return nil, err
   end
   return data[provider]
 end
 
+-- The snapshot passed to update stays authoritative through the atomic write.
+local function modify(provider, update)
+  return with_lock(function(path, data)
+    local current = data[provider]
+    local entry, err = update(current)
+    if not entry then
+      return nil, err
+    end
+    if entry ~= current then
+      data[provider] = entry
+      local ok, write_err = write_all(path, data)
+      if not ok then
+        return nil, write_err
+      end
+    end
+    return entry
+  end)
+end
+
 function M.set(provider, entry)
   if type(provider) ~= "string" or provider == "" or type(entry) ~= "table" then
     return false, "provider and credential entry are required"
   end
-  local data, err = read_all()
-  if not data then
-    return false, err
-  end
-  data[provider] = entry
-  return write_all(data)
+  local saved, err = modify(provider, function()
+    return entry
+  end)
+  return saved ~= nil, err
 end
 
 function M.remove(provider)
   if type(provider) ~= "string" or provider == "" then
     return false, "provider is required"
   end
-  local data, err = read_all()
-  if not data then
-    return false, err
+  local removed, err = with_lock(function(path, data)
+    local entry = data[provider]
+    if not entry then
+      return nil, "no stored credential for " .. provider
+    end
+    data[provider] = nil
+    local ok, write_err = write_all(path, data)
+    return ok and entry or nil, write_err
+  end)
+  return removed ~= nil, removed or err
+end
+
+-- Mirror Pi's double-checked OAuth refresh. Once locked, refresh only the
+-- current entry, never the stale snapshot that triggered the refresh.
+function M.ensure_oauth(provider, candidate, valid, refresh)
+  local function fresh(entry)
+    return type(entry.access) == "string"
+      and entry.access ~= ""
+      and not entry.access:find("[%c%s]")
+      and (tonumber(entry.expires) or 0) > (os.time() + 300) * 1000
   end
-  local removed = data[provider]
-  if removed == nil then
-    return false, "no stored credential for " .. provider
+  local missing = "No compatible saved login; run /login oauth " .. provider
+  if not valid(candidate) then
+    return nil, missing
   end
-  data[provider] = nil
-  local ok, write_err = write_all(data)
-  if not ok then
-    return false, write_err
+  if fresh(candidate) then
+    return candidate
   end
-  return true, removed
+  return modify(provider, function(current)
+    if not valid(current) then
+      return nil, missing
+    end
+    if fresh(current) then
+      return current
+    end
+    return refresh(current)
+  end)
 end
 
 -- List stored credential metadata without resolving API-key references or
 -- exposing secret fields. This is the source for /logout selection.
 function M.list()
-  local data, err = read_all()
+  local data, err = M.load()
   if not data then
     return nil, err
   end

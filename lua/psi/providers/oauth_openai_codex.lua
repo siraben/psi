@@ -343,35 +343,35 @@ function M.refresh(refresh_token)
   })
 end
 
+local function valid(entry)
+  return type(entry) == "table"
+    and entry.type == "oauth"
+    and type(entry.refresh) == "string"
+    and entry.refresh ~= ""
+end
+
 function M.ensure_fresh(entry)
-  if type(entry) ~= "table" or entry.type ~= "oauth" then
-    return nil, "not logged in"
-  end
-  if tonumber(entry.expires or 0) > math.floor(os.time() * 1000) + 60000 then
-    return entry
-  end
-  local refreshed, err = M.refresh(entry.refresh)
-  if not refreshed then
-    return nil, err
-  end
-  refreshed.type = "oauth"
-  local ok, write_err = auth_storage.set(PROVIDER, refreshed)
-  if not ok then
-    return nil, write_err
-  end
-  return refreshed
+  return auth_storage.ensure_oauth(PROVIDER, entry, valid, function(current)
+    local refreshed, err = M.refresh(current.refresh)
+    if refreshed then
+      refreshed.type = "oauth"
+    end
+    return refreshed, err
+  end)
 end
 
 function M.credentials()
-  local entry = auth_storage.get(PROVIDER)
+  local entry, err = auth_storage.get(PROVIDER)
+  if err then
+    return nil, err
+  end
   return M.ensure_fresh(entry)
 end
 
 -- Presence check only; never refreshes tokens, so the resolver's auth
 -- gate can call it without network I/O.
 function M.has_credentials()
-  local entry = auth_storage.get(PROVIDER)
-  return type(entry) == "table" and entry.type == "oauth" and type(entry.refresh) == "string"
+  return valid(auth_storage.get(PROVIDER))
 end
 
 function M.login_with_input(input, flow)

@@ -19,9 +19,11 @@
 #include <errno.h>
 #include <limits.h>
 #ifndef _WIN32
+#include <sys/file.h>
 #include <unistd.h>
 #else
 #include <io.h>
+#include <sys/locking.h>
 #endif
 #include <sys/time.h>
 #if PSI_ENABLE_TUI
@@ -2867,6 +2869,78 @@ static int lfn_file_write_secure(lua_State *L) {
     return psi_vm_lfn_atomic_write(L, 0600);
 }
 
+/* The sidecar inode stays in place across atomic credential-file renames.
+ * Closing the descriptor releases the lock, including on process exit. */
+#define PSI_FILE_LOCK_MT "psi.file_lock"
+
+static int lfn_file_lock_close(lua_State *L) {
+    int *fd = (int *)luaL_checkudata(L, 1, PSI_FILE_LOCK_MT);
+    if (*fd >= 0) {
+        close(*fd);
+        *fd = -1;
+    }
+    return 0;
+}
+
+static int lfn_file_try_lock(lua_State *L) {
+    const char *path = luaL_checkstring(L, 1);
+    int *handle = (int *)lua_newuserdata(L, sizeof(*handle));
+    int flags = O_RDWR | O_CREAT;
+    int fd;
+    int lock_result;
+    int lock_errno;
+    struct stat st;
+
+    *handle = -1;
+    luaL_setmetatable(L, PSI_FILE_LOCK_MT);
+#ifdef _WIN32
+    flags |= _O_NOINHERIT | _O_BINARY;
+#else
+    flags |= O_NONBLOCK;
+#ifdef O_NOFOLLOW
+    flags |= O_NOFOLLOW;
+#endif
+#ifdef O_CLOEXEC
+    flags |= O_CLOEXEC;
+#endif
+#endif
+    fd = open(path, flags, 0600);
+    if (fd < 0)
+        goto failed;
+    if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode)) {
+        close(fd);
+        goto failed;
+    }
+#ifndef _WIN32
+    if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
+        close(fd);
+        goto failed;
+    }
+    lock_result = flock(fd, LOCK_EX | LOCK_NB);
+#else
+    lock_result = _locking(fd, _LK_NBLCK, 1L);
+#endif
+    if (lock_result == 0) {
+        *handle = fd;
+        return 1;
+    }
+    lock_errno = errno;
+    close(fd);
+#ifdef _WIN32
+    if (lock_errno == EACCES) {
+#else
+    if (lock_errno == EWOULDBLOCK || lock_errno == EAGAIN) {
+#endif
+        lua_pushnil(L);
+        lua_pushliteral(L, "busy");
+        return 2;
+    }
+failed:
+    lua_pushnil(L);
+    lua_pushliteral(L, "could not acquire file lock");
+    return 2;
+}
+
 static int lfn_file_write_atomic(lua_State *L) {
     mode_t mode = (mode_t)luaL_optinteger(L, 3, 0644);
     return psi_vm_lfn_atomic_write(L, mode);
@@ -4902,6 +4976,11 @@ static void psi_vm_register_psi(lua_State *L) {
      * fire so luaL_setmetatable always finds them. */
     psi_vm_register_gc_mt(L, PSI_HTTP_STREAM_MT, lfn_http_stream_gc);
     psi_vm_register_gc_mt(L, PSI_PROCESS_HANDLE_MT, lfn_process_gc);
+    psi_vm_register_gc_mt(L, PSI_FILE_LOCK_MT, lfn_file_lock_close);
+    luaL_getmetatable(L, PSI_FILE_LOCK_MT);
+    lua_pushcfunction(L, lfn_file_lock_close);
+    lua_setfield(L, -2, "__close");
+    lua_pop(L, 1);
 
     lua_newtable(L); /* psi */
     lua_pushlightuserdata(L, (void *)&psi_vm_json_null);
@@ -4953,6 +5032,7 @@ static void psi_vm_register_psi(lua_State *L) {
     PSI_REG_DOC("file_write", lfn_file_write,
         "Write text to a file (truncating). Creates parent directories if needed.");
     PSI_REG("file_write_secure", lfn_file_write_secure);
+    PSI_REG("file_try_lock", lfn_file_try_lock);
     PSI_REG("file_write_atomic", lfn_file_write_atomic);
     PSI_REG_DOC("file_append", lfn_file_append,
         "Append text to a file in 'ab' mode. Optional mode sets file permissions.");

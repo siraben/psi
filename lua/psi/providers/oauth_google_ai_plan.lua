@@ -166,43 +166,29 @@ function M.finish_login(input)
   return ok, ok and "Signed in to Google AI Ultra" or write_err
 end
 
-local function stored()
+local function valid(entry)
   local client = configured()
-  local entry = client and storage.get(PROVIDER)
-  return type(entry) == "table"
-      and entry.type == "oauth"
-      and entry.client == client
-      and type(entry.refresh) == "string"
-      and type(entry.key) == "table"
-      and entry
-    or nil
+  return client ~= nil
+    and type(entry) == "table"
+    and entry.type == "oauth"
+    and entry.client == client
+    and type(entry.refresh) == "string"
+    and entry.refresh ~= ""
+    and type(entry.key) == "table"
 end
 
 function M.has_credentials()
-  return stored() ~= nil
+  return valid(storage.get(PROVIDER))
 end
 
 function M.credentials()
-  local entry = stored()
-  if not entry then
-    return nil, "Run /login google-ai-plan first"
-  end
-  if
-    type(entry.access) == "string"
-    and not entry.access:find("[\r\n]")
-    and (tonumber(entry.expires) or 0) > (os.time() + 300) * 1000
-  then
-    return entry
-  end
-  local updated, err = request({ action = "refresh", entry = entry })
-  if not updated then
+  local entry, err = storage.get(PROVIDER)
+  if err then
     return nil, err
   end
-  local ok, write_err = storage.set(PROVIDER, updated)
-  if not ok then
-    return nil, write_err
-  end
-  return updated
+  return storage.ensure_oauth(PROVIDER, entry, valid, function(current)
+    return request({ action = "refresh", entry = current })
+  end)
 end
 
 return M

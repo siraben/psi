@@ -127,43 +127,36 @@ function M.new(spec)
     return ok, ok and ("Signed in to " .. spec.name) or write_err
   end
 
-  local function stored(candidate)
+  local function valid(entry)
     local client = client_id()
-    local entry = client and (candidate or storage.get(spec.provider))
-    if
-      type(entry) == "table"
+    return client ~= nil
+      and type(entry) == "table"
       and entry.type == "oauth"
       and entry.client == client
       and M.valid_secret(entry.refresh)
-    then
-      return entry
-    end
   end
 
   function auth.has_credentials(candidate)
-    return stored(candidate) ~= nil
+    return valid(candidate or storage.get(spec.provider))
   end
 
   function auth.access_token(candidate)
-    local entry = stored(candidate)
-    if not entry then
-      return nil, "Run " .. command .. " first"
+    if not candidate then
+      local read_err
+      candidate, read_err = storage.get(spec.provider)
+      if read_err then
+        return nil, read_err
+      end
     end
-    if
-      M.valid_secret(entry.access) and (tonumber(entry.expires) or 0) > (os.time() + 300) * 1000
-    then
-      return entry.access
-    end
-    local updated, err = spec.refresh(entry)
-    if not updated then
-      return nil, err or ("Token refresh failed; try " .. command .. " again")
-    end
-    updated.type, updated.client = "oauth", entry.client
-    local ok, write_err = storage.set(spec.provider, updated)
-    if not ok then
-      return nil, write_err
-    end
-    return updated.access
+    local updated, err = storage.ensure_oauth(spec.provider, candidate, valid, function(current)
+      local replacement, refresh_err = spec.refresh(current)
+      if not replacement then
+        return nil, refresh_err or ("Token refresh failed; try " .. command .. " again")
+      end
+      replacement.type, replacement.client = "oauth", current.client
+      return replacement
+    end)
+    return updated and updated.access or nil, err
   end
   return auth
 end
