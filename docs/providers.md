@@ -4,13 +4,14 @@ psi is a provider-agnostic coding agent. Choose the provider and model that fit
 your workflow; the active provider depends on your model selection,
 configuration, and available credentials.
 
-psi ships with six routed providers:
+psi ships with seven routed providers:
 
 - Anthropic, via `https://api.anthropic.com`
 - Ollama, local, via `/api/chat`
 - OpenRouter, via OpenAI-compatible `/chat/completions`
 - OpenAI Codex, via ChatGPT's Codex Responses backend
 - Google AI Ultra, via Gemini Interactions
+- xAI Grok, via OpenAI-compatible Chat Completions
 - Moonshot (Kimi For Coding), via the Anthropic-compatible
   `https://api.kimi.com/coding`
 
@@ -45,12 +46,12 @@ In priority order:
    `--model=openai-codex/gpt-5.5` or `--model=moonshot/kimi-for-coding`. The
    prefix is stripped before being forwarded to the provider.
 2. **`PSI_PROVIDER` env var:** `anthropic`, `ollama`,
-   `openrouter`, `openai-codex`, `moonshot`, or `google-ai-plan`.
+   `openrouter`, `openai-codex`, `moonshot`, `google-ai-plan`, or `xai`.
 3. **Settings:** `defaults.model`, or an authenticated `defaults.provider`, in
    `~/.config/psi/settings.json` or `./.psi/settings.json`.
 4. **Authenticated fallback:** Anthropic, OpenAI Codex, OpenRouter, then
-   Moonshot and Google AI Ultra. Ollama is excluded because it does not require credentials. If no
-   provider is authenticated, psi falls back to Anthropic.
+   Moonshot, Google AI Ultra, and xAI. Ollama is excluded because it does not
+   require credentials. If no provider is authenticated, psi falls back to Anthropic.
 
 ## Anthropic bearer credentials
 
@@ -77,6 +78,15 @@ will not load because Psi uses manual paste rather than a local callback
 server. Use `/model google-ai-plan/gemini-4-hydrogen` to select the provider.
 Keep `auth.json` private: it holds both the refresh token and its DPoP key.
 Use `/logout google-ai-plan` to remove the local credential.
+
+## xAI Grok
+
+Use `XAI_API_KEY` or `/login api-key xai` for API billing. For device sign-in,
+set `PSI_XAI_OAUTH_CLIENT_ID` to a client authorized by xAI for Psi. Run
+`/login oauth xai`, approve the displayed device code in the browser, then run
+`/login oauth xai check`. Psi does not ship another application's client ID.
+A stored or environment API key takes precedence over OAuth credentials.
+Select `xai/grok-4.7` with `/model` or pass a different supported model explicitly.
 
 ## Streaming retries
 

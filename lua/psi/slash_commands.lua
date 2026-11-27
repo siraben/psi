@@ -348,6 +348,13 @@ local function oauth_login(option, input)
     lines[#lines + 1] = "Copied auth URL to clipboard via OSC 52."
     lines[#lines + 1] = ""
   end
+  if flow.user_code then
+    lines[#lines + 1] = "Enter this code in the browser: " .. flow.user_code
+    lines[#lines + 1] = "After authorizing the device, run /login oauth "
+      .. option.provider
+      .. " check"
+    return true, table.concat(lines, "\n")
+  end
   lines[#lines + 1] = flow.require_redirect_url
       and "Copy the full redirect URL from the address bar, even if the loopback page fails to load."
     or "Complete sign-in in the browser, then copy the final redirect URL or code."
